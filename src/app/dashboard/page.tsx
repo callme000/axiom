@@ -261,105 +261,162 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Main: Deployment History */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-black text-foreground tracking-tight">
-                Recent History
-              </h2>
-              <div className="h-0.5 w-12 bg-foreground/10"></div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                Sort: Newest First
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {deployments.length === 0 ? (
-              <div className="text-center py-32 bg-background border-2 border-dashed rounded-4xl border-foreground/5">
-                <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="text-gray-400"
-                  >
-                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                    <polyline points="13 2 13 9 20 9" />
-                  </svg>
-                </div>
-                <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-                  No financial events recorded in ledger.
-                </p>
+        {/* Main: Analysis & History */}
+        <div className="lg:col-span-8 space-y-10">
+          {/* Capital Allocation Section */}
+          {analytics && analytics.totalDeployed > 0 && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-black text-foreground tracking-tight">
+                  Capital Allocation
+                </h2>
+                <div className="h-0.5 w-12 bg-foreground/10"></div>
               </div>
-            ) : (
-              deployments.map((deployment) => (
-                <div
-                  key={deployment.id}
-                  className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
-                >
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                      >
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-black text-xl text-foreground transition-colors leading-none">
-                          {deployment.title}
-                        </h3>
-                        <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
-                          {deployment.category || "General"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
-                        <span>
-                          {new Date(deployment.created_at).toLocaleDateString(
-                            undefined,
-                            { month: "short", day: "numeric", year: "numeric" },
-                          )}
-                        </span>
-                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                        <span>
-                          {new Date(deployment.created_at).toLocaleTimeString(
-                            undefined,
-                            { hour: "2-digit", minute: "2-digit" },
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="text-right flex flex-col items-end">
-                    <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                      {Number(deployment.amount).toLocaleString("en-KE", {
-                        style: "currency",
-                        currency: "KSh",
-                      })}
-                    </p>
-                    <div className="mt-1 px-3 py-1 bg-green-500/10 rounded-full">
-                      <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                        Verified
-                      </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(analytics.categoryBreakdown)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([cat, amt]) => {
+                    const percentage = (amt / analytics.totalDeployed) * 100;
+                    return (
+                      <div
+                        key={cat}
+                        className="bg-background border rounded-3xl p-5 shadow-sm"
+                      >
+                        <div className="flex justify-between items-end mb-3">
+                          <div>
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">
+                              {cat}
+                            </span>
+                            <span className="text-lg font-black text-foreground tabular-nums">
+                              {amt.toLocaleString("en-KE", {
+                                style: "currency",
+                                currency: "KSh",
+                                maximumFractionDigits: 0,
+                              })}
+                            </span>
+                          </div>
+                          <span className="text-sm font-black text-gray-400">
+                            {Math.round(percentage)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-foreground transition-all duration-1000 ease-out"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
+          {/* Deployment History Section */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-black text-foreground tracking-tight">
+                  Recent History
+                </h2>
+                <div className="h-0.5 w-12 bg-foreground/10"></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  Sort: Newest First
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {deployments.length === 0 ? (
+                <div className="text-center py-32 bg-background border-2 border-dashed rounded-4xl border-foreground/5">
+                  <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-gray-400"
+                    >
+                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                      <polyline points="13 2 13 9 20 9" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+                    No financial events recorded in ledger.
+                  </p>
+                </div>
+              ) : (
+                deployments.map((deployment) => (
+                  <div
+                    key={deployment.id}
+                    className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-black text-xl text-foreground transition-colors leading-none">
+                            {deployment.title}
+                          </h3>
+                          <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
+                            {deployment.category || "General"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
+                          <span>
+                            {new Date(deployment.created_at).toLocaleDateString(
+                              undefined,
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </span>
+                          <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                          <span>
+                            {new Date(deployment.created_at).toLocaleTimeString(
+                              undefined,
+                              { hour: "2-digit", minute: "2-digit" },
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right flex flex-col items-end">
+                      <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
+                        {Number(deployment.amount).toLocaleString("en-KE", {
+                          style: "currency",
+                          currency: "KSh",
+                        })}
+                      </p>
+                      <div className="mt-1 px-3 py-1 bg-green-500/10 rounded-full">
+                        <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+                          Verified
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
