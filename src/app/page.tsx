@@ -52,18 +52,24 @@ export default function Home() {
         <div className="bg-background/40 backdrop-blur-xl p-10 rounded-[2.5rem] border-2 border-foreground/5 shadow-2xl">
           <Auth
             supabaseClient={supabase}
+            theme="dark"
             appearance={{
               theme: ThemeSupa,
               variables: {
                 default: {
                   colors: {
-                    brand: "var(--foreground)",
-                    brandAccent: "var(--foreground)",
-                    brandButtonText: "var(--background)",
+                    brand: "white",
+                    brandAccent: "white",
+                    brandButtonText: "black",
                     defaultButtonBackground: "transparent",
-                    defaultButtonBackgroundHover: "var(--foreground)",
-                    defaultButtonText: "var(--foreground)",
-                    defaultButtonBorder: "var(--foreground)",
+                    defaultButtonBackgroundHover: "white",
+                    defaultButtonText: "white",
+                    defaultButtonBorder: "white",
+                    inputText: "white",
+                    inputBackground: "transparent",
+                    inputBorder: "#333",
+                    inputPlaceholder: "#666",
+                    inputLabelText: "#999",
                   },
                   radii: {
                     buttonBorderRadius: "20px",

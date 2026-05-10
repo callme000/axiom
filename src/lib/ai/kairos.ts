@@ -11,8 +11,11 @@ export type DeploymentInput = {
   category?: string | null;
 };
 
+export type InsightSeverity = "passive" | "advisory" | "critical";
+
 export interface KairosInsight {
   type: "warning" | "info" | "pattern" | "opportunity";
+  severity: InsightSeverity; // New: production-safe classification
   category:
     | "capital_efficiency"
     | "spending_habit"
@@ -20,28 +23,34 @@ export interface KairosInsight {
     | "system";
   confidence: number;
   message: string;
+  timestamp: string; // New: for temporal continuity
   related_ids?: string[];
+  is_new_signal?: boolean; // New: for UX transition logic
 }
 
 /**
- * DETERMINISTIC INTERPRETATION ENGINE (Kairos V1)
- * Transforms financial history into strategic insights without LLM inference.
+ * DETERMINISTIC INTERPRETATION ENGINE (Kairos V1.1)
+ * Implementation of Behavioral Presence Layer.
  */
 export async function generateKairosAIInsight(
   deployments: DeploymentInput[],
   currentBalance?: number,
+  previousInsight?: KairosInsight | null,
 ): Promise<KairosInsight> {
+  // 1. Initial State (Waiting for Signal)
   if (!deployments || deployments.length === 0) {
     return {
       type: "info",
+      severity: "passive",
       category: "system",
       confidence: 1.0,
+      timestamp: new Date().toISOString(),
       message:
-        "No financial events recorded. Logic engine awaiting data for pattern formation.",
+        "Intelligence engine dormant. Awaiting financial deployment signals to begin behavioral analysis.",
     };
   }
 
-  // 1. Map inputs to domain models
+  // 2. Map inputs to domain models
   const domainDeployments: Deployment[] = deployments.map((d) => ({
     id: d.id || "temp",
     title: d.title,
@@ -50,17 +59,33 @@ export async function generateKairosAIInsight(
     category: d.category,
   }));
 
-  // 2. Generate Analytics Context (Source of Truth)
+  // 3. Generate Analytics Context (Source of Truth)
   const analytics = generateSummary(domainDeployments, currentBalance);
 
-  // 3. Build Behavioral Context (Compression Layer)
+  // 4. Build Behavioral Context (Compression Layer)
   const context = buildBehavioralContext(
     { currentAnalytics: analytics },
     domainDeployments.map((d) => d.amount),
   );
 
-  // 4. Evaluate Insights (Logic Layer)
+  // 5. Evaluate Insights (Logic Layer)
   const result = evaluateInsights(context);
+  const primary = result.primaryInsight;
 
-  return result.primaryInsight;
+  // 6. Signal Filtering & Deduplication (Behavioral Presence)
+  // If the new message is exactly the same as the previous, we preserve the signal
+  // but mark it as 'old' to avoid jarring UI transitions.
+  if (previousInsight && previousInsight.message === primary.message) {
+    return {
+      ...primary,
+      is_new_signal: false,
+      timestamp: previousInsight.timestamp, // Keep original time
+    };
+  }
+
+  return {
+    ...primary,
+    timestamp: new Date().toISOString(),
+    is_new_signal: true,
+  };
 }

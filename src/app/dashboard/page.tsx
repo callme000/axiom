@@ -42,11 +42,11 @@ export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
 
-  // EXECUTION LOCKS (Sync-Safe)
+  // EXECUTION LOCKS
   const isExecuting = useRef(false);
   const fetchCount = useRef(0);
 
-  // GRANULAR LOADING STATES
+  // LOADING & ERROR STATES
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isLiquidityLoading, setIsLiquidityLoading] = useState(false);
@@ -70,8 +70,7 @@ export default function Dashboard() {
   const [liquidityInput, setLiquidityInput] = useState("");
 
   /**
-   * REFRESH & ANALYZE (Centralized Intelligence Trigger)
-   * Guaranteed to be atomic and consistent with liquidity truth.
+   * REFRESH & ANALYZE (Behavioral Presence Orchestrator)
    */
   const refreshAndReAnalyze = useCallback(
     async (userId: string, currentLiquidity: number) => {
@@ -80,34 +79,34 @@ export default function Dashboard() {
         const data = await getDeployments();
         const castedData = (data || []) as Deployment[];
 
-        // Atomic Update
+        // Update Core Ledger Truth
         setLedger({
           deployments: castedData,
           analytics: generateSummary(castedData, currentLiquidity),
         });
 
+        // Recalculate Intelligence State
         const insight = await generateKairosAIInsight(
           castedData,
           currentLiquidity,
+          kairosInsight,
         );
-        await saveInsight(insight, userId);
+
+        // Persist if it's a new or significant signal
+        if (insight.is_new_signal) {
+          await saveInsight(insight, userId);
+        }
+
         setKairosInsight(insight);
       } catch {
-        console.warn("Analytics Sync: Deferred. Network unstable.");
-        setGlobalError(
-          "Real-time intelligence sync lagging. Data truth is preserved.",
-        );
+        setGlobalError("Behavioral sync lagging. Data integrity maintained.");
       } finally {
         setIsIntelligenceSyncing(false);
       }
     },
-    [],
+    [kairosInsight],
   );
 
-  /**
-   * FETCH DASHBOARD DATA
-   * Includes 'Stale Request Protection' to prevent jitter during refresh-spam.
-   */
   const fetchDashboardData = useCallback(async () => {
     const requestId = ++fetchCount.current;
     setGlobalError(null);
@@ -123,7 +122,6 @@ export default function Dashboard() {
         getUserSettings(),
       ]);
 
-      // Stale request check
       if (requestId !== fetchCount.current) return;
 
       const castedDeployments = (deploymentsData || []) as Deployment[];
@@ -144,9 +142,17 @@ export default function Dashboard() {
         savedInsights.length > 0
       ) {
         setKairosInsight(savedInsights[0]);
+      } else if (requestId === fetchCount.current) {
+        // Initialize empty state presence
+        const initial = await generateKairosAIInsight(
+          [],
+          currentLiquidity,
+          null,
+        );
+        setKairosInsight(initial);
       }
     } catch {
-      setGlobalError("Connectivity failure. Intelligence engine is offline.");
+      setGlobalError("Connectivity failure. Intelligence layer offline.");
     } finally {
       if (requestId === fetchCount.current) {
         setIsInitialLoading(false);
@@ -159,14 +165,8 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  /**
-   * HANDLE ADD DEPLOYMENT
-   * Features 'Sync-Locking' to prevent double-writes on rapid clicks.
-   */
   async function handleAddDeployment(e: React.FormEvent) {
     e.preventDefault();
-
-    // 1. Sync-safe lock check
     if (isExecuting.current) return;
 
     setIsActionLoading(true);
@@ -181,7 +181,7 @@ export default function Dashboard() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("Session expired. Please re-login.");
+      if (!user) throw new Error("Session unverified");
 
       await createDeployment(title, Number(amount), user.id, category);
 
@@ -228,7 +228,7 @@ export default function Dashboard() {
 
   async function handleDelete(id: string) {
     if (isExecuting.current) return;
-    if (!confirm("Delete record?")) return;
+    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
 
     setDeletingId(id);
     isExecuting.current = true;
@@ -242,7 +242,7 @@ export default function Dashboard() {
       await deleteDeployment(id);
       await refreshAndReAnalyze(user.id, liquidity);
     } catch {
-      setGlobalError("Record preservation failed. Check connectivity.");
+      setGlobalError("Deletion interrupted.");
     } finally {
       setDeletingId(null);
       isExecuting.current = false;
@@ -270,7 +270,7 @@ export default function Dashboard() {
       if (!user) return;
 
       if (!editForm.title.trim()) throw new Error("Title required");
-      if (Number(editForm.amount) <= 0) throw new Error("Invalid amount");
+      if (Number(editForm.amount) <= 0) throw new Error("Amount invalid");
 
       await updateDeployment(id, {
         title: editForm.title,
@@ -280,7 +280,7 @@ export default function Dashboard() {
       setEditingId(null);
       await refreshAndReAnalyze(user.id, liquidity);
     } catch (err: unknown) {
-      setGlobalError(err instanceof Error ? err.message : "Update rejected");
+      alert(err instanceof Error ? err.message : "Update failed");
     } finally {
       setUpdatingId(null);
       isExecuting.current = false;
@@ -361,8 +361,8 @@ export default function Dashboard() {
                   })}
                 </span>
                 <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-2xl transition-opacity">
-                  <span className="text-[10px] font-black uppercase">
-                    Edit Truth
+                  <span className="text-[10px] font-black uppercase tracking-tighter">
+                    Edit Liquidity
                   </span>
                 </div>
               </>
@@ -456,7 +456,7 @@ export default function Dashboard() {
                   <input
                     type="text"
                     disabled={isActionLoading}
-                    placeholder="e.g. Server Hosting"
+                    placeholder="e.g. BTC Buy"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
@@ -540,12 +540,12 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Intelligence Section */}
+          {/* Behavioral Presence Section */}
           <div
-            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.type === "warning" ? "ring-4 ring-orange-500/50" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale" : "opacity-100"}`}
+            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/50" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
           >
             <div>
-              <div className="flex items-center gap-2 mb-4 opacity-60">
+              <div className="flex items-center gap-2 mb-6 opacity-60">
                 <svg
                   width="16"
                   height="16"
@@ -557,35 +557,49 @@ export default function Dashboard() {
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                 </svg>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                  Kairos Engine Analysis ::{" "}
+                  Kairos Presence ::{" "}
                   {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
                 </span>
               </div>
 
               <div className="space-y-4">
                 {kairosInsight ? (
-                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <p className="text-lg font-bold leading-tight">
+                  <div
+                    className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
+                  >
+                    <p
+                      className={`text-lg font-bold leading-tight italic ${kairosInsight.severity === "critical" ? "text-orange-400" : "text-background"}`}
+                    >
                       &ldquo;{kairosInsight.message}&rdquo;
                     </p>
-                    <div className="mt-4 flex items-center gap-4">
+                    <div className="mt-6 flex items-center gap-5 border-t border-background/10 pt-4">
                       <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest opacity-40">
-                          Confidence
+                          Reliability
                         </span>
                         <span className="text-xs font-black">
                           {(kairosInsight.confidence * 100).toFixed(0)}%
                         </span>
                       </div>
-                      <div className="h-6 w-[1px] bg-background/10"></div>
                       <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-widest opacity-40">
-                          Classification
+                          Status
                         </span>
                         <span
-                          className={`text-xs font-black uppercase ${kairosInsight.type === "warning" ? "text-orange-400" : "text-blue-400"}`}
+                          className={`text-xs font-black uppercase ${kairosInsight.severity === "critical" ? "text-orange-400" : "text-blue-300"}`}
                         >
-                          {kairosInsight.type}
+                          {kairosInsight.severity}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest opacity-40">
+                          Observation
+                        </span>
+                        <span className="text-xs font-black uppercase text-gray-400">
+                          {new Date(kairosInsight.timestamp).toLocaleTimeString(
+                            [],
+                            { hour: "2-digit", minute: "2-digit" },
+                          )}
                         </span>
                       </div>
                     </div>
@@ -594,8 +608,8 @@ export default function Dashboard() {
                   <div className="space-y-2 opacity-30">
                     <div className="h-4 bg-background/20 rounded-full w-full"></div>
                     <div className="h-4 bg-background/20 rounded-full w-2/3"></div>
-                    <p className="text-[10px] font-bold uppercase mt-4">
-                      Awaiting financial event for interpretation...
+                    <p className="text-[10px] font-bold uppercase mt-4 tracking-widest">
+                      Awaiting signal for behavioral interpretation...
                     </p>
                   </div>
                 )}
@@ -614,8 +628,8 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <p className="text-[8px] font-bold text-background/40 uppercase tracking-tight">
-                  * Benchmark based on {liquidity.toLocaleString()} KSh
-                  operational balance
+                  * Calculated against {liquidity.toLocaleString()} KSh
+                  operational truth
                 </p>
               </div>
             )}
@@ -624,9 +638,64 @@ export default function Dashboard() {
 
         {/* Main: Analysis & History */}
         <div className="lg:col-span-8 space-y-10">
+          {/* Empty State: Aliveness / Onboarding */}
+          {ledger.deployments.length === 0 && !globalError && (
+            <div className="bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-4xl p-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <div className="max-w-md mx-auto">
+                <div className="w-20 h-20 bg-foreground/5 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-gray-500"
+                  >
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase mb-4">
+                  Establish Financial Truth
+                </h2>
+                <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed mb-10">
+                  Axiom is observing your capital behavior. Begin by deploying
+                  funds into Assets, Skills, or Leverage to initialize the
+                  intelligence engine.
+                </p>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-black text-foreground">
+                      LEAD
+                    </span>
+                    <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                      Assets generate future value
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-black text-foreground">
+                      GROW
+                    </span>
+                    <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                      Skills improve earning ability
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-black text-foreground">
+                      MULTIPLY
+                    </span>
+                    <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                      Leverage saves operational time
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Capital Allocation Section */}
           {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in fade-in duration-500">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-black text-foreground tracking-tight">
                   Capital Allocation
@@ -643,14 +712,14 @@ export default function Dashboard() {
                     return (
                       <div
                         key={cat}
-                        className="bg-background border rounded-4xl p-5 shadow-sm"
+                        className="bg-background border rounded-4xl p-5 shadow-sm hover:border-foreground/20 transition-all group"
                       >
                         <div className="flex justify-between items-end mb-3">
                           <div>
                             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">
                               {cat}
                             </span>
-                            <span className="text-lg font-black text-foreground tabular-nums">
+                            <span className="text-lg font-black text-foreground tabular-nums group-hover:text-black dark:group-hover:text-white">
                               {amt.toLocaleString("en-KE", {
                                 style: "currency",
                                 currency: "KSh",
@@ -676,44 +745,24 @@ export default function Dashboard() {
           )}
 
           {/* Deployment History Section */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-black text-foreground tracking-tight">
-                  Recent History
-                </h2>
-                <div className="h-0.5 w-12 bg-foreground/10"></div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  Sort: Newest First
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              {ledger.deployments.length === 0 ? (
-                <div className="text-center py-32 bg-background border-2 border-dashed rounded-4xl border-foreground/5">
-                  <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-gray-400"
-                    >
-                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                      <polyline points="13 2 13 9 20 9" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-                    No financial events recorded in ledger.
-                  </p>
+          {ledger.deployments.length > 0 && (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-black text-foreground tracking-tight">
+                    Recent History
+                  </h2>
+                  <div className="h-0.5 w-12 bg-foreground/10"></div>
                 </div>
-              ) : (
-                ledger.deployments.map((deployment) => (
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                    Chronological Stream
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {ledger.deployments.map((deployment) => (
                   <div
                     key={deployment.id}
                     className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
@@ -868,10 +917,10 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                ))
-              )}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
