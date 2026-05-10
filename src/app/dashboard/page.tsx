@@ -9,6 +9,7 @@ import {
   deleteDeployment,
 } from "@/lib/db/deployments";
 import { saveInsight, getInsights } from "@/lib/db/insights";
+import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
 
@@ -23,6 +24,7 @@ type Deployment = {
 export default function Dashboard() {
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  const [liquidity, setLiquidity] = useState<number>(0);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Unclassified");
@@ -43,75 +45,73 @@ export default function Dashboard() {
     amount: "",
     category: "Unclassified",
   });
+  const [isEditingLiquidity, setIsEditingLiquidity] = useState(false);
+  const [liquidityInput, setLiquidityInput] = useState("");
 
   /**
-   * REFRESH & ANALYZE (Centralized Intelligence Trigger)
-   * This function ensures the ledger, analytics, and Kairos are always in sync.
+   * REFRESH & ANALYZE
    */
-  const refreshAndReAnalyze = useCallback(async (userId: string) => {
-    try {
-      const data = await getDeployments();
-      const castedData = (data || []) as Deployment[];
-      setDeployments(castedData);
+  const refreshAndReAnalyze = useCallback(
+    async (userId: string, currentLiquidity: number) => {
+      try {
+        const data = await getDeployments();
+        const castedData = (data || []) as Deployment[];
+        setDeployments(castedData);
 
-      // 1. Update Deterministic Analytics
-      const summary = generateSummary(castedData);
-      setAnalytics(summary);
+        const summary = generateSummary(castedData, currentLiquidity);
+        setAnalytics(summary);
 
-      // 2. Trigger Intelligence Engine
-      setKairosInsight((prev) => ({
-        ...(prev || {
-          type: "info",
-          category: "system",
-          confidence: 1.0,
-          message: "",
-        }),
-        message: "Synchronizing intelligence...",
-      }));
+        const insight = await generateKairosAIInsight(
+          castedData,
+          currentLiquidity,
+        );
+        await saveInsight(insight, userId);
+        setKairosInsight(insight);
+      } catch (error) {
+        // In production, we'd use a non-intrusive notification here
+        console.warn("Analytics Sync: Deferred. Using previous cache.");
+      }
+    },
+    [],
+  );
 
-      const insight = await generateKairosAIInsight(castedData);
-
-      // 3. Persist Memory
-      await saveInsight(insight, userId);
-      setKairosInsight(insight);
-    } catch (error) {
-      console.error("Intelligence synchronization failed:", error);
-    }
-  }, []);
-
-  const fetchDeployments = useCallback(async () => {
+  const fetchDashboardData = useCallback(async () => {
     setGlobalError(null);
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) return; // Middleware will handle redirect
+      if (!session) return;
 
-      const data = await getDeployments();
-      const castedData = (data || []) as Deployment[];
-      setDeployments(castedData);
+      // Parallel fetch for speed
+      const [deploymentsData, settings] = await Promise.all([
+        getDeployments(),
+        getUserSettings(),
+      ]);
 
-      const summary = generateSummary(castedData);
-      setAnalytics(summary);
+      const castedDeployments = (deploymentsData || []) as Deployment[];
+      const currentLiquidity = Number(settings.total_liquidity);
+
+      setDeployments(castedDeployments);
+      setLiquidity(currentLiquidity);
+      setLiquidityInput(currentLiquidity.toString());
+
+      setAnalytics(generateSummary(castedDeployments, currentLiquidity));
 
       const savedInsights = await getInsights(1);
       if (savedInsights && savedInsights.length > 0) {
         setKairosInsight(savedInsights[0]);
       }
     } catch (error) {
-      console.error("Failed to fetch deployments:", error);
-      setGlobalError(
-        "Database Connection Interrupted. Unable to synchronize ledger.",
-      );
+      setGlobalError("Connectivity failure. Intelligence engine is offline.");
     } finally {
       setIsInitialLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDeployments();
-  }, [fetchDeployments]);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   async function handleAddDeployment(e: React.FormEvent) {
     e.preventDefault();
@@ -119,7 +119,6 @@ export default function Dashboard() {
     setFormError(null);
 
     try {
-      // MANDATORY CLASSIFICATION GATE
       if (category === "Unclassified") {
         throw new Error("Strategic classification required before execution");
       }
@@ -127,33 +126,47 @@ export default function Dashboard() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-
       if (!user) {
-        setFormError("User not authenticated");
+        setFormError("Identity unverified. Please re-authenticate.");
         return;
       }
 
       await createDeployment(title, Number(amount), user.id, category);
 
-      // Clear form
       setTitle("");
       setAmount("");
       setCategory("Unclassified");
 
-      // Trigger intelligence update
-      await refreshAndReAnalyze(user.id);
+      await refreshAndReAnalyze(user.id, liquidity);
     } catch (err: unknown) {
-      console.error(err);
-      const errorMsg =
-        err instanceof Error ? err.message : "Failed to add deployment";
-      setFormError(errorMsg);
+      setFormError(err instanceof Error ? err.message : "Deployment failed");
     } finally {
       setIsActionLoading(false);
     }
   }
 
+  async function handleUpdateLiquidity() {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const newAmount = Number(liquidityInput);
+      if (isNaN(newAmount)) throw new Error("Invalid liquidity value");
+
+      await updateLiquidity(newAmount);
+      setLiquidity(newAmount);
+      setIsEditingLiquidity(false);
+
+      await refreshAndReAnalyze(user.id, newAmount);
+    } catch (err: unknown) {
+      alert("Settings update failed");
+    }
+  }
+
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this deployment?")) return;
+    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
 
     try {
       const {
@@ -162,10 +175,9 @@ export default function Dashboard() {
       if (!user) return;
 
       await deleteDeployment(id);
-      await refreshAndReAnalyze(user.id);
+      await refreshAndReAnalyze(user.id, liquidity);
     } catch (err) {
-      console.error(err);
-      alert("Failed to delete deployment");
+      alert("Database error: Record preserved.");
     }
   }
 
@@ -185,10 +197,9 @@ export default function Dashboard() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Validation
-      if (!editForm.title.trim()) throw new Error("Title cannot be empty");
+      if (!editForm.title.trim()) throw new Error("Title required");
       if (Number(editForm.amount) <= 0)
-        throw new Error("Amount must be greater than zero");
+        throw new Error("Amount must be positive");
 
       await updateDeployment(id, {
         title: editForm.title,
@@ -196,13 +207,9 @@ export default function Dashboard() {
         category: editForm.category,
       });
       setEditingId(null);
-
-      // TRIGGER KAIROS ON EDIT
-      await refreshAndReAnalyze(user.id);
+      await refreshAndReAnalyze(user.id, liquidity);
     } catch (err: unknown) {
-      console.error(err);
-      const errorMsg = err instanceof Error ? err.message : "Update failed";
-      alert(errorMsg);
+      alert(err instanceof Error ? err.message : "Update rejected");
     }
   }
 
@@ -238,17 +245,48 @@ export default function Dashboard() {
         </div>
 
         <div className="flex gap-4">
-          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40">
+          <div
+            className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group cursor-pointer"
+            onClick={() => !isEditingLiquidity && setIsEditingLiquidity(true)}
+          >
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
-              Total Deployed
+              Total Liquidity
             </span>
-            <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {analytics?.totalDeployed.toLocaleString("en-KE", {
-                style: "currency",
-                currency: "KSh",
-                maximumFractionDigits: 0,
-              })}
-            </span>
+            {isEditingLiquidity ? (
+              <div className="flex flex-col gap-2">
+                <input
+                  autoFocus
+                  type="number"
+                  value={liquidityInput}
+                  onChange={(e) => setLiquidityInput(e.target.value)}
+                  className="bg-background border-none rounded p-1 text-center font-black text-lg w-full focus:outline-none"
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpdateLiquidity();
+                  }}
+                  className="bg-foreground text-background text-[8px] font-black py-1 rounded"
+                >
+                  SAVE TRUTH
+                </button>
+              </div>
+            ) : (
+              <>
+                <span className="text-2xl font-black tabular-nums text-foreground text-center">
+                  {liquidity.toLocaleString("en-KE", {
+                    style: "currency",
+                    currency: "KSh",
+                    maximumFractionDigits: 0,
+                  })}
+                </span>
+                <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-2xl transition-opacity">
+                  <span className="text-[10px] font-black uppercase">
+                    Edit Truth
+                  </span>
+                </div>
+              </>
+            )}
           </div>
           <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40">
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
@@ -293,7 +331,7 @@ export default function Dashboard() {
             </div>
           </div>
           <button
-            onClick={fetchDeployments}
+            onClick={fetchDashboardData}
             className="bg-foreground text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10"
           >
             Re-Synchronize
@@ -492,7 +530,8 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <p className="text-[8px] font-bold text-background/40 uppercase tracking-tight">
-                  * Benchmark based on 1M KSh operational balance
+                  * Benchmark based on {liquidity.toLocaleString()} KSh
+                  operational balance
                 </p>
               </div>
             )}

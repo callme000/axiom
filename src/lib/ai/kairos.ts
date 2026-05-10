@@ -1,5 +1,7 @@
 import { buildBehavioralContext } from "../context/buildBehavioralContext";
 import { evaluateInsights } from "../insights/generateInsights";
+import { generateSummary } from "../analytics/engine";
+import { Deployment } from "../analytics/types";
 
 export type DeploymentInput = {
   id?: string;
@@ -27,6 +29,7 @@ export interface KairosInsight {
  */
 export async function generateKairosAIInsight(
   deployments: DeploymentInput[],
+  currentBalance?: number,
 ): Promise<KairosInsight> {
   if (!deployments || deployments.length === 0) {
     return {
@@ -38,38 +41,26 @@ export async function generateKairosAIInsight(
     };
   }
 
-  // 1. Build Behavioral Context (Compression Layer)
-  // Note: We currently don't pass historical metrics yet, but the architecture supports it.
+  // 1. Map inputs to domain models
+  const domainDeployments: Deployment[] = deployments.map((d) => ({
+    id: d.id || "temp",
+    title: d.title,
+    amount: d.amount,
+    created_at: d.created_at || new Date().toISOString(),
+    category: d.category,
+  }));
+
+  // 2. Generate Analytics Context (Source of Truth)
+  const analytics = generateSummary(domainDeployments, currentBalance);
+
+  // 3. Build Behavioral Context (Compression Layer)
   const context = buildBehavioralContext(
-    { currentAnalytics: simulateAnalytics(deployments) },
-    deployments.map((d) => d.amount),
+    { currentAnalytics: analytics },
+    domainDeployments.map((d) => d.amount),
   );
 
-  // 2. Evaluate Insights (Logic Layer)
+  // 4. Evaluate Insights (Logic Layer)
   const result = evaluateInsights(context);
 
   return result.primaryInsight;
-}
-
-/**
- * Helper to transform raw deployments into analytics for context building.
- * (Sync version of the Analytics Engine logic for internal engine use)
- */
-function simulateAnalytics(deployments: DeploymentInput[]) {
-  const total = deployments.reduce((sum, d) => sum + Number(d.amount), 0);
-  const dailyBurn = total / 30; // 30-day window
-  const balance = 1000000;
-
-  const breakdown: Record<string, number> = {};
-  deployments.forEach((d) => {
-    const cat = d.category || "Unclassified";
-    breakdown[cat] = (breakdown[cat] || 0) + Number(d.amount);
-  });
-  return {
-    totalDeployed: total,
-    dailyBurnRate: dailyBurn,
-    runwayDays: dailyBurn > 0 ? balance / dailyBurn : null,
-    categoryBreakdown: breakdown,
-    deploymentCount: deployments.length,
-  };
 }

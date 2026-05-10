@@ -59,7 +59,7 @@ export const getCategoryBreakdown = (
  */
 export const generateSummary = (
   deployments: Deployment[],
-  currentBalance: number = 1000000, // Placeholder 1M KSh balance
+  currentBalance?: number,
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
   const burnRate = calculateBurnRate(deployments);
@@ -68,7 +68,7 @@ export const generateSummary = (
     totalDeployed: total,
     averageDeployment: calculateAverage(deployments),
     dailyBurnRate: burnRate,
-    runwayDays: projectRunway(currentBalance, burnRate),
+    runwayDays: currentBalance ? projectRunway(currentBalance, burnRate) : null,
     categoryBreakdown: getCategoryBreakdown(deployments),
     deploymentCount: deployments.length,
   };

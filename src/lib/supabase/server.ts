@@ -1,8 +1,8 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export async function createClient() {
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,20 +10,25 @@ export async function createClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+              cookieStore.set(name, value, options),
+            );
+          } catch (error) {
+            // This is expected if calling from a Server Component that is already streaming.
+            // We log it only for debugging in dev mode.
+            if (process.env.NODE_ENV === "development") {
+              console.warn(
+                "Supabase SSR: Unable to set cookies from Server Component. Ensure middleware is configured.",
+                error,
+              );
+            }
           }
         },
       },
-    }
-  )
+    },
+  );
 }
