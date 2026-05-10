@@ -1,9 +1,8 @@
+import { geminiModel } from "./gemini";
+
 export type DeploymentInput = {
-  id?: string;
   title: string;
   amount: number;
-  created_at?: string;
-  category?: string | null;
 };
 
 /**
@@ -30,15 +29,40 @@ export function generateKairosInsight(input: DeploymentInput) {
 }
 
 /**
- * AI-powered behavioral insight generation (Placeholder for Hugging Face)
+ * AI-powered behavioral insight generation (Probabilistic)
  */
 export async function generateKairosAIInsight(deployments: DeploymentInput[]) {
   if (!deployments || deployments.length === 0) {
     return "No financial events recorded. Logic engine awaiting data for pattern formation.";
   }
 
-  // NOTE: Gemini API implementation removed.
-  // Awaiting replacement with Hugging Face (Mistral) model.
+  const summary = deployments
+    .slice(0, 10)
+    .map((d) => `- ${d.title}: KSh ${d.amount}`)
+    .join("\n");
 
-  return "Local intelligence engine (Mistral) is currently initializing. Behavioral analysis will resume shortly.";
+  const prompt = `
+You are Kairos, a financial intelligence system.
+
+Rules:
+- Be analytical only
+- No motivation
+- No emotional language
+- No preaching
+- Max 2 sentences
+
+User deployments:
+${summary}
+
+Return insight about spending patterns and capital efficiency.
+`;
+
+  try {
+    const result = await geminiModel.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Kairos AI Error:", error);
+    return "Intelligence engine temporarily unavailable. Standard pattern recognition active.";
+  }
 }

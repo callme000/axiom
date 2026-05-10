@@ -34,7 +34,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-background text-foreground p-6 relative overflow-hidden">
       {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-foreground/5 blur-[120px] rounded-full"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-foreground/5 blur-[120px] rounded-full"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-12 group">

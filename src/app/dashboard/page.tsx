@@ -4,34 +4,25 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { getDeployments, createDeployment } from "@/lib/db/deployments";
 import { generateKairosAIInsight } from "@/lib/ai/kairos";
-import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
 
 type Deployment = {
   id: string;
   title: string;
   amount: number;
   created_at: string;
-  category?: string | null;
 };
 
 export default function Dashboard() {
   const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("General");
   const [kairosMessage, setKairosMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const fetchDeployments = useCallback(async () => {
     try {
       const data = await getDeployments();
-      const castedData = (data || []) as Deployment[];
-      setDeployments(castedData);
-
-      // Generate analytics from pure engine
-      const summary = generateSummary(castedData);
-      setAnalytics(summary);
+      setDeployments(data || []);
     } catch (error) {
       console.error("Failed to fetch deployments:", error);
     }
@@ -41,6 +32,13 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDeployments();
   }, [fetchDeployments]);
+
+  const totalDeployed = deployments.reduce(
+    (sum, d) => sum + Number(d.amount),
+    0,
+  );
+  const avgDeployment =
+    deployments.length > 0 ? totalDeployed / deployments.length : 0;
 
   async function handleAddDeployment(e: React.FormEvent) {
     e.preventDefault();
@@ -56,22 +54,20 @@ export default function Dashboard() {
         return;
       }
 
-      await createDeployment(title, Number(amount), user.id, category);
+      // We perform the creation directly on the client to ensure the Supabase session is included.
+      await createDeployment(title, Number(amount), user.id);
 
       // Clear form
       setTitle("");
       setAmount("");
-      setCategory("General");
 
-      // Refresh list & analytics
+      // Refresh list to include the new deployment
       const updatedData = await getDeployments();
-      const castedUpdated = (updatedData || []) as Deployment[];
-      setDeployments(castedUpdated);
-      setAnalytics(generateSummary(castedUpdated));
+      setDeployments(updatedData || []);
 
-      // Generate AI-powered behavioral insight
+      // Generate AI-powered behavioral insight based on history
       setKairosMessage("Analytic engine processing history...");
-      const aiInsight = await generateKairosAIInsight(castedUpdated);
+      const aiInsight = await generateKairosAIInsight(updatedData || []);
       setKairosMessage(aiInsight);
     } catch (err: unknown) {
       console.error(err);
@@ -100,24 +96,24 @@ export default function Dashboard() {
         </div>
 
         <div className="flex gap-4">
-          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40">
+          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-[160px]">
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
               Total Deployed
             </span>
             <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {analytics?.totalDeployed.toLocaleString("en-KE", {
+              {totalDeployed.toLocaleString("en-KE", {
                 style: "currency",
                 currency: "KSh",
                 maximumFractionDigits: 0,
               })}
             </span>
           </div>
-          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40">
+          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-[160px]">
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
-              Daily Burn
+              Avg. Ticket
             </span>
             <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {analytics?.dailyBurnRate.toLocaleString("en-KE", {
+              {avgDeployment.toLocaleString("en-KE", {
                 style: "currency",
                 currency: "KSh",
                 maximumFractionDigits: 0,
@@ -131,6 +127,7 @@ export default function Dashboard() {
         {/* Left Sidebar: Controls & Intelligence */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-background border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+            {/* Subtle Glow Effect */}
             <div className="absolute -top-24 -left-24 w-48 h-48 bg-foreground/5 blur-3xl rounded-full transition-all group-hover:bg-foreground/10"></div>
 
             <div className="relative z-10">
@@ -160,7 +157,7 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Server Hosting"
+                    placeholder="e.g. Infrastructure Scalability"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium"
@@ -168,35 +165,22 @@ export default function Dashboard() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                      Amount (KSh)
-                    </label>
+                <div>
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                    Amount (KSh)
+                  </label>
+                  <div className="relative">
                     <input
                       type="number"
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-bold tabular-nums"
+                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 pl-16 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-bold text-xl tabular-nums"
                       required
                     />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                      Category
-                    </label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground font-bold appearance-none cursor-pointer"
-                    >
-                      <option value="General">General</option>
-                      <option value="Infrastructure">Infrastructure</option>
-                      <option value="Marketing">Marketing</option>
-                      <option value="R&D">R&D</option>
-                      <option value="Operations">Operations</option>
-                    </select>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">
+                      KSh
+                    </span>
                   </div>
                 </div>
 
@@ -212,7 +196,7 @@ export default function Dashboard() {
           </div>
 
           {/* Intelligence Section */}
-          <div className="bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between">
+          <div className="bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-[200px] flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-4 opacity-60">
                 <svg
@@ -247,15 +231,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {analytics && (
-              <div className="mt-8 flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-background rounded-full animate-pulse"></span>
-                  Projected Runway:{" "}
-                  {analytics.runwayDays
-                    ? `${Math.round(analytics.runwayDays)} Days`
-                    : "Stable"}
-                </div>
+            {kairosMessage && (
+              <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+                <span className="w-2 h-2 bg-background rounded-full animate-pulse"></span>
+                Real-time Insight Generated
               </div>
             )}
           </div>
@@ -268,7 +247,7 @@ export default function Dashboard() {
               <h2 className="text-2xl font-black text-foreground tracking-tight">
                 Recent History
               </h2>
-              <div className="h-0.5 w-12 bg-foreground/10"></div>
+              <div className="h-[2px] w-12 bg-foreground/10"></div>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
@@ -279,7 +258,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 gap-4">
             {deployments.length === 0 ? (
-              <div className="text-center py-32 bg-background border-2 border-dashed rounded-4xl border-foreground/5">
+              <div className="text-center py-32 bg-background border-2 border-dashed rounded-[2rem] border-foreground/5">
                 <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg
                     width="24"
@@ -302,7 +281,7 @@ export default function Dashboard() {
               deployments.map((deployment) => (
                 <div
                   key={deployment.id}
-                  className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                  className="bg-background border rounded-[2rem] p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
                 >
                   <div className="flex items-center gap-5">
                     <div className="w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background">
@@ -318,14 +297,9 @@ export default function Dashboard() {
                       </svg>
                     </div>
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-black text-xl text-foreground transition-colors leading-none">
-                          {deployment.title}
-                        </h3>
-                        <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
-                          {deployment.category || "General"}
-                        </span>
-                      </div>
+                      <h3 className="font-black text-xl text-foreground transition-colors leading-none mb-2">
+                        {deployment.title}
+                      </h3>
                       <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
                         <span>
                           {new Date(deployment.created_at).toLocaleDateString(
