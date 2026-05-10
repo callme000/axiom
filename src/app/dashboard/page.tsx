@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { getDeployments, createDeployment } from "@/lib/db/deployments";
-import { generateKairosAIInsight } from "@/lib/ai/kairos";
+import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
 
 type Deployment = {
@@ -20,7 +20,9 @@ export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("General");
-  const [kairosMessage, setKairosMessage] = useState("");
+  const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
 
   const fetchDeployments = useCallback(async () => {
@@ -70,9 +72,15 @@ export default function Dashboard() {
       setAnalytics(generateSummary(castedUpdated));
 
       // Generate AI-powered behavioral insight
-      setKairosMessage("Analytic engine processing history...");
-      const aiInsight = await generateKairosAIInsight(castedUpdated);
-      setKairosMessage(aiInsight);
+      setKairosInsight({
+        type: "info",
+        category: "system",
+        confidence: 1.0,
+        message: "Analytic engine processing history...",
+      });
+
+      const insight = await generateKairosAIInsight(castedUpdated);
+      setKairosInsight(insight);
     } catch (err: unknown) {
       console.error(err);
       const errorMsg =
@@ -212,7 +220,9 @@ export default function Dashboard() {
           </div>
 
           {/* Intelligence Section */}
-          <div className="bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between">
+          <div
+            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-colors duration-500 ${kairosInsight?.type === "warning" ? "ring-4 ring-orange-500/50" : ""}`}
+          >
             <div>
               <div className="flex items-center gap-2 mb-4 opacity-60">
                 <svg
@@ -226,15 +236,39 @@ export default function Dashboard() {
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                 </svg>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                  Kairos Engine Analysis
+                  Kairos Engine Analysis //{" "}
+                  {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
                 </span>
               </div>
 
               <div className="space-y-4">
-                {kairosMessage ? (
-                  <p className="text-lg font-bold leading-tight animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    &ldquo;{kairosMessage}&rdquo;
-                  </p>
+                {kairosInsight ? (
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <p className="text-lg font-bold leading-tight">
+                      &ldquo;{kairosInsight.message}&rdquo;
+                    </p>
+                    <div className="mt-4 flex items-center gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest opacity-40">
+                          Confidence
+                        </span>
+                        <span className="text-xs font-black">
+                          {(kairosInsight.confidence * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="h-6 w-[1px] bg-background/10"></div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest opacity-40">
+                          Classification
+                        </span>
+                        <span
+                          className={`text-xs font-black uppercase ${kairosInsight.type === "warning" ? "text-orange-400" : "text-blue-400"}`}
+                        >
+                          {kairosInsight.type}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-2 opacity-30">
                     <div className="h-4 bg-background/20 rounded-full w-full"></div>
