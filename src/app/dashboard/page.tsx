@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { getDeployments, createDeployment } from "@/lib/db/deployments";
+import { saveInsight, getInsights } from "@/lib/db/insights";
 import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
 
@@ -34,6 +35,12 @@ export default function Dashboard() {
       // Generate analytics from pure engine
       const summary = generateSummary(castedData);
       setAnalytics(summary);
+
+      // Fetch latest persisted insight
+      const savedInsights = await getInsights(1);
+      if (savedInsights && savedInsights.length > 0) {
+        setKairosInsight(savedInsights[0]);
+      }
     } catch (error) {
       console.error("Failed to fetch deployments:", error);
     }
@@ -80,6 +87,10 @@ export default function Dashboard() {
       });
 
       const insight = await generateKairosAIInsight(castedUpdated);
+
+      // PERSIST THE INSIGHT (Continuity Layer)
+      await saveInsight(insight, user.id);
+
       setKairosInsight(insight);
     } catch (err: unknown) {
       console.error(err);
