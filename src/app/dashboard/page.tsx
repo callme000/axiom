@@ -44,6 +44,41 @@ export default function Dashboard() {
     category: "",
   });
 
+  /**
+   * REFRESH & ANALYZE (Centralized Intelligence Trigger)
+   * This function ensures the ledger, analytics, and Kairos are always in sync.
+   */
+  const refreshAndReAnalyze = useCallback(async (userId: string) => {
+    try {
+      const data = await getDeployments();
+      const castedData = (data || []) as Deployment[];
+      setDeployments(castedData);
+
+      // 1. Update Deterministic Analytics
+      const summary = generateSummary(castedData);
+      setAnalytics(summary);
+
+      // 2. Trigger Intelligence Engine
+      setKairosInsight((prev) => ({
+        ...(prev || {
+          type: "info",
+          category: "system",
+          confidence: 1.0,
+          message: "",
+        }),
+        message: "Synchronizing intelligence...",
+      }));
+
+      const insight = await generateKairosAIInsight(castedData);
+
+      // 3. Persist Memory
+      await saveInsight(insight, userId);
+      setKairosInsight(insight);
+    } catch (error) {
+      console.error("Intelligence synchronization failed:", error);
+    }
+  }, []);
+
   const fetchDeployments = useCallback(async () => {
     setGlobalError(null);
     try {
@@ -51,11 +86,9 @@ export default function Dashboard() {
       const castedData = (data || []) as Deployment[];
       setDeployments(castedData);
 
-      // Generate analytics from pure engine
       const summary = generateSummary(castedData);
       setAnalytics(summary);
 
-      // Fetch latest persisted insight
       const savedInsights = await getInsights(1);
       if (savedInsights && savedInsights.length > 0) {
         setKairosInsight(savedInsights[0]);
@@ -97,26 +130,8 @@ export default function Dashboard() {
       setAmount("");
       setCategory("General");
 
-      // Refresh list & analytics
-      const updatedData = await getDeployments();
-      const castedUpdated = (updatedData || []) as Deployment[];
-      setDeployments(castedUpdated);
-      setAnalytics(generateSummary(castedUpdated));
-
-      // Generate AI-powered behavioral insight
-      setKairosInsight({
-        type: "info",
-        category: "system",
-        confidence: 1.0,
-        message: "Analytic engine processing history...",
-      });
-
-      const insight = await generateKairosAIInsight(castedUpdated);
-
-      // PERSIST THE INSIGHT
-      await saveInsight(insight, user.id);
-
-      setKairosInsight(insight);
+      // Trigger intelligence update
+      await refreshAndReAnalyze(user.id);
     } catch (err: unknown) {
       console.error(err);
       const errorMsg =
@@ -131,8 +146,13 @@ export default function Dashboard() {
     if (!confirm("Are you sure you want to delete this deployment?")) return;
 
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
       await deleteDeployment(id);
-      await fetchDeployments();
+      await refreshAndReAnalyze(user.id);
     } catch (err) {
       console.error(err);
       alert("Failed to delete deployment");
@@ -150,13 +170,20 @@ export default function Dashboard() {
 
   async function handleUpdate(id: string) {
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
       await updateDeployment(id, {
         title: editForm.title,
         amount: Number(editForm.amount),
         category: editForm.category,
       });
       setEditingId(null);
-      await fetchDeployments();
+
+      // TRIGGER KAIROS ON EDIT
+      await refreshAndReAnalyze(user.id);
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "Update failed";
       alert(errorMsg);

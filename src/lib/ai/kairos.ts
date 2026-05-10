@@ -71,5 +71,6 @@ function simulateAnalytics(deployments: DeploymentInput[]) {
     dailyBurnRate: dailyBurn,
     runwayDays: dailyBurn > 0 ? balance / dailyBurn : null,
     categoryBreakdown: breakdown,
+    deploymentCount: deployments.length,
   };
 }

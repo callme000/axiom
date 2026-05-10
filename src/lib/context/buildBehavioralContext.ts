@@ -67,6 +67,7 @@ export const buildBehavioralContext = (
 
   return {
     generatedAt: new Date().toISOString(),
+    deploymentCount: currentAnalytics.deploymentCount,
     capitalEfficiencyScore: Math.round(Math.max(efficiency, 0)),
 
     burnRate: {

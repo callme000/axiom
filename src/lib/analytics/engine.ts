@@ -18,7 +18,10 @@ export const calculateAverage = (deployments: Deployment[]): number => {
  * Calculates burn rate over a specific window (in days).
  * Defaulting to a 30-day window for normalized metrics.
  */
-export const calculateBurnRate = (deployments: Deployment[], windowDays: number = 30): number => {
+export const calculateBurnRate = (
+  deployments: Deployment[],
+  windowDays: number = 30,
+): number => {
   if (windowDays <= 0) return 0;
   const total = calculateTotal(deployments);
   return total / windowDays;
@@ -27,7 +30,10 @@ export const calculateBurnRate = (deployments: Deployment[], windowDays: number 
 /**
  * Projects runway based on a hypothetical liquidity balance.
  */
-export const projectRunway = (balance: number, dailyBurnRate: number): number | null => {
+export const projectRunway = (
+  balance: number,
+  dailyBurnRate: number,
+): number | null => {
   if (dailyBurnRate <= 0) return null;
   return balance / dailyBurnRate;
 };
@@ -35,12 +41,17 @@ export const projectRunway = (balance: number, dailyBurnRate: number): number | 
 /**
  * Aggregates deployments into categories.
  */
-export const getCategoryBreakdown = (deployments: Deployment[]): Record<string, number> => {
-  return deployments.reduce((acc, d) => {
-    const cat = d.category || "Uncategorized";
-    acc[cat] = (acc[cat] || 0) + Number(d.amount);
-    return acc;
-  }, {} as Record<string, number>);
+export const getCategoryBreakdown = (
+  deployments: Deployment[],
+): Record<string, number> => {
+  return deployments.reduce(
+    (acc, d) => {
+      const cat = d.category || "Uncategorized";
+      acc[cat] = (acc[cat] || 0) + Number(d.amount);
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 };
 
 /**
@@ -48,7 +59,7 @@ export const getCategoryBreakdown = (deployments: Deployment[]): Record<string, 
  */
 export const generateSummary = (
   deployments: Deployment[],
-  currentBalance: number = 1000000 // Placeholder 1M KSh balance
+  currentBalance: number = 1000000, // Placeholder 1M KSh balance
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
   const burnRate = calculateBurnRate(deployments);
@@ -58,6 +69,7 @@ export const generateSummary = (
     averageDeployment: calculateAverage(deployments),
     dailyBurnRate: burnRate,
     runwayDays: projectRunway(currentBalance, burnRate),
-    categoryBreakdown: getCategoryBreakdown(deployments)
+    categoryBreakdown: getCategoryBreakdown(deployments),
+    deploymentCount: deployments.length,
   };
 };

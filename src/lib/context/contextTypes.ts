@@ -9,6 +9,7 @@ export interface AllocationState {
 
 export interface BehavioralContext {
   generatedAt: string;
+  deploymentCount: number;
 
   // High-level aggregate metric (0-100)
   capitalEfficiencyScore: number;
@@ -46,6 +47,7 @@ export interface ContextInput {
     dailyBurnRate: number;
     runwayDays: number | null;
     categoryBreakdown: Record<string, number>;
+    deploymentCount: number;
   };
   historicalMetrics?: {
     previousBurnRate: number;

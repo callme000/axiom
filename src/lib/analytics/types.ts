@@ -12,4 +12,5 @@ export interface AnalyticsSummary {
   dailyBurnRate: number;
   runwayDays: number | null;
   categoryBreakdown: Record<string, number>;
+  deploymentCount: number;
 }
