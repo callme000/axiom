@@ -29,7 +29,11 @@ export default function Dashboard() {
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
-  const [loading, setLoading] = useState(false);
+
+  // Loading & Error States
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [globalError, setGlobalError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Edit State
@@ -41,6 +45,7 @@ export default function Dashboard() {
   });
 
   const fetchDeployments = useCallback(async () => {
+    setGlobalError(null);
     try {
       const data = await getDeployments();
       const castedData = (data || []) as Deployment[];
@@ -57,6 +62,11 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("Failed to fetch deployments:", error);
+      setGlobalError(
+        "Database Connection Interrupted. Unable to synchronize ledger.",
+      );
+    } finally {
+      setIsInitialLoading(false);
     }
   }, []);
 
@@ -67,7 +77,7 @@ export default function Dashboard() {
 
   async function handleAddDeployment(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
+    setIsActionLoading(true);
     setFormError(null);
 
     try {
@@ -113,7 +123,7 @@ export default function Dashboard() {
         err instanceof Error ? err.message : "Failed to add deployment";
       setFormError(errorMsg);
     } finally {
-      setLoading(false);
+      setIsActionLoading(false);
     }
   }
 
@@ -151,6 +161,23 @@ export default function Dashboard() {
       const errorMsg = err instanceof Error ? err.message : "Update failed";
       alert(errorMsg);
     }
+  }
+
+  if (isInitialLoading) {
+    return (
+      <div className="max-w-6xl mx-auto p-6 pb-20 animate-pulse">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="space-y-3">
+            <div className="h-12 w-64 bg-foreground/5 rounded-2xl"></div>
+            <div className="h-4 w-48 bg-foreground/5 rounded-full"></div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-4 h-96 bg-foreground/5 rounded-[2.5rem]"></div>
+          <div className="lg:col-span-8 h-96 bg-foreground/5 rounded-[2.5rem]"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -194,7 +221,45 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {globalError && (
+        <div className="mb-10 bg-red-500/10 border-2 border-red-500/20 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-5 text-center md:text-left">
+            <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                className="text-red-500"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-1">
+                Synchronization Failure
+              </h3>
+              <p className="text-red-600/70 text-sm font-bold uppercase tracking-widest leading-none">
+                {globalError}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={fetchDeployments}
+            className="bg-foreground text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10"
+          >
+            Re-Synchronize
+          </button>
+        </div>
+      )}
+
+      <div
+        className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-500 ${globalError ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
+      >
         {/* Left Sidebar: Controls & Intelligence */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-background border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
@@ -296,10 +361,10 @@ export default function Dashboard() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={isActionLoading}
                   className={`w-full px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl ${formError ? "bg-red-600 text-white shadow-red-500/20" : "bg-foreground text-background shadow-foreground/10"}`}
                 >
-                  {loading ? "AUTHENTICATING..." : "EXECUTE DEPLOYMENT"}
+                  {isActionLoading ? "PROCESSING..." : "EXECUTE DEPLOYMENT"}
                 </button>
               </form>
             </div>
