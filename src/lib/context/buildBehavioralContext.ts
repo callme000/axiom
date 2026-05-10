@@ -34,18 +34,40 @@ export const buildBehavioralContext = (
       : 0;
 
   // 2. Allocation Analysis
+  // 2. Allocation Analysis
   const total = currentAnalytics.totalDeployed || 1;
   const distribution: Record<string, number> = {};
   let dominantCategory = "None";
   let maxAmt = -1;
 
+  const validCategories = [
+    "Asset",
+    "Skill",
+    "Leverage",
+    "Experience",
+    "Leakage",
+  ];
+  let unclassifiedTotal = 0;
+
   Object.entries(currentAnalytics.categoryBreakdown).forEach(([cat, amt]) => {
-    distribution[cat] = amt / total;
-    if (amt > maxAmt) {
-      maxAmt = amt;
-      dominantCategory = cat;
+    if (!validCategories.includes(cat)) {
+      unclassifiedTotal += amt;
+    } else {
+      distribution[cat] = amt / total;
+      if (amt > maxAmt) {
+        maxAmt = amt;
+        dominantCategory = cat;
+      }
     }
   });
+
+  // Add the merged 'Unclassified' group
+  if (unclassifiedTotal > 0) {
+    distribution["Unclassified"] = unclassifiedTotal / total;
+    if (unclassifiedTotal > maxAmt) {
+      dominantCategory = "Unclassified";
+    }
+  }
 
   const concentrationScore = calculateConcentrationScore(distribution);
   const volatility = calculateVolatility(deploymentAmounts);
@@ -53,10 +75,12 @@ export const buildBehavioralContext = (
   // 3. Efficiency Calculation (Heuristic)
   // Starts at 100, penalized by volatility, accelerating burn, and low runway.
   let efficiency = 100;
-  efficiency -= volatility * 20;
+  efficiency -= volatility * 60; // Much more sensitive to erratic spending
   if (burnTrend === "increasing") efficiency -= 15;
-  if (currentAnalytics.runwayDays && currentAnalytics.runwayDays < 60)
-    efficiency -= 20;
+  if (currentAnalytics.runwayDays && currentAnalytics.runwayDays < 90)
+    efficiency -= 40; // Aggressive penalty for low runway
+
+  // 4. Status Determination
 
   // 4. Status Determination
   let runwayStatus: "healthy" | "concerning" | "critical" = "healthy";

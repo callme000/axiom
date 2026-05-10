@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { validateDeployment } from "../finance/validateDeployment";
 
 export async function getDeployments() {
   const { data, error } = await supabase
@@ -10,29 +11,42 @@ export async function getDeployments() {
   return data;
 }
 
+/**
+ * Creates a new deployment record.
+ * Guaranteed to pass through the Taxonomy Enforcement Gate.
+ */
 export async function createDeployment(
   title: string,
   amount: number,
   userId: string,
-  category: string = "General",
+  category: string,
   impactScore: number = 0,
 ) {
-  // Validation
-  if (!title.trim()) throw new Error("Title is required");
-  if (amount <= 0) throw new Error("Amount must be greater than zero");
-
-  const { data, error } = await supabase.from("deployments").insert({
-    title: title.trim(),
+  // 1. Pass through Taxonomy Enforcement Gate
+  const validated = validateDeployment({
+    title,
     amount,
-    user_id: userId,
     category,
-    impact_score: impactScore,
+    impactScore,
+  });
+
+  // 2. Database Write (Verified Truth)
+  const { data, error } = await supabase.from("deployments").insert({
+    title: validated.title,
+    amount: validated.amount,
+    user_id: userId,
+    category: validated.category,
+    impact_score: validated.impactScore,
   });
 
   if (error) throw error;
   return data;
 }
 
+/**
+ * Updates an existing deployment record.
+ * Enforces partial taxonomy validation for updated fields.
+ */
 export async function updateDeployment(
   id: string,
   updates: {
@@ -42,20 +56,29 @@ export async function updateDeployment(
     impact_score?: number;
   },
 ) {
-  // Validation
-  if (updates.title !== undefined && !updates.title.trim()) {
-    throw new Error("Title cannot be empty");
-  }
-  if (updates.amount !== undefined && updates.amount <= 0) {
-    throw new Error("Amount must be greater than zero");
+  // 1. Enforcement for provided fields
+  // Note: We use the gate to normalize and validate only what changed
+  if (updates.title || updates.amount || updates.category) {
+    // We simulate a full input to reuse the Gate logic,
+    // but only use the validated fields for the update.
+    const validated = validateDeployment({
+      title: updates.title || "Temporary Title",
+      amount: updates.amount || 1,
+      category: updates.category || "Leakage", // Explicit default for gate reuse
+      impactScore: updates.impact_score,
+    });
+
+    if (updates.title) updates.title = validated.title;
+    if (updates.amount) updates.amount = validated.amount;
+    if (updates.category) updates.category = validated.category;
+    if (updates.impact_score !== undefined)
+      updates.impact_score = validated.impactScore;
   }
 
+  // 2. Database Update
   const { data, error } = await supabase
     .from("deployments")
-    .update({
-      ...updates,
-      title: updates.title?.trim(),
-    })
+    .update(updates)
     .eq("id", id);
 
   if (error) throw error;

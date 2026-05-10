@@ -25,7 +25,7 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("General");
+  const [category, setCategory] = useState("Unclassified");
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
@@ -41,7 +41,7 @@ export default function Dashboard() {
   const [editForm, setEditForm] = useState({
     title: "",
     amount: "",
-    category: "",
+    category: "Unclassified",
   });
 
   /**
@@ -119,6 +119,11 @@ export default function Dashboard() {
     setFormError(null);
 
     try {
+      // MANDATORY CLASSIFICATION GATE
+      if (category === "Unclassified") {
+        throw new Error("Strategic classification required before execution");
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -133,7 +138,7 @@ export default function Dashboard() {
       // Clear form
       setTitle("");
       setAmount("");
-      setCategory("General");
+      setCategory("Unclassified");
 
       // Trigger intelligence update
       await refreshAndReAnalyze(user.id);
@@ -169,7 +174,7 @@ export default function Dashboard() {
     setEditForm({
       title: deployment.title,
       amount: deployment.amount.toString(),
-      category: deployment.category || "General",
+      category: deployment.category || "Unclassified",
     });
   }
 
@@ -365,14 +370,18 @@ export default function Dashboard() {
                     </label>
                     <select
                       value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground font-bold appearance-none cursor-pointer"
+                      onChange={(e) => {
+                        setCategory(e.target.value);
+                        if (formError) setFormError(null);
+                      }}
+                      className={`w-full border-2 rounded-2xl p-4 focus:outline-none transition-colors font-bold appearance-none cursor-pointer ${category === "Unclassified" ? "border-orange-500/30 text-orange-500/60 bg-orange-500/5" : "border-foreground/10 bg-background text-foreground"}`}
                     >
-                      <option value="General">General</option>
-                      <option value="Infrastructure">Infrastructure</option>
-                      <option value="Marketing">Marketing</option>
-                      <option value="R&D">R&D</option>
-                      <option value="Operations">Operations</option>
+                      <option value="Unclassified">-- SELECT TYPE --</option>
+                      <option value="Asset">Asset</option>
+                      <option value="Skill">Skill</option>
+                      <option value="Leverage">Leverage</option>
+                      <option value="Experience">Experience</option>
+                      <option value="Leakage">Leakage</option>
                     </select>
                   </div>
                 </div>
@@ -622,13 +631,12 @@ export default function Dashboard() {
                             }
                             className="bg-foreground/5 border-none rounded-xl p-2 text-xs font-black uppercase"
                           >
-                            <option value="General">General</option>
-                            <option value="Infrastructure">
-                              Infrastructure
-                            </option>
-                            <option value="Marketing">Marketing</option>
-                            <option value="R&D">R&D</option>
-                            <option value="Operations">Operations</option>
+                            <option value="Unclassified">Unclassified</option>
+                            <option value="Asset">Asset</option>
+                            <option value="Skill">Skill</option>
+                            <option value="Leverage">Leverage</option>
+                            <option value="Experience">Experience</option>
+                            <option value="Leakage">Leakage</option>
                           </select>
                           <div className="flex gap-2">
                             <button
@@ -667,7 +675,7 @@ export default function Dashboard() {
                                 {deployment.title}
                               </h3>
                               <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
-                                {deployment.category || "General"}
+                                {deployment.category || "Unclassified"}
                               </span>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">

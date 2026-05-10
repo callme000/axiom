@@ -46,7 +46,7 @@ export const getCategoryBreakdown = (
 ): Record<string, number> => {
   return deployments.reduce(
     (acc, d) => {
-      const cat = d.category || "Uncategorized";
+      const cat = d.category || "Unclassified";
       acc[cat] = (acc[cat] || 0) + Number(d.amount);
       return acc;
     },

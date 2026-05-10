@@ -62,10 +62,9 @@ function simulateAnalytics(deployments: DeploymentInput[]) {
 
   const breakdown: Record<string, number> = {};
   deployments.forEach((d) => {
-    const cat = d.category || "General";
+    const cat = d.category || "Unclassified";
     breakdown[cat] = (breakdown[cat] || 0) + Number(d.amount);
   });
-
   return {
     totalDeployed: total,
     dailyBurnRate: dailyBurn,

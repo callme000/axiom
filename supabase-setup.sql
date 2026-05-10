@@ -1,4 +1,4 @@
--- AXIOM SUPABASE SCHEMA & SECURITY (v2.2)
+-- AXIOM SUPABASE SCHEMA & SECURITY (v3.0 - Return-Based Taxonomy)
 -- Idempotent script for deployments and kairos_insights.
 
 -- 1. Deployments Table
@@ -7,13 +7,14 @@ CREATE TABLE IF NOT EXISTS public.deployments (
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
     title TEXT NOT NULL,
     amount NUMERIC(15, 2) NOT NULL,
-    category TEXT DEFAULT 'General',
+    category TEXT DEFAULT 'Leakage',
     impact_score INTEGER DEFAULT 0,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
--- Ensure columns exist
-ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'General';
+-- Ensure columns exist and defaults are updated
+ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Leakage';
+ALTER TABLE public.deployments ALTER COLUMN category SET DEFAULT 'Leakage';
 ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS impact_score INTEGER DEFAULT 0;
 
 -- 2. Kairos Insights Table (Memory Layer)
