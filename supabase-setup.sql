@@ -45,9 +45,12 @@ ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
 -- Cleanup existing policies
 DROP POLICY IF EXISTS "Users can view their own deployments" ON public.deployments;
 DROP POLICY IF EXISTS "Users can insert their own deployments" ON public.deployments;
+DROP POLICY IF EXISTS "Users can update their own deployments" ON public.deployments;
+DROP POLICY IF EXISTS "Users can delete their own deployments" ON public.deployments;
 DROP POLICY IF EXISTS "Users can view their own insights" ON public.kairos_insights;
 DROP POLICY IF EXISTS "Users can insert their own insights" ON public.kairos_insights;
 DROP POLICY IF EXISTS "Users can manage their own settings" ON public.user_settings;
+DROP POLICY IF EXISTS "TEMPORARY DEBUG POLICY" ON public.deployments;
 
 -- Policies for Deployments
 CREATE POLICY "Users can view their own deployments" ON public.deployments FOR SELECT TO authenticated USING (auth.uid() = user_id);

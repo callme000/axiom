@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/navigation";
+import Link from "next/link";
 
 export default function AuthCodeError() {
   return (
@@ -30,12 +30,12 @@ export default function AuthCodeError() {
           The secure handshake with the authentication provider was interrupted.
         </p>
 
-        <a
+        <Link
           href="/"
-          className="w-full bg-foreground text-background px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-foreground/10 block uppercase"
+          className="w-full bg-foreground text-background px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-foreground/10 block uppercase text-center"
         >
           Return to Login
-        </a>
+        </Link>
       </div>
     </main>
   );

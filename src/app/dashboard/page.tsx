@@ -32,11 +32,18 @@ export default function Dashboard() {
     null,
   );
 
-  // Loading & Error States
+  // GRANULAR LOADING STATES
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isLiquidityLoading, setIsLiquidityLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [isIntelligenceSyncing, setIsIntelligenceSyncing] = useState(false);
+
+  // ERROR STATES
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [liquidityError, setLiquidityError] = useState<string | null>(null);
 
   // Edit State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -49,10 +56,11 @@ export default function Dashboard() {
   const [liquidityInput, setLiquidityInput] = useState("");
 
   /**
-   * REFRESH & ANALYZE
+   * REFRESH & ANALYZE (Centralized Intelligence Trigger)
    */
   const refreshAndReAnalyze = useCallback(
     async (userId: string, currentLiquidity: number) => {
+      setIsIntelligenceSyncing(true);
       try {
         const data = await getDeployments();
         const castedData = (data || []) as Deployment[];
@@ -68,8 +76,12 @@ export default function Dashboard() {
         await saveInsight(insight, userId);
         setKairosInsight(insight);
       } catch (error) {
-        // In production, we'd use a non-intrusive notification here
-        console.warn("Analytics Sync: Deferred. Using previous cache.");
+        console.warn("Analytics Sync: Deferred. Network unstable.");
+        setGlobalError(
+          "Real-time intelligence sync lagging. Data truth is preserved.",
+        );
+      } finally {
+        setIsIntelligenceSyncing(false);
       }
     },
     [],
@@ -83,7 +95,6 @@ export default function Dashboard() {
       } = await supabase.auth.getSession();
       if (!session) return;
 
-      // Parallel fetch for speed
       const [deploymentsData, settings] = await Promise.all([
         getDeployments(),
         getUserSettings(),
@@ -120,16 +131,13 @@ export default function Dashboard() {
 
     try {
       if (category === "Unclassified") {
-        throw new Error("Strategic classification required before execution");
+        throw new Error("Strategic classification required");
       }
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) {
-        setFormError("Identity unverified. Please re-authenticate.");
-        return;
-      }
+      if (!user) throw new Error("Session expired. Please re-login.");
 
       await createDeployment(title, Number(amount), user.id, category);
 
@@ -146,14 +154,16 @@ export default function Dashboard() {
   }
 
   async function handleUpdateLiquidity() {
+    setIsLiquidityLoading(true);
+    setLiquidityError(null);
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) throw new Error("Unauthenticated");
 
       const newAmount = Number(liquidityInput);
-      if (isNaN(newAmount)) throw new Error("Invalid liquidity value");
+      if (isNaN(newAmount)) throw new Error("Invalid value");
 
       await updateLiquidity(newAmount);
       setLiquidity(newAmount);
@@ -161,13 +171,15 @@ export default function Dashboard() {
 
       await refreshAndReAnalyze(user.id, newAmount);
     } catch (err: unknown) {
-      alert("Settings update failed");
+      setLiquidityError("Update failed");
+    } finally {
+      setIsLiquidityLoading(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
-
+    if (!confirm("Delete record?")) return;
+    setDeletingId(id);
     try {
       const {
         data: { user },
@@ -177,20 +189,14 @@ export default function Dashboard() {
       await deleteDeployment(id);
       await refreshAndReAnalyze(user.id, liquidity);
     } catch (err) {
-      alert("Database error: Record preserved.");
+      setGlobalError("Record preservation failed. Check connectivity.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
-  function startEdit(deployment: Deployment) {
-    setEditingId(deployment.id);
-    setEditForm({
-      title: deployment.title,
-      amount: deployment.amount.toString(),
-      category: deployment.category || "Unclassified",
-    });
-  }
-
   async function handleUpdate(id: string) {
+    setUpdatingId(id);
     try {
       const {
         data: { user },
@@ -198,8 +204,7 @@ export default function Dashboard() {
       if (!user) return;
 
       if (!editForm.title.trim()) throw new Error("Title required");
-      if (Number(editForm.amount) <= 0)
-        throw new Error("Amount must be positive");
+      if (Number(editForm.amount) <= 0) throw new Error("Invalid amount");
 
       await updateDeployment(id, {
         title: editForm.title,
@@ -209,7 +214,9 @@ export default function Dashboard() {
       setEditingId(null);
       await refreshAndReAnalyze(user.id, liquidity);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Update rejected");
+      setGlobalError(err instanceof Error ? err.message : "Update rejected");
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -223,8 +230,8 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 h-96 bg-foreground/5 rounded-[2.5rem]"></div>
-          <div className="lg:col-span-8 h-96 bg-foreground/5 rounded-[2.5rem]"></div>
+          <div className="lg:col-span-4 h-96 bg-foreground/5 rounded-4xl"></div>
+          <div className="lg:col-span-8 h-96 bg-foreground/5 rounded-4xl"></div>
         </div>
       </div>
     );
@@ -246,29 +253,35 @@ export default function Dashboard() {
 
         <div className="flex gap-4">
           <div
-            className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group cursor-pointer"
-            onClick={() => !isEditingLiquidity && setIsEditingLiquidity(true)}
+            className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group cursor-pointer transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/5"}`}
+            onClick={() =>
+              !isEditingLiquidity &&
+              !isLiquidityLoading &&
+              setIsEditingLiquidity(true)
+            }
           >
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
-              Total Liquidity
+              {liquidityError ? "Update Error" : "Total Liquidity"}
             </span>
             {isEditingLiquidity ? (
               <div className="flex flex-col gap-2">
                 <input
                   autoFocus
                   type="number"
+                  disabled={isLiquidityLoading}
                   value={liquidityInput}
                   onChange={(e) => setLiquidityInput(e.target.value)}
-                  className="bg-background border-none rounded p-1 text-center font-black text-lg w-full focus:outline-none"
+                  className="bg-background border-none rounded p-1 text-center font-black text-lg w-full focus:outline-none disabled:opacity-50"
                 />
                 <button
+                  disabled={isLiquidityLoading}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleUpdateLiquidity();
                   }}
-                  className="bg-foreground text-background text-[8px] font-black py-1 rounded"
+                  className="bg-foreground text-background text-[8px] font-black py-1 rounded disabled:opacity-50"
                 >
-                  SAVE TRUTH
+                  {isLiquidityLoading ? "SYNCING..." : "SAVE TRUTH"}
                 </button>
               </div>
             ) : (
@@ -288,7 +301,7 @@ export default function Dashboard() {
               </>
             )}
           </div>
-          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40">
+          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/5">
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
               Daily Burn
             </span>
@@ -304,7 +317,7 @@ export default function Dashboard() {
       </div>
 
       {globalError && (
-        <div className="mb-10 bg-red-500/10 border-2 border-red-500/20 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="mb-10 bg-red-500/10 border-2 border-red-500/20 p-8 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="flex items-center gap-5 text-center md:text-left">
             <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0">
               <svg
@@ -323,24 +336,25 @@ export default function Dashboard() {
             </div>
             <div>
               <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-1">
-                Synchronization Failure
+                System Anomaly Detected
               </h3>
-              <p className="text-red-600/70 text-sm font-bold uppercase tracking-widest leading-none">
+              <p className="text-red-600/70 text-xs font-bold uppercase tracking-widest leading-tight max-w-md">
                 {globalError}
               </p>
             </div>
           </div>
           <button
+            disabled={isInitialLoading}
             onClick={fetchDashboardData}
-            className="bg-foreground text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10"
+            className="bg-foreground text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10 disabled:opacity-50"
           >
-            Re-Synchronize
+            Attempt Re-Sync
           </button>
         </div>
       )}
 
       <div
-        className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-500 ${globalError ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
+        className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-500 ${globalError && !isInitialLoading && deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
       >
         {/* Left Sidebar: Controls & Intelligence */}
         <div className="lg:col-span-4 space-y-6">
@@ -374,13 +388,14 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
+                    disabled={isActionLoading}
                     placeholder="e.g. Server Hosting"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
                       if (formError) setFormError(null);
                     }}
-                    className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium"
+                    className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
                     required
                   />
                 </div>
@@ -392,13 +407,14 @@ export default function Dashboard() {
                     </label>
                     <input
                       type="number"
+                      disabled={isActionLoading}
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => {
                         setAmount(e.target.value);
                         if (formError) setFormError(null);
                       }}
-                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-bold tabular-nums"
+                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-bold tabular-nums disabled:opacity-50"
                       required
                     />
                   </div>
@@ -407,12 +423,13 @@ export default function Dashboard() {
                       Category
                     </label>
                     <select
+                      disabled={isActionLoading}
                       value={category}
                       onChange={(e) => {
                         setCategory(e.target.value);
                         if (formError) setFormError(null);
                       }}
-                      className={`w-full border-2 rounded-2xl p-4 focus:outline-none transition-colors font-bold appearance-none cursor-pointer ${category === "Unclassified" ? "border-orange-500/30 text-orange-500/60 bg-orange-500/5" : "border-foreground/10 bg-background text-foreground"}`}
+                      className={`w-full border-2 rounded-2xl p-4 focus:outline-none transition-colors font-bold appearance-none cursor-pointer disabled:opacity-50 ${category === "Unclassified" ? "border-orange-500/30 text-orange-500/60 bg-orange-500/5" : "border-foreground/10 bg-background text-foreground"}`}
                     >
                       <option value="Unclassified">-- SELECT TYPE --</option>
                       <option value="Asset">Asset</option>
@@ -458,7 +475,7 @@ export default function Dashboard() {
 
           {/* Intelligence Section */}
           <div
-            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-colors duration-500 ${kairosInsight?.type === "warning" ? "ring-4 ring-orange-500/50" : ""}`}
+            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.type === "warning" ? "ring-4 ring-orange-500/50" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale" : "opacity-100"}`}
           >
             <div>
               <div className="flex items-center gap-2 mb-4 opacity-60">
@@ -638,6 +655,7 @@ export default function Dashboard() {
                         <div className="grid grid-cols-2 gap-4">
                           <input
                             type="text"
+                            disabled={updatingId === deployment.id}
                             value={editForm.title}
                             onChange={(e) =>
                               setEditForm({
@@ -645,10 +663,11 @@ export default function Dashboard() {
                                 title: e.target.value,
                               })
                             }
-                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold"
+                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
                           />
                           <input
                             type="number"
+                            disabled={updatingId === deployment.id}
                             value={editForm.amount}
                             onChange={(e) =>
                               setEditForm({
@@ -656,11 +675,12 @@ export default function Dashboard() {
                                 amount: e.target.value,
                               })
                             }
-                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black"
+                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
                           />
                         </div>
                         <div className="flex justify-between items-center">
                           <select
+                            disabled={updatingId === deployment.id}
                             value={editForm.category}
                             onChange={(e) =>
                               setEditForm({
@@ -668,7 +688,7 @@ export default function Dashboard() {
                                 category: e.target.value,
                               })
                             }
-                            className="bg-foreground/5 border-none rounded-xl p-2 text-xs font-black uppercase"
+                            className="bg-foreground/5 border-none rounded-xl p-2 text-xs font-black uppercase disabled:opacity-50"
                           >
                             <option value="Unclassified">Unclassified</option>
                             <option value="Asset">Asset</option>
@@ -679,16 +699,20 @@ export default function Dashboard() {
                           </select>
                           <div className="flex gap-2">
                             <button
+                              disabled={updatingId === deployment.id}
                               onClick={() => setEditingId(null)}
-                              className="text-xs font-black text-gray-500 uppercase px-3 py-1"
+                              className="text-xs font-black text-gray-500 uppercase px-3 py-1 disabled:opacity-50"
                             >
                               Cancel
                             </button>
                             <button
+                              disabled={updatingId === deployment.id}
                               onClick={() => handleUpdate(deployment.id)}
-                              className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase"
+                              className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
                             >
-                              Save
+                              {updatingId === deployment.id
+                                ? "SAVING..."
+                                : "Save"}
                             </button>
                           </div>
                         </div>
@@ -696,7 +720,9 @@ export default function Dashboard() {
                     ) : (
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-5">
-                          <div className="w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background">
+                          <div
+                            className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
+                          >
                             <svg
                               width="24"
                               height="24"
@@ -749,16 +775,20 @@ export default function Dashboard() {
                           </p>
                           <div className="mt-1 flex items-center gap-3">
                             <button
+                              disabled={deletingId !== null}
                               onClick={() => startEdit(deployment)}
-                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-foreground"
+                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
                             >
                               Edit
                             </button>
                             <button
+                              disabled={deletingId !== null}
                               onClick={() => handleDelete(deployment.id)}
-                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500"
+                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
                             >
-                              Delete
+                              {deletingId === deployment.id
+                                ? "DELETING..."
+                                : "Delete"}
                             </button>
                             <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
                               <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
