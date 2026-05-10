@@ -1,11 +1,30 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/lib/supabase";
 
 export default function Home() {
-  // Middleware handles redirection to /dashboard if logged in.
+  const router = useRouter();
+
+  useEffect(() => {
+    // Listen for auth changes to handle client-side redirect
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        router.push("/dashboard");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
+
+  // Middleware handles redirection to /dashboard if logged in on request.
   // This client component is now strictly for rendering the login form.
 
   return (
@@ -53,7 +72,8 @@ export default function Home() {
                 },
               },
             }}
-            providers={[]}
+            providers={["google"]}
+            redirectTo={`${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`}
           />
         </div>
 

@@ -82,6 +82,11 @@ export default function Dashboard() {
   const fetchDeployments = useCallback(async () => {
     setGlobalError(null);
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return; // Middleware will handle redirect
+
       const data = await getDeployments();
       const castedData = (data || []) as Deployment[];
       setDeployments(castedData);
@@ -175,6 +180,11 @@ export default function Dashboard() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Validation
+      if (!editForm.title.trim()) throw new Error("Title cannot be empty");
+      if (Number(editForm.amount) <= 0)
+        throw new Error("Amount must be greater than zero");
+
       await updateDeployment(id, {
         title: editForm.title,
         amount: Number(editForm.amount),
@@ -185,6 +195,7 @@ export default function Dashboard() {
       // TRIGGER KAIROS ON EDIT
       await refreshAndReAnalyze(user.id);
     } catch (err: unknown) {
+      console.error(err);
       const errorMsg = err instanceof Error ? err.message : "Update failed";
       alert(errorMsg);
     }
@@ -212,10 +223,11 @@ export default function Dashboard() {
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex flex-col gap-1">
-          <h1 className="text-5xl font-black tracking-tighter text-foreground">
-            AXIOM // <span className="text-gray-500">DASHBOARD</span>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase">
+            AXIOM <span className="hidden md:inline">::</span>{" "}
+            <span className="text-gray-500">DASHBOARD</span>
           </h1>
-          <p className="text-gray-400 text-sm font-bold uppercase tracking-[0.3em]">
+          <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
             Financial Intelligence System v2.0
           </p>
         </div>
@@ -414,7 +426,7 @@ export default function Dashboard() {
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                 </svg>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                  Kairos Engine Analysis //{" "}
+                  Kairos Engine Analysis ::{" "}
                   {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
                 </span>
               </div>
@@ -460,14 +472,19 @@ export default function Dashboard() {
             </div>
 
             {analytics && (
-              <div className="mt-8 flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-background rounded-full animate-pulse"></span>
-                  Projected Runway:{" "}
-                  {analytics.runwayDays
-                    ? `${Math.round(analytics.runwayDays)} Days`
-                    : "Stable"}
+              <div className="mt-8 flex flex-col gap-2">
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-background rounded-full animate-pulse"></span>
+                    Projected Runway:{" "}
+                    {analytics.runwayDays
+                      ? `${Math.round(analytics.runwayDays)} Days`
+                      : "Stable"}
+                  </div>
                 </div>
+                <p className="text-[8px] font-bold text-background/40 uppercase tracking-tight">
+                  * Benchmark based on 1M KSh operational balance
+                </p>
               </div>
             )}
           </div>
