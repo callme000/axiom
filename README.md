@@ -1,36 +1,197 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AXIOM
 
-## Getting Started
+Axiom is an AI-powered financial intelligence system that helps users understand, track, and improve their financial behavior through structured data analysis and AI-generated insights.
 
-First, run the development server:
+It is built around a strict separation between:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+* financial truth (database)
+* computed analytics (backend logic)
+* AI interpretation (insights layer)
+
+---
+
+# 🧠 CORE PRINCIPLE
+
+> Transactions are truth. Everything else is interpretation.
+
+The system is designed so that:
+
+* financial data is deterministic
+* analytics are derived
+* AI never becomes a source of truth
+
+---
+
+# 🏗️ ARCHITECTURE DECISION
+
+Axiom follows **Architecture A**:
+
+```
+Next.js (Frontend + Server Actions)
+        ↓
+Backend Logic Layer (services / lib)
+        ↓
+Supabase (PostgreSQL + Auth)
+        ↓
+AI Layer (external API - undecided)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Why this architecture:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+* Keeps control of business logic inside the application layer
+* Prevents database logic leakage into the frontend
+* Allows swapping AI providers without rewriting core system
+* Maintains a single source of truth in Supabase
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+# 🗄️ DATABASE (SUPABASE)
 
-To learn more about Next.js, take a look at the following resources:
+Axiom uses **Supabase** as its backend infrastructure:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* PostgreSQL database (source of truth)
+* Authentication (Supabase Auth or future custom layer)
+* Row Level Security (RLS) for user isolation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Core data entities:
 
-## Deploy on Vercel
+* Users
+* Accounts
+* Transactions
+* Categories
+* Budgets
+* Goals
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+All financial computations derive from these entities.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+# 🤖 AI LAYER (UNDECIDED)
+
+The AI provider has NOT been selected yet.
+
+Planned role of AI:
+
+* interpret financial behavior
+* generate insights and patterns
+* explain spending habits
+* assist goal tracking
+* provide strategic financial guidance
+
+### Key constraint:
+
+AI is READ-ONLY over financial truth.
+
+It can:
+
+* analyze
+* explain
+* suggest
+
+It cannot:
+
+* modify financial records
+* fabricate data
+* override database truth
+
+---
+
+# 📁 PROJECT STRUCTURE
+
+```
+/app                → Next.js routes (UI + server actions)
+/components        → UI components
+/lib
+  /finance         → financial logic (transactions, budgets, calculations)
+  /ai              → AI orchestration layer (prompts, context building)
+  /db              → Supabase client + data access layer
+  /analytics       → derived metrics & insights
+
+/prisma (optional) → not primary, Supabase is main DB
+/prompts           → system prompts for AI
+/docs              → architecture + system design docs
+```
+
+---
+
+# 💡 SOURCE OF TRUTH MODEL
+
+### 1. RAW DATA (Supabase)
+
+* Transactions
+* Accounts
+* Budgets
+* Goals
+
+This is immutable truth.
+
+---
+
+### 2. DERIVED DATA (Backend logic)
+
+* Monthly spending
+* Category breakdowns
+* Net worth calculations
+* Trend analysis
+
+These are computed from raw data.
+
+---
+
+### 3. AI INSIGHTS (Interpretation layer)
+
+* Behavioral patterns
+* Financial observations
+* Suggestions
+* Risk signals
+
+These are probabilistic, not factual.
+
+---
+
+# 🔐 SECURITY MODEL
+
+* Supabase Row Level Security enforced per user
+* No cross-user data access
+* Server-side Supabase operations for sensitive logic
+* No financial secrets exposed to client or AI layer
+
+---
+
+# ⚙️ DEVELOPMENT PRIORITIES
+
+1. Stable Supabase schema
+2. Clean financial transaction system
+3. Server-side business logic layer
+4. AI integration layer (provider later)
+5. Dashboard + analytics UI
+6. Behavioral intelligence system
+
+---
+
+# 🎯 DESIGN PHILOSOPHY
+
+Axiom is built to feel:
+
+* minimal
+* analytical
+* calm
+* structured
+* intelligence-driven
+
+Avoid:
+
+* gamification noise
+* unnecessary complexity
+* multiple conflicting sources of truth
+* emotional manipulation UX
+
+---
+
+# ⚠️ NON-NEGOTIABLE RULES
+
+* There is only one source of truth: Supabase
+* AI never writes financial data
+* Business logic must not be duplicated across layers
+* Derived metrics must always be traceable to transactions
+* System must remain explainable at all times
