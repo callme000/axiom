@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   getDeployments,
@@ -21,16 +21,30 @@ type Deployment = {
   category?: string | null;
 };
 
+interface LedgerState {
+  deployments: Deployment[];
+  analytics: AnalyticsSummary | null;
+}
+
 export default function Dashboard() {
-  const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  // ATOMIC DATA STATE
+  const [ledger, setLedger] = useState<LedgerState>({
+    deployments: [],
+    analytics: null,
+  });
   const [liquidity, setLiquidity] = useState<number>(0);
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Unclassified");
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
+
+  // FORM STATE
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+
+  // EXECUTION LOCKS (Sync-Safe)
+  const isExecuting = useRef(false);
+  const fetchCount = useRef(0);
 
   // GRANULAR LOADING STATES
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -57,6 +71,7 @@ export default function Dashboard() {
 
   /**
    * REFRESH & ANALYZE (Centralized Intelligence Trigger)
+   * Guaranteed to be atomic and consistent with liquidity truth.
    */
   const refreshAndReAnalyze = useCallback(
     async (userId: string, currentLiquidity: number) => {
@@ -64,10 +79,12 @@ export default function Dashboard() {
       try {
         const data = await getDeployments();
         const castedData = (data || []) as Deployment[];
-        setDeployments(castedData);
 
-        const summary = generateSummary(castedData, currentLiquidity);
-        setAnalytics(summary);
+        // Atomic Update
+        setLedger({
+          deployments: castedData,
+          analytics: generateSummary(castedData, currentLiquidity),
+        });
 
         const insight = await generateKairosAIInsight(
           castedData,
@@ -87,8 +104,14 @@ export default function Dashboard() {
     [],
   );
 
+  /**
+   * FETCH DASHBOARD DATA
+   * Includes 'Stale Request Protection' to prevent jitter during refresh-spam.
+   */
   const fetchDashboardData = useCallback(async () => {
+    const requestId = ++fetchCount.current;
     setGlobalError(null);
+
     try {
       const {
         data: { session },
@@ -100,23 +123,34 @@ export default function Dashboard() {
         getUserSettings(),
       ]);
 
+      // Stale request check
+      if (requestId !== fetchCount.current) return;
+
       const castedDeployments = (deploymentsData || []) as Deployment[];
       const currentLiquidity = Number(settings.total_liquidity);
 
-      setDeployments(castedDeployments);
       setLiquidity(currentLiquidity);
       setLiquidityInput(currentLiquidity.toString());
 
-      setAnalytics(generateSummary(castedDeployments, currentLiquidity));
+      setLedger({
+        deployments: castedDeployments,
+        analytics: generateSummary(castedDeployments, currentLiquidity),
+      });
 
       const savedInsights = await getInsights(1);
-      if (savedInsights && savedInsights.length > 0) {
+      if (
+        requestId === fetchCount.current &&
+        savedInsights &&
+        savedInsights.length > 0
+      ) {
         setKairosInsight(savedInsights[0]);
       }
     } catch {
       setGlobalError("Connectivity failure. Intelligence engine is offline.");
     } finally {
-      setIsInitialLoading(false);
+      if (requestId === fetchCount.current) {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
@@ -125,10 +159,19 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
+  /**
+   * HANDLE ADD DEPLOYMENT
+   * Features 'Sync-Locking' to prevent double-writes on rapid clicks.
+   */
   async function handleAddDeployment(e: React.FormEvent) {
     e.preventDefault();
+
+    // 1. Sync-safe lock check
+    if (isExecuting.current) return;
+
     setIsActionLoading(true);
     setFormError(null);
+    isExecuting.current = true;
 
     try {
       if (category === "Unclassified") {
@@ -151,12 +194,16 @@ export default function Dashboard() {
       setFormError(err instanceof Error ? err.message : "Deployment failed");
     } finally {
       setIsActionLoading(false);
+      isExecuting.current = false;
     }
   }
 
   async function handleUpdateLiquidity() {
+    if (isExecuting.current) return;
     setIsLiquidityLoading(true);
     setLiquidityError(null);
+    isExecuting.current = true;
+
     try {
       const {
         data: { user },
@@ -175,12 +222,17 @@ export default function Dashboard() {
       setLiquidityError("Update failed");
     } finally {
       setIsLiquidityLoading(false);
+      isExecuting.current = false;
     }
   }
 
   async function handleDelete(id: string) {
+    if (isExecuting.current) return;
     if (!confirm("Delete record?")) return;
+
     setDeletingId(id);
+    isExecuting.current = true;
+
     try {
       const {
         data: { user },
@@ -193,6 +245,7 @@ export default function Dashboard() {
       setGlobalError("Record preservation failed. Check connectivity.");
     } finally {
       setDeletingId(null);
+      isExecuting.current = false;
     }
   }
 
@@ -206,7 +259,10 @@ export default function Dashboard() {
   }
 
   async function handleUpdate(id: string) {
+    if (isExecuting.current) return;
     setUpdatingId(id);
+    isExecuting.current = true;
+
     try {
       const {
         data: { user },
@@ -227,6 +283,7 @@ export default function Dashboard() {
       setGlobalError(err instanceof Error ? err.message : "Update rejected");
     } finally {
       setUpdatingId(null);
+      isExecuting.current = false;
     }
   }
 
@@ -316,7 +373,7 @@ export default function Dashboard() {
               Daily Burn
             </span>
             <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {analytics?.dailyBurnRate.toLocaleString("en-KE", {
+              {ledger.analytics?.dailyBurnRate.toLocaleString("en-KE", {
                 style: "currency",
                 currency: "KSh",
                 maximumFractionDigits: 0,
@@ -364,7 +421,7 @@ export default function Dashboard() {
       )}
 
       <div
-        className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-500 ${globalError && !isInitialLoading && deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
+        className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
       >
         {/* Left Sidebar: Controls & Intelligence */}
         <div className="lg:col-span-4 space-y-6">
@@ -545,14 +602,14 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {analytics && (
+            {ledger.analytics && (
               <div className="mt-8 flex flex-col gap-2">
                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-background rounded-full animate-pulse"></span>
                     Projected Runway:{" "}
-                    {analytics.runwayDays
-                      ? `${Math.round(analytics.runwayDays)} Days`
+                    {ledger.analytics.runwayDays
+                      ? `${Math.round(ledger.analytics.runwayDays)} Days`
                       : "Stable"}
                   </div>
                 </div>
@@ -568,7 +625,7 @@ export default function Dashboard() {
         {/* Main: Analysis & History */}
         <div className="lg:col-span-8 space-y-10">
           {/* Capital Allocation Section */}
-          {analytics && analytics.totalDeployed > 0 && (
+          {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-black text-foreground tracking-tight">
@@ -578,10 +635,11 @@ export default function Dashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(analytics.categoryBreakdown)
+                {Object.entries(ledger.analytics.categoryBreakdown)
                   .sort(([, a], [, b]) => b - a)
                   .map(([cat, amt]) => {
-                    const percentage = (amt / analytics.totalDeployed) * 100;
+                    const percentage =
+                      (amt / ledger.analytics!.totalDeployed) * 100;
                     return (
                       <div
                         key={cat}
@@ -634,7 +692,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {deployments.length === 0 ? (
+              {ledger.deployments.length === 0 ? (
                 <div className="text-center py-32 bg-background border-2 border-dashed rounded-4xl border-foreground/5">
                   <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
@@ -655,7 +713,7 @@ export default function Dashboard() {
                   </p>
                 </div>
               ) : (
-                deployments.map((deployment) => (
+                ledger.deployments.map((deployment) => (
                   <div
                     key={deployment.id}
                     className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
