@@ -17,8 +17,12 @@ export async function createDeployment(
   category: string = "General",
   impactScore: number = 0,
 ) {
+  // Validation
+  if (!title.trim()) throw new Error("Title is required");
+  if (amount <= 0) throw new Error("Amount must be greater than zero");
+
   const { data, error } = await supabase.from("deployments").insert({
-    title,
+    title: title.trim(),
     amount,
     user_id: userId,
     category,
@@ -27,4 +31,40 @@ export async function createDeployment(
 
   if (error) throw error;
   return data;
+}
+
+export async function updateDeployment(
+  id: string,
+  updates: {
+    title?: string;
+    amount?: number;
+    category?: string;
+    impact_score?: number;
+  },
+) {
+  // Validation
+  if (updates.title !== undefined && !updates.title.trim()) {
+    throw new Error("Title cannot be empty");
+  }
+  if (updates.amount !== undefined && updates.amount <= 0) {
+    throw new Error("Amount must be greater than zero");
+  }
+
+  const { data, error } = await supabase
+    .from("deployments")
+    .update({
+      ...updates,
+      title: updates.title?.trim(),
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteDeployment(id: string) {
+  const { error } = await supabase.from("deployments").delete().eq("id", id);
+
+  if (error) throw error;
+  return true;
 }

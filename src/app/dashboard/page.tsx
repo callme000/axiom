@@ -2,7 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { getDeployments, createDeployment } from "@/lib/db/deployments";
+import {
+  getDeployments,
+  createDeployment,
+  updateDeployment,
+  deleteDeployment,
+} from "@/lib/db/deployments";
 import { saveInsight, getInsights } from "@/lib/db/insights";
 import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
@@ -25,6 +30,15 @@ export default function Dashboard() {
     null,
   );
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Edit State
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    amount: "",
+    category: "",
+  });
 
   const fetchDeployments = useCallback(async () => {
     try {
@@ -54,6 +68,7 @@ export default function Dashboard() {
   async function handleAddDeployment(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setFormError(null);
 
     try {
       const {
@@ -61,7 +76,7 @@ export default function Dashboard() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        alert("User not authenticated");
+        setFormError("User not authenticated");
         return;
       }
 
@@ -88,7 +103,7 @@ export default function Dashboard() {
 
       const insight = await generateKairosAIInsight(castedUpdated);
 
-      // PERSIST THE INSIGHT (Continuity Layer)
+      // PERSIST THE INSIGHT
       await saveInsight(insight, user.id);
 
       setKairosInsight(insight);
@@ -96,12 +111,45 @@ export default function Dashboard() {
       console.error(err);
       const errorMsg =
         err instanceof Error ? err.message : "Failed to add deployment";
-      const errorCode = (err as { code?: string })?.code
-        ? ` (${(err as { code?: string }).code})`
-        : "";
-      alert(`${errorMsg}${errorCode}`);
+      setFormError(errorMsg);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Are you sure you want to delete this deployment?")) return;
+
+    try {
+      await deleteDeployment(id);
+      await fetchDeployments();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete deployment");
+    }
+  }
+
+  function startEdit(deployment: Deployment) {
+    setEditingId(deployment.id);
+    setEditForm({
+      title: deployment.title,
+      amount: deployment.amount.toString(),
+      category: deployment.category || "General",
+    });
+  }
+
+  async function handleUpdate(id: string) {
+    try {
+      await updateDeployment(id, {
+        title: editForm.title,
+        amount: Number(editForm.amount),
+        category: editForm.category,
+      });
+      setEditingId(null);
+      await fetchDeployments();
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Update failed";
+      alert(errorMsg);
     }
   }
 
@@ -181,7 +229,10 @@ export default function Dashboard() {
                     type="text"
                     placeholder="e.g. Server Hosting"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      if (formError) setFormError(null);
+                    }}
                     className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium"
                     required
                   />
@@ -196,7 +247,10 @@ export default function Dashboard() {
                       type="number"
                       placeholder="0.00"
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      onChange={(e) => {
+                        setAmount(e.target.value);
+                        if (formError) setFormError(null);
+                      }}
                       className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-bold tabular-nums"
                       required
                     />
@@ -219,10 +273,31 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {formError && (
+                  <div className="bg-red-500/10 border-2 border-red-500/20 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      className="text-red-500 shrink-0"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <p className="text-xs font-black text-red-600 uppercase tracking-tight leading-tight">
+                      {formError}
+                    </p>
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-foreground text-background px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl shadow-foreground/10"
+                  className={`w-full px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl ${formError ? "bg-red-600 text-white shadow-red-500/20" : "bg-foreground text-background shadow-foreground/10"}`}
                 >
                   {loading ? "AUTHENTICATING..." : "EXECUTE DEPLOYMENT"}
                 </button>
@@ -326,7 +401,7 @@ export default function Dashboard() {
                     return (
                       <div
                         key={cat}
-                        className="bg-background border rounded-3xl p-5 shadow-sm"
+                        className="bg-background border rounded-4xl p-5 shadow-sm"
                       >
                         <div className="flex justify-between items-end mb-3">
                           <div>
@@ -399,65 +474,145 @@ export default function Dashboard() {
                 deployments.map((deployment) => (
                   <div
                     key={deployment.id}
-                    className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                    className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
                   >
-                    <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                        >
-                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                        </svg>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-black text-xl text-foreground transition-colors leading-none">
-                            {deployment.title}
-                          </h3>
-                          <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
-                            {deployment.category || "General"}
-                          </span>
+                    {editingId === deployment.id ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <input
+                            type="text"
+                            value={editForm.title}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                title: e.target.value,
+                              })
+                            }
+                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold"
+                          />
+                          <input
+                            type="number"
+                            value={editForm.amount}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                amount: e.target.value,
+                              })
+                            }
+                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black"
+                          />
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
-                          <span>
-                            {new Date(deployment.created_at).toLocaleDateString(
-                              undefined,
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </span>
-                          <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                          <span>
-                            {new Date(deployment.created_at).toLocaleTimeString(
-                              undefined,
-                              { hour: "2-digit", minute: "2-digit" },
-                            )}
-                          </span>
+                        <div className="flex justify-between items-center">
+                          <select
+                            value={editForm.category}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                category: e.target.value,
+                              })
+                            }
+                            className="bg-foreground/5 border-none rounded-xl p-2 text-xs font-black uppercase"
+                          >
+                            <option value="General">General</option>
+                            <option value="Infrastructure">
+                              Infrastructure
+                            </option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="R&D">R&D</option>
+                            <option value="Operations">Operations</option>
+                          </select>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="text-xs font-black text-gray-500 uppercase px-3 py-1"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleUpdate(deployment.id)}
+                              className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase"
+                            >
+                              Save
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-5">
+                          <div className="w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background">
+                            <svg
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                            >
+                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-black text-xl text-foreground transition-colors leading-none">
+                                {deployment.title}
+                              </h3>
+                              <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
+                                {deployment.category || "General"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
+                              <span>
+                                {new Date(
+                                  deployment.created_at,
+                                ).toLocaleDateString(undefined, {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </span>
+                              <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                              <span>
+                                {new Date(
+                                  deployment.created_at,
+                                ).toLocaleTimeString(undefined, {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
 
-                    <div className="text-right flex flex-col items-end">
-                      <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                        {Number(deployment.amount).toLocaleString("en-KE", {
-                          style: "currency",
-                          currency: "KSh",
-                        })}
-                      </p>
-                      <div className="mt-1 px-3 py-1 bg-green-500/10 rounded-full">
-                        <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                          Verified
-                        </span>
+                        <div className="text-right flex flex-col items-end">
+                          <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
+                            {Number(deployment.amount).toLocaleString("en-KE", {
+                              style: "currency",
+                              currency: "KSh",
+                            })}
+                          </p>
+                          <div className="mt-1 flex items-center gap-3">
+                            <button
+                              onClick={() => startEdit(deployment)}
+                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-foreground"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(deployment.id)}
+                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500"
+                            >
+                              Delete
+                            </button>
+                            <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
+                              <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+                                Verified
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))
               )}
