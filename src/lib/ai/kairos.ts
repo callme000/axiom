@@ -1,3 +1,6 @@
+import { buildBehavioralContext } from "../context/buildBehavioralContext";
+import { evaluateInsights } from "../insights/generateInsights";
+
 export type DeploymentInput = {
   id?: string;
   title: string;
@@ -19,55 +22,8 @@ export interface KairosInsight {
 }
 
 /**
- * Local rule-based insight generation (Deterministic)
- */
-export function generateKairosInsight(input: DeploymentInput): KairosInsight {
-  const { title, amount } = input;
-  const lower = title.toLowerCase();
-
-  const base: KairosInsight = {
-    type: "info",
-    category: "pattern_recognition",
-    confidence: 1.0,
-    message:
-      "Deployment recorded. Pattern formation will become clearer over time.",
-    related_ids: input.id ? [input.id] : [],
-  };
-
-  if (amount > 10000) {
-    return {
-      ...base,
-      type: "warning",
-      category: "capital_efficiency",
-      message:
-        "High-value capital deployment detected. Monitoring long-term return potential.",
-    };
-  }
-
-  if (lower.includes("course") || lower.includes("book")) {
-    return {
-      ...base,
-      category: "spending_habit",
-      message:
-        "Skill acquisition detected. This may improve future earning capacity.",
-    };
-  }
-
-  if (lower.includes("game") || lower.includes("food")) {
-    return {
-      ...base,
-      type: "warning",
-      category: "spending_habit",
-      message:
-        "Consumption-oriented spending detected. Ensure intentional allocation.",
-    };
-  }
-
-  return base;
-}
-
-/**
- * AI-powered behavioral insight generation (Placeholder for Hugging Face)
+ * DETERMINISTIC INTERPRETATION ENGINE (Kairos V1)
+ * Transforms financial history into strategic insights without LLM inference.
  */
 export async function generateKairosAIInsight(
   deployments: DeploymentInput[],
@@ -82,14 +38,38 @@ export async function generateKairosAIInsight(
     };
   }
 
-  // NOTE: Awaiting replacement with Hugging Face (Mistral) model.
-  // The local engine will eventually generate this structure internally via JSON prompting.
+  // 1. Build Behavioral Context (Compression Layer)
+  // Note: We currently don't pass historical metrics yet, but the architecture supports it.
+  const context = buildBehavioralContext(
+    { currentAnalytics: simulateAnalytics(deployments) },
+    deployments.map((d) => d.amount),
+  );
+
+  // 2. Evaluate Insights (Logic Layer)
+  const result = evaluateInsights(context);
+
+  return result.primaryInsight;
+}
+
+/**
+ * Helper to transform raw deployments into analytics for context building.
+ * (Sync version of the Analytics Engine logic for internal engine use)
+ */
+function simulateAnalytics(deployments: DeploymentInput[]) {
+  const total = deployments.reduce((sum, d) => sum + Number(d.amount), 0);
+  const dailyBurn = total / 30; // 30-day window
+  const balance = 1000000;
+
+  const breakdown: Record<string, number> = {};
+  deployments.forEach((d) => {
+    const cat = d.category || "General";
+    breakdown[cat] = (breakdown[cat] || 0) + Number(d.amount);
+  });
 
   return {
-    type: "info",
-    category: "system",
-    confidence: 0.9,
-    message:
-      "Local intelligence engine (Mistral) is currently initializing. Behavioral analysis will resume shortly.",
+    totalDeployed: total,
+    dailyBurnRate: dailyBurn,
+    runwayDays: dailyBurn > 0 ? balance / dailyBurn : null,
+    categoryBreakdown: breakdown,
   };
 }
