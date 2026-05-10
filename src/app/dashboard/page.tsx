@@ -75,7 +75,7 @@ export default function Dashboard() {
         );
         await saveInsight(insight, userId);
         setKairosInsight(insight);
-      } catch (error) {
+      } catch {
         console.warn("Analytics Sync: Deferred. Network unstable.");
         setGlobalError(
           "Real-time intelligence sync lagging. Data truth is preserved.",
@@ -113,7 +113,7 @@ export default function Dashboard() {
       if (savedInsights && savedInsights.length > 0) {
         setKairosInsight(savedInsights[0]);
       }
-    } catch (error) {
+    } catch {
       setGlobalError("Connectivity failure. Intelligence engine is offline.");
     } finally {
       setIsInitialLoading(false);
@@ -121,6 +121,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDashboardData();
   }, [fetchDashboardData]);
 
@@ -170,7 +171,7 @@ export default function Dashboard() {
       setIsEditingLiquidity(false);
 
       await refreshAndReAnalyze(user.id, newAmount);
-    } catch (err: unknown) {
+    } catch {
       setLiquidityError("Update failed");
     } finally {
       setIsLiquidityLoading(false);
@@ -188,11 +189,20 @@ export default function Dashboard() {
 
       await deleteDeployment(id);
       await refreshAndReAnalyze(user.id, liquidity);
-    } catch (err) {
+    } catch {
       setGlobalError("Record preservation failed. Check connectivity.");
     } finally {
       setDeletingId(null);
     }
+  }
+
+  function startEdit(deployment: Deployment) {
+    setEditingId(deployment.id);
+    setEditForm({
+      title: deployment.title,
+      amount: deployment.amount.toString(),
+      category: deployment.category || "Unclassified",
+    });
   }
 
   async function handleUpdate(id: string) {
