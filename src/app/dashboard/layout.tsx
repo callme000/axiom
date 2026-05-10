@@ -1,18 +1,16 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-
   async function handleLogout() {
     await supabase.auth.signOut();
-    router.push("/");
+    // Refresh to trigger middleware redirection
+    window.location.href = "/";
   }
 
   return (
