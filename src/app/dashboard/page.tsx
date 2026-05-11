@@ -316,7 +316,7 @@ export default function Dashboard() {
             <span className="text-gray-500">DASHBOARD</span>
           </h1>
           <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
-            Financial Intelligence System v2.1-FORCE-SYNC
+            Financial Intelligence System v2.1-FINAL-SYNC
           </p>
         </div>
 
