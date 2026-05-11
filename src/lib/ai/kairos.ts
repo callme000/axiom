@@ -2,6 +2,8 @@ import { buildBehavioralContext } from "../context/buildBehavioralContext";
 import { evaluateInsights } from "../insights/generateInsights";
 import { generateSummary } from "../analytics/engine";
 import { Deployment } from "../analytics/types";
+import { MetadataQualitySummary } from "../finance/metadataQuality";
+import { DeploymentAdvancedContext } from "../finance/deploymentContext";
 
 export type DeploymentInput = {
   id?: string;
@@ -9,6 +11,7 @@ export type DeploymentInput = {
   amount: number;
   created_at?: string;
   category?: string | null;
+  advanced_context?: DeploymentAdvancedContext | null;
 };
 
 export type InsightSeverity = "passive" | "advisory" | "critical";
@@ -24,6 +27,7 @@ export interface KairosInsight {
   confidence: number;
   message: string;
   timestamp: string; // New: for temporal continuity
+  metadataQuality?: MetadataQualitySummary;
   related_ids?: string[];
   is_new_signal?: boolean; // New: for UX transition logic
 }
@@ -57,6 +61,7 @@ export async function generateKairosAIInsight(
     amount: d.amount,
     created_at: d.created_at || new Date().toISOString(),
     category: d.category,
+    advanced_context: d.advanced_context,
   }));
 
   // 3. Generate Analytics Context (Source of Truth)
@@ -70,7 +75,10 @@ export async function generateKairosAIInsight(
 
   // 5. Evaluate Insights (Logic Layer)
   const result = evaluateInsights(context);
-  const primary = result.primaryInsight;
+  const primary = {
+    ...result.primaryInsight,
+    metadataQuality: context.metadataQuality,
+  };
 
   // 6. Signal Filtering & Deduplication (Behavioral Presence)
   // If the new message is exactly the same as the previous, we preserve the signal

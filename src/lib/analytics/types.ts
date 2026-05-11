@@ -1,9 +1,13 @@
+import { MetadataQualitySummary } from "../finance/metadataQuality";
+import { DeploymentAdvancedContext } from "../finance/deploymentContext";
+
 export interface Deployment {
   id: string;
   amount: number;
   created_at: string;
   category?: string | null;
   title: string;
+  advanced_context?: DeploymentAdvancedContext | null;
 }
 
 export interface AnalyticsSummary {
@@ -13,4 +17,5 @@ export interface AnalyticsSummary {
   runwayDays: number | null;
   categoryBreakdown: Record<string, number>;
   deploymentCount: number;
+  metadataQuality: MetadataQualitySummary;
 }

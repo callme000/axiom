@@ -7,6 +7,11 @@ import {
   formatTaxonomyCategoryList,
   isValidCategory,
 } from "./taxonomy";
+import {
+  DeploymentAdvancedContextInput,
+  normalizeDeploymentAdvancedContext,
+} from "./deploymentContext";
+import { evaluateMetadataQuality } from "./metadataQuality";
 
 export { VALID_CATEGORIES, type ValidCategory } from "./taxonomy";
 
@@ -15,6 +20,7 @@ export interface DeploymentInput {
   amount: number;
   category: string;
   impactScore?: number;
+  advancedContext?: DeploymentAdvancedContextInput;
 }
 
 /**
@@ -22,7 +28,7 @@ export interface DeploymentInput {
  * Rejects any input that violates taxonomy integrity or data truth.
  */
 export function validateDeployment(input: DeploymentInput) {
-  const { title, amount, category, impactScore } = input;
+  const { title, amount, category, impactScore, advancedContext } = input;
 
   // 1. Structural Integrity
   if (!title || !title.trim()) {
@@ -52,6 +58,8 @@ export function validateDeployment(input: DeploymentInput) {
     title: title.trim(),
     amount: Number(amount),
     category,
+    advancedContext: normalizeDeploymentAdvancedContext(advancedContext),
+    metadataQuality: evaluateMetadataQuality(title),
     impactScore: Math.min(Math.max(impactScore || 0, 0), 10) // Scale 0-10
   };
 }

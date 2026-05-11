@@ -1,7 +1,11 @@
-import { supabase } from "@/lib/supabase";
-import { KairosInsight } from "@/lib/ai/kairos";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { KairosInsight } from "@/lib/ai/kairos";
 
-export async function saveInsight(insight: KairosInsight, userId: string) {
+export async function saveInsight(
+  supabase: SupabaseClient,
+  insight: KairosInsight,
+  userId: string,
+) {
   const { data, error } = await supabase.from("kairos_insights").insert({
     user_id: userId,
     type: insight.type,
@@ -10,8 +14,11 @@ export async function saveInsight(insight: KairosInsight, userId: string) {
     message: insight.message,
     metadata: {
       related_ids: insight.related_ids || [],
-      source: "client_engine"
-    }
+      metadata_quality: insight.metadataQuality || null,
+      severity: insight.severity,
+      timestamp: insight.timestamp,
+      source: "server_action",
+    },
   });
 
   if (error) {
@@ -21,7 +28,7 @@ export async function saveInsight(insight: KairosInsight, userId: string) {
   return data;
 }
 
-export async function getInsights(limit: number = 5) {
+export async function getInsights(supabase: SupabaseClient, limit: number = 5) {
   const { data, error } = await supabase
     .from("kairos_insights")
     .select("*")

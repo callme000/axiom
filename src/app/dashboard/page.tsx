@@ -1,21 +1,24 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase";
 import {
-  getDeployments,
-  createDeployment,
-  updateDeployment,
-  deleteDeployment,
-} from "@/lib/db/deployments";
-import { saveInsight, getInsights } from "@/lib/db/insights";
-import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
-import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
-import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
+  createDeploymentAction,
+  deleteDeploymentAction,
+  getDashboardSnapshotAction,
+  updateDeploymentAction,
+  updateLiquidityAction,
+  type DashboardSnapshot,
+} from "./actions";
+import type { AnalyticsSummary } from "@/lib/analytics";
 import {
   getTaxonomyBehavioralSignal,
   TAXONOMY_CATEGORIES,
 } from "@/lib/finance/taxonomy";
+import { evaluateMetadataQuality } from "@/lib/finance/metadataQuality";
+import {
+  EXPECTED_RETURN_HORIZONS,
+  type DeploymentAdvancedContextInput,
+} from "@/lib/finance/deploymentContext";
 
 type Deployment = {
   id: string;
@@ -30,12 +33,20 @@ interface LedgerState {
   analytics: AnalyticsSummary | null;
 }
 
+type KairosInsight = DashboardSnapshot["kairosInsight"];
+
 /**
  * UTILITY: Consistent Currency Formatting
  * Forces lowercase 'h' as requested.
  */
 const formatKSh = (amt: number) => {
   return `KSh ${Math.round(amt).toLocaleString()}`;
+};
+
+const EMPTY_ADVANCED_CONTEXT: DeploymentAdvancedContextInput = {
+  associatedAccount: "",
+  expectedReturnHorizon: "",
+  tags: "",
 };
 
 function CategorySelector({
@@ -127,6 +138,15 @@ export default function Dashboard() {
   // FORM STATE
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [isAdvancedContextOpen, setIsAdvancedContextOpen] = useState(false);
+  const [advancedContext, setAdvancedContext] =
+    useState<DeploymentAdvancedContextInput>({ ...EMPTY_ADVANCED_CONTEXT });
+  const titleMetadataQuality = evaluateMetadataQuality(title);
+  const showTitleQualityHint =
+    title.trim().length > 0 && titleMetadataQuality.isLowQuality;
+  const advancedTagsValue = Array.isArray(advancedContext.tags)
+    ? advancedContext.tags.join(", ")
+    : advancedContext.tags || "";
 
   // EXECUTION LOCKS
   const isExecuting = useRef(false);
@@ -138,7 +158,6 @@ export default function Dashboard() {
   const [isLiquidityLoading, setIsLiquidityLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [isIntelligenceSyncing, setIsIntelligenceSyncing] = useState(false);
 
   // ERROR STATES
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -155,82 +174,27 @@ export default function Dashboard() {
   const [isEditingLiquidity, setIsEditingLiquidity] = useState(false);
   const [liquidityInput, setLiquidityInput] = useState("");
 
-  /**
-   * REFRESH & ANALYZE (Centralized Intelligence Trigger)
-   */
-  const refreshAndReAnalyze = useCallback(
-    async (userId: string, currentLiquidity: number) => {
-      setIsIntelligenceSyncing(true);
-      try {
-        const data = await getDeployments();
-        const castedData = (data || []) as Deployment[];
+  const applyDashboardSnapshot = useCallback((snapshot: DashboardSnapshot) => {
+    if (!snapshot.authenticated) return;
 
-        setLedger({
-          deployments: castedData,
-          analytics: generateSummary(castedData, currentLiquidity),
-        });
-
-        const insight = await generateKairosAIInsight(
-          castedData,
-          currentLiquidity,
-          kairosInsight,
-        );
-        if (insight.is_new_signal) {
-          await saveInsight(insight, userId);
-        }
-        setKairosInsight(insight);
-      } catch {
-        setGlobalError("Behavioral sync lagging. Data integrity maintained.");
-      } finally {
-        setIsIntelligenceSyncing(false);
-      }
-    },
-    [kairosInsight],
-  );
+    setLiquidity(snapshot.liquidity);
+    setLiquidityInput(snapshot.liquidity.toString());
+    setLedger({
+      deployments: snapshot.deployments as Deployment[],
+      analytics: snapshot.analytics,
+    });
+    setKairosInsight(snapshot.kairosInsight);
+  }, []);
 
   const fetchDashboardData = useCallback(async () => {
     const requestId = ++fetchCount.current;
     setGlobalError(null);
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const [deploymentsData, settings] = await Promise.all([
-        getDeployments(),
-        getUserSettings(),
-      ]);
+      const snapshot = await getDashboardSnapshotAction();
 
       if (requestId !== fetchCount.current) return;
-
-      const castedDeployments = (deploymentsData || []) as Deployment[];
-      const currentLiquidity = Number(settings.total_liquidity);
-
-      setLiquidity(currentLiquidity);
-      setLiquidityInput(currentLiquidity.toString());
-
-      setLedger({
-        deployments: castedDeployments,
-        analytics: generateSummary(castedDeployments, currentLiquidity),
-      });
-
-      const savedInsights = await getInsights(1);
-      if (
-        requestId === fetchCount.current &&
-        savedInsights &&
-        savedInsights.length > 0
-      ) {
-        setKairosInsight(savedInsights[0]);
-      } else if (requestId === fetchCount.current) {
-        const initial = await generateKairosAIInsight(
-          [],
-          currentLiquidity,
-          null,
-        );
-        setKairosInsight(initial);
-      }
+      applyDashboardSnapshot(snapshot);
     } catch {
       setGlobalError("Connectivity failure. Intelligence layer offline.");
     } finally {
@@ -238,7 +202,7 @@ export default function Dashboard() {
         setIsInitialLoading(false);
       }
     }
-  }, []);
+  }, [applyDashboardSnapshot]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -258,18 +222,20 @@ export default function Dashboard() {
         throw new Error("Strategic classification required");
       }
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Session unverified");
-
-      await createDeployment(title, Number(amount), user.id, category);
+      const snapshot = await createDeploymentAction({
+        title,
+        amount: Number(amount),
+        category,
+        advancedContext,
+      });
 
       setTitle("");
       setAmount("");
       setCategory("Unclassified");
+      setAdvancedContext({ ...EMPTY_ADVANCED_CONTEXT });
+      setIsAdvancedContextOpen(false);
 
-      await refreshAndReAnalyze(user.id, liquidity);
+      applyDashboardSnapshot(snapshot);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : "Deployment failed");
     } finally {
@@ -285,19 +251,12 @@ export default function Dashboard() {
     isExecuting.current = true;
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Unauthenticated");
-
       const newAmount = Number(liquidityInput);
       if (isNaN(newAmount)) throw new Error("Invalid value");
 
-      await updateLiquidity(newAmount);
-      setLiquidity(newAmount);
+      const snapshot = await updateLiquidityAction(newAmount);
       setIsEditingLiquidity(false);
-
-      await refreshAndReAnalyze(user.id, newAmount);
+      applyDashboardSnapshot(snapshot);
     } catch {
       setLiquidityError("Update failed");
     } finally {
@@ -314,13 +273,8 @@ export default function Dashboard() {
     isExecuting.current = true;
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await deleteDeployment(id);
-      await refreshAndReAnalyze(user.id, liquidity);
+      const snapshot = await deleteDeploymentAction(id);
+      applyDashboardSnapshot(snapshot);
     } catch {
       setGlobalError("Deletion interrupted.");
     } finally {
@@ -344,21 +298,16 @@ export default function Dashboard() {
     isExecuting.current = true;
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
       if (!editForm.title.trim()) throw new Error("Title required");
       if (Number(editForm.amount) <= 0) throw new Error("Amount invalid");
 
-      await updateDeployment(id, {
+      const snapshot = await updateDeploymentAction(id, {
         title: editForm.title,
         amount: Number(editForm.amount),
         category: editForm.category,
       });
       setEditingId(null);
-      await refreshAndReAnalyze(user.id, liquidity);
+      applyDashboardSnapshot(snapshot);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Update failed");
     } finally {
@@ -523,12 +472,12 @@ export default function Dashboard() {
               <form onSubmit={handleAddDeployment} className="space-y-5">
                 <div>
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                    Capital Designation
+                    Strategic Designation
                   </label>
                   <input
                     type="text"
                     disabled={isActionLoading}
-                    placeholder="e.g. Asset Acquisition"
+                    placeholder="What is this capital achieving?"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
@@ -537,6 +486,11 @@ export default function Dashboard() {
                     className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
                     required
                   />
+                  {showTitleQualityHint && (
+                    <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-gray-500">
+                      Specific labels improve future analysis.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -569,6 +523,124 @@ export default function Dashboard() {
                         if (formError) setFormError(null);
                       }}
                     />
+                  </div>
+                </div>
+
+                <div className="border-t border-foreground/10 pt-2">
+                  <button
+                    type="button"
+                    disabled={isActionLoading}
+                    aria-expanded={isAdvancedContextOpen}
+                    aria-controls="advanced-context-drawer"
+                    onClick={() =>
+                      setIsAdvancedContextOpen((isOpen) => !isOpen)
+                    }
+                    className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                      Advanced Context
+                    </span>
+                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500">
+                      Optional
+                      <span
+                        className={`inline-block transition-transform duration-300 ${
+                          isAdvancedContextOpen ? "rotate-180" : ""
+                        }`}
+                        aria-hidden="true"
+                      >
+                        v
+                      </span>
+                    </span>
+                  </button>
+
+                  <div
+                    id="advanced-context-drawer"
+                    aria-hidden={!isAdvancedContextOpen}
+                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                      isAdvancedContextOpen
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="space-y-3 pt-3">
+                        <div>
+                          <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                            Associated Account
+                          </label>
+                          <input
+                            type="text"
+                            disabled={
+                              isActionLoading || !isAdvancedContextOpen
+                            }
+                            placeholder="e.g. Brokerage, operations"
+                            value={advancedContext.associatedAccount || ""}
+                            onChange={(e) => {
+                              setAdvancedContext((current) => ({
+                                ...current,
+                                associatedAccount: e.target.value,
+                              }));
+                              if (formError) setFormError(null);
+                            }}
+                            className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                              Return Horizon
+                            </label>
+                            <select
+                              disabled={
+                                isActionLoading || !isAdvancedContextOpen
+                              }
+                              value={advancedContext.expectedReturnHorizon || ""}
+                              onChange={(e) => {
+                                setAdvancedContext((current) => ({
+                                  ...current,
+                                  expectedReturnHorizon: e.target.value,
+                                }));
+                                if (formError) setFormError(null);
+                              }}
+                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold disabled:opacity-50"
+                            >
+                              <option value="">Unspecified</option>
+                              {EXPECTED_RETURN_HORIZONS.map((horizon) => (
+                                <option
+                                  key={horizon.value}
+                                  value={horizon.value}
+                                >
+                                  {horizon.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                              Tags
+                            </label>
+                            <input
+                              type="text"
+                              disabled={
+                                isActionLoading || !isAdvancedContextOpen
+                              }
+                              placeholder="ops, recurring"
+                              value={advancedTagsValue}
+                              onChange={(e) => {
+                                setAdvancedContext((current) => ({
+                                  ...current,
+                                  tags: e.target.value,
+                                }));
+                                if (formError) setFormError(null);
+                              }}
+                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -606,7 +678,7 @@ export default function Dashboard() {
 
           {/* Behavioral Presence Section */}
           <div
-            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/50" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
+            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/50" : ""}`}
           >
             <div>
               <div className="flex items-center gap-2 mb-6 opacity-60">

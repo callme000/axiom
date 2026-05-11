@@ -1,4 +1,5 @@
 import { BehavioralContext } from "../context/contextTypes";
+import { weightConfidenceForMetadataQuality } from "../finance/metadataQuality";
 import { InsightEngineResult } from "./types";
 import { rules } from "./rules/registry";
 
@@ -13,24 +14,36 @@ export const evaluateInsights = (
   // 1. Filter rules by condition
   const activeRules = rules.filter((rule) => rule.condition(context));
 
-  // 2. Generate insights
-  const generatedInsights = activeRules.map((rule) => rule.generate(context));
+  // 2. Generate insights and apply deterministic metadata confidence weighting.
+  const generatedInsights = activeRules.map((rule) => {
+    const insight = rule.generate(context);
+
+    return {
+      priority: rule.priority,
+      insight: {
+        ...insight,
+        confidence: weightConfidenceForMetadataQuality(
+          insight.confidence,
+          context.metadataQuality,
+        ),
+      },
+    };
+  });
 
   // 3. Prioritize
   // Sort by priority (High > Medium > Low) and then by confidence
-  const sortedRules = activeRules.sort((a, b) => {
+  const sortedInsights = generatedInsights.sort((a, b) => {
     const priorityScore = { high: 3, medium: 2, low: 1 };
 
     if (priorityScore[a.priority] !== priorityScore[b.priority]) {
       return priorityScore[b.priority] - priorityScore[a.priority];
     }
 
-    // Secondary sort: Confidence of the generated insight
-    return b.generate(context).confidence - a.generate(context).confidence;
+    return b.insight.confidence - a.insight.confidence;
   });
 
   return {
-    primaryInsight: sortedRules[0].generate(context),
-    allInsights: generatedInsights,
+    primaryInsight: sortedInsights[0].insight,
+    allInsights: generatedInsights.map((result) => result.insight),
   };
 };

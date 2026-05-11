@@ -1,6 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function getUserSettings() {
+export async function getUserSettings(supabase: SupabaseClient) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -29,7 +29,10 @@ export async function getUserSettings() {
   return data;
 }
 
-export async function updateLiquidity(amount: number) {
+export async function updateLiquidity(
+  supabase: SupabaseClient,
+  amount: number,
+) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
