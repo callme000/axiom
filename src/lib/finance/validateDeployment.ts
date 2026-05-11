@@ -3,8 +3,12 @@
  * Ensures every deployment written to the ledger follows the strict return-based taxonomy.
  */
 
-export const VALID_CATEGORIES = ["Asset", "Skill", "Leverage", "Experience", "Leakage"] as const;
-export type ValidCategory = typeof VALID_CATEGORIES[number];
+import {
+  formatTaxonomyCategoryList,
+  isValidCategory,
+} from "./taxonomy";
+
+export { VALID_CATEGORIES, type ValidCategory } from "./taxonomy";
 
 export interface DeploymentInput {
   title: string;
@@ -34,20 +38,20 @@ export function validateDeployment(input: DeploymentInput) {
   }
 
   // 2. Taxonomy Enforcement
-  if (!VALID_CATEGORIES.includes(category as ValidCategory)) {
+  if (!isValidCategory(category)) {
     // Specifically reject 'Unclassified' and legacy categories
     if (category === "Unclassified") {
       throw new Error("Taxonomy Gate: Strategic classification is mandatory. Entry rejected.");
     }
 
-    throw new Error(`Taxonomy Gate: Unknown category '${category}'. Use Asset, Skill, Leverage, Experience, or Leakage.`);
+    throw new Error(`Taxonomy Gate: Unknown category '${category}'. Use ${formatTaxonomyCategoryList()}.`);
   }
 
   // 3. Normalization
   return {
     title: title.trim(),
     amount: Number(amount),
-    category: category as ValidCategory,
+    category,
     impactScore: Math.min(Math.max(impactScore || 0, 0), 10) // Scale 0-10
   };
 }

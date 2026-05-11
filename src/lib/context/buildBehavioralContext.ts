@@ -9,6 +9,7 @@ import {
   generateBehavioralFlags,
   calculateConcentrationScore,
 } from "./behavioralFlags";
+import { isValidCategory } from "../finance/taxonomy";
 
 /**
  * Axiom Behavioral Context Builder
@@ -40,17 +41,10 @@ export const buildBehavioralContext = (
   let dominantCategory = "None";
   let maxAmt = -1;
 
-  const validCategories = [
-    "Asset",
-    "Skill",
-    "Leverage",
-    "Experience",
-    "Leakage",
-  ];
   let unclassifiedTotal = 0;
 
   Object.entries(currentAnalytics.categoryBreakdown).forEach(([cat, amt]) => {
-    if (!validCategories.includes(cat)) {
+    if (!isValidCategory(cat)) {
       unclassifiedTotal += amt;
     } else {
       distribution[cat] = amt / total;

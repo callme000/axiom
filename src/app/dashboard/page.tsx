@@ -12,6 +12,7 @@ import { saveInsight, getInsights } from "@/lib/db/insights";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
+import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
 
 type Deployment = {
   id: string;
@@ -33,6 +34,63 @@ interface LedgerState {
 const formatKSh = (amt: number) => {
   return `KSh ${Math.round(amt).toLocaleString()}`;
 };
+
+function CategorySelector({
+  value,
+  onChange,
+  disabled,
+  compact = false,
+}: {
+  value: string;
+  onChange: (category: string) => void;
+  disabled?: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Capital category"
+      className={compact ? "grid grid-cols-1 gap-1.5" : "grid grid-cols-1 gap-2"}
+    >
+      {TAXONOMY_CATEGORIES.map((category) => {
+        const isSelected = value === category.value;
+
+        return (
+          <button
+            key={category.value}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            disabled={disabled}
+            onClick={() => onChange(category.value)}
+            className={`w-full rounded-xl border text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+              compact ? "p-2" : "p-3"
+            } ${
+              isSelected
+                ? "border-foreground bg-foreground text-background shadow-sm"
+                : "border-foreground/10 bg-background text-foreground hover:border-foreground/30 hover:bg-foreground/5"
+            }`}
+          >
+            <span
+              className={`block font-black uppercase tracking-widest ${
+                compact ? "text-[9px]" : "text-[10px]"
+              }`}
+            >
+              {category.label}
+            </span>
+            <span
+              className={`mt-0.5 block font-bold leading-snug ${
+                compact ? "text-[8px]" : "text-[10px]"
+              } ${isSelected ? "text-background/70" : "text-gray-500"}`}
+            >
+              {category.definition}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   // ATOMIC DATA STATE
@@ -461,7 +519,7 @@ export default function Dashboard() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
                       Amount (KSh)
@@ -483,22 +541,14 @@ export default function Dashboard() {
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
                       Category
                     </label>
-                    <select
+                    <CategorySelector
                       disabled={isActionLoading}
                       value={category}
-                      onChange={(e) => {
-                        setCategory(e.target.value);
+                      onChange={(nextCategory) => {
+                        setCategory(nextCategory);
                         if (formError) setFormError(null);
                       }}
-                      className={`w-full border-2 rounded-2xl p-4 focus:outline-none transition-colors font-bold appearance-none cursor-pointer disabled:opacity-50 ${category === "Unclassified" ? "border-orange-500/30 text-orange-500/60 bg-orange-500/5" : "border-foreground/10 bg-background text-foreground"}`}
-                    >
-                      <option value="Unclassified">-- SELECT TYPE --</option>
-                      <option value="Asset">Asset</option>
-                      <option value="Skill">Skill</option>
-                      <option value="Leverage">Leverage</option>
-                      <option value="Experience">Experience</option>
-                      <option value="Leakage">Leakage</option>
-                    </select>
+                    />
                   </div>
                 </div>
 
@@ -783,26 +833,21 @@ export default function Dashboard() {
                             className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
                           />
                         </div>
-                        <div className="flex justify-between items-center">
-                          <select
-                            disabled={updatingId === deployment.id}
-                            value={editForm.category}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                category: e.target.value,
-                              })
-                            }
-                            className="bg-foreground/5 border-none rounded-xl p-2 text-xs font-black uppercase disabled:opacity-50"
-                          >
-                            <option value="Unclassified">Unclassified</option>
-                            <option value="Asset">Asset</option>
-                            <option value="Skill">Skill</option>
-                            <option value="Leverage">Leverage</option>
-                            <option value="Experience">Experience</option>
-                            <option value="Leakage">Leakage</option>
-                          </select>
-                          <div className="flex gap-2">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <CategorySelector
+                              disabled={updatingId === deployment.id}
+                              value={editForm.category}
+                              onChange={(nextCategory) =>
+                                setEditForm({
+                                  ...editForm,
+                                  category: nextCategory,
+                                })
+                              }
+                              compact
+                            />
+                          </div>
+                          <div className="flex shrink-0 gap-2 pt-1">
                             <button
                               disabled={updatingId === deployment.id}
                               onClick={() => setEditingId(null)}
