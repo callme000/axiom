@@ -10,6 +10,7 @@ export async function saveInsight(insight: KairosInsight, userId: string) {
     message: insight.message,
     metadata: {
       related_ids: insight.related_ids || [],
+      metadata_quality: insight.metadataQuality || null,
       source: "client_engine"
     }
   });

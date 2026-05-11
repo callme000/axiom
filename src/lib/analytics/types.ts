@@ -1,3 +1,5 @@
+import { MetadataQualitySummary } from "../finance/metadataQuality";
+
 export interface Deployment {
   id: string;
   amount: number;
@@ -13,4 +15,5 @@ export interface AnalyticsSummary {
   runwayDays: number | null;
   categoryBreakdown: Record<string, number>;
   deploymentCount: number;
+  metadataQuality: MetadataQualitySummary;
 }

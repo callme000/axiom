@@ -16,6 +16,7 @@ import {
   getTaxonomyBehavioralSignal,
   TAXONOMY_CATEGORIES,
 } from "@/lib/finance/taxonomy";
+import { evaluateMetadataQuality } from "@/lib/finance/metadataQuality";
 
 type Deployment = {
   id: string;
@@ -127,6 +128,9 @@ export default function Dashboard() {
   // FORM STATE
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const titleMetadataQuality = evaluateMetadataQuality(title);
+  const showTitleQualityHint =
+    title.trim().length > 0 && titleMetadataQuality.isLowQuality;
 
   // EXECUTION LOCKS
   const isExecuting = useRef(false);
@@ -523,12 +527,12 @@ export default function Dashboard() {
               <form onSubmit={handleAddDeployment} className="space-y-5">
                 <div>
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                    Capital Designation
+                    Strategic Designation
                   </label>
                   <input
                     type="text"
                     disabled={isActionLoading}
-                    placeholder="e.g. Asset Acquisition"
+                    placeholder="What is this capital achieving?"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
@@ -537,6 +541,11 @@ export default function Dashboard() {
                     className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
                     required
                   />
+                  {showTitleQualityHint && (
+                    <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-gray-500">
+                      Specific labels improve future analysis.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-4">

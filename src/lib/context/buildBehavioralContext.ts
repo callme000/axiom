@@ -108,6 +108,8 @@ export const buildBehavioralContext = (
 
     volatilityScore: volatility,
 
+    metadataQuality: currentAnalytics.metadataQuality,
+
     disciplineTrend: inferDiscipline(burnTrend, runwayDelta),
 
     behavioralFlags: generateBehavioralFlags({
@@ -132,5 +134,6 @@ export const compressContextForAI = (context: BehavioralContext): string => {
     allocation: `${context.allocation.dominantCategory} (conc: ${context.allocation.concentrationScore.toFixed(2)})`,
     flags: context.behavioralFlags.join(","),
     discipline: context.disciplineTrend,
+    metadata: `${context.metadataQuality.lowQualityCount}/${context.deploymentCount} low-quality labels`,
   });
 };

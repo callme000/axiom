@@ -7,6 +7,7 @@ import {
   formatTaxonomyCategoryList,
   isValidCategory,
 } from "./taxonomy";
+import { evaluateMetadataQuality } from "./metadataQuality";
 
 export { VALID_CATEGORIES, type ValidCategory } from "./taxonomy";
 
@@ -52,6 +53,7 @@ export function validateDeployment(input: DeploymentInput) {
     title: title.trim(),
     amount: Number(amount),
     category,
+    metadataQuality: evaluateMetadataQuality(title),
     impactScore: Math.min(Math.max(impactScore || 0, 0), 10) // Scale 0-10
   };
 }

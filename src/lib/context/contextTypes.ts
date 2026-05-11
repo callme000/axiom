@@ -1,3 +1,5 @@
+import { MetadataQualitySummary } from "../finance/metadataQuality";
+
 export type TrendState = "increasing" | "stable" | "decreasing";
 export type DisciplineState = "improving" | "stable" | "declining";
 
@@ -34,6 +36,8 @@ export interface BehavioralContext {
   // Measure of spending consistency
   volatilityScore: number; // 0 to 1, higher is more erratic
 
+  metadataQuality: MetadataQualitySummary;
+
   disciplineTrend: DisciplineState;
 }
 
@@ -48,6 +52,7 @@ export interface ContextInput {
     runwayDays: number | null;
     categoryBreakdown: Record<string, number>;
     deploymentCount: number;
+    metadataQuality: MetadataQualitySummary;
   };
   historicalMetrics?: {
     previousBurnRate: number;

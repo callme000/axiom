@@ -1,4 +1,5 @@
 import { Deployment, AnalyticsSummary } from "./types";
+import { summarizeMetadataQuality } from "../finance/metadataQuality";
 
 /**
  * Pure, deterministic engine for financial intelligence.
@@ -71,5 +72,6 @@ export const generateSummary = (
     runwayDays: currentBalance ? projectRunway(currentBalance, burnRate) : null,
     categoryBreakdown: getCategoryBreakdown(deployments),
     deploymentCount: deployments.length,
+    metadataQuality: summarizeMetadataQuality(deployments),
   };
 };
