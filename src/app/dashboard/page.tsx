@@ -311,12 +311,12 @@ export default function Dashboard() {
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex flex-col gap-1">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase hover:text-gray-400 transition-colors cursor-default">
             AXIOM <span className="hidden md:inline">::</span>{" "}
             <span className="text-gray-500">DASHBOARD</span>
           </h1>
           <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
-            Financial Intelligence System v2.1-FINAL-SYNC
+            Financial Intelligence System v2.2-PROD-READY
           </p>
         </div>
 
