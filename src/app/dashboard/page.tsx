@@ -99,6 +99,7 @@ export default function Dashboard() {
 
         setKairosInsight(insight);
       } catch {
+        console.warn("Analytics Sync: Deferred. Network unstable.");
         setGlobalError("Behavioral sync lagging. Data integrity maintained.");
       } finally {
         setIsIntelligenceSyncing(false);
@@ -228,7 +229,7 @@ export default function Dashboard() {
 
   async function handleDelete(id: string) {
     if (isExecuting.current) return;
-    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
+    if (!confirm("Delete record?")) return;
 
     setDeletingId(id);
     isExecuting.current = true;
@@ -467,7 +468,7 @@ export default function Dashboard() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
                       Amount (KSh)
@@ -816,14 +817,12 @@ export default function Dashboard() {
                           </select>
                           <div className="flex gap-2">
                             <button
-                              disabled={updatingId === deployment.id}
                               onClick={() => setEditingId(null)}
                               className="text-xs font-black text-gray-500 uppercase px-3 py-1 disabled:opacity-50"
                             >
                               Cancel
                             </button>
                             <button
-                              disabled={updatingId === deployment.id}
                               onClick={() => handleUpdate(deployment.id)}
                               className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
                             >
