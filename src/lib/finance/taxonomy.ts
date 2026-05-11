@@ -27,6 +27,8 @@ export const TAXONOMY_CATEGORIES = [
     value: "Leakage",
     label: "Leakage",
     definition: "Non-strategic capital drift",
+    behavioralSignal:
+      "Leakage deployments are tracked separately to protect long-term positioning.",
   },
 ] as const;
 
@@ -51,6 +53,18 @@ export function isValidCategory(category: string): category is ValidCategory {
 export function getTaxonomyDefinition(category: string) {
   return isValidCategory(category)
     ? TAXONOMY_DEFINITIONS[category]
+    : undefined;
+}
+
+export function getTaxonomyBehavioralSignal(category: string) {
+  if (!isValidCategory(category)) return undefined;
+
+  const taxonomyCategory = TAXONOMY_CATEGORIES.find(
+    (item) => item.value === category,
+  );
+
+  return taxonomyCategory && "behavioralSignal" in taxonomyCategory
+    ? taxonomyCategory.behavioralSignal
     : undefined;
 }
 

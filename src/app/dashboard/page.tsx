@@ -12,7 +12,10 @@ import { saveInsight, getInsights } from "@/lib/db/insights";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
-import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
+import {
+  getTaxonomyBehavioralSignal,
+  TAXONOMY_CATEGORIES,
+} from "@/lib/finance/taxonomy";
 
 type Deployment = {
   id: string;
@@ -46,48 +49,65 @@ function CategorySelector({
   disabled?: boolean;
   compact?: boolean;
 }) {
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Capital category"
-      className={compact ? "grid grid-cols-1 gap-1.5" : "grid grid-cols-1 gap-2"}
-    >
-      {TAXONOMY_CATEGORIES.map((category) => {
-        const isSelected = value === category.value;
+  const behavioralSignal = getTaxonomyBehavioralSignal(value);
 
-        return (
-          <button
-            key={category.value}
-            type="button"
-            role="radio"
-            aria-checked={isSelected}
-            disabled={disabled}
-            onClick={() => onChange(category.value)}
-            className={`w-full rounded-xl border text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
-              compact ? "p-2" : "p-3"
-            } ${
-              isSelected
-                ? "border-foreground bg-foreground text-background shadow-sm"
-                : "border-foreground/10 bg-background text-foreground hover:border-foreground/30 hover:bg-foreground/5"
-            }`}
-          >
-            <span
-              className={`block font-black uppercase tracking-widest ${
-                compact ? "text-[9px]" : "text-[10px]"
+  return (
+    <div className={compact ? "space-y-2" : "space-y-3"}>
+      <div
+        role="radiogroup"
+        aria-label="Capital category"
+        className={
+          compact ? "grid grid-cols-1 gap-1.5" : "grid grid-cols-1 gap-2"
+        }
+      >
+        {TAXONOMY_CATEGORIES.map((category) => {
+          const isSelected = value === category.value;
+
+          return (
+            <button
+              key={category.value}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              disabled={disabled}
+              onClick={() => onChange(category.value)}
+              className={`w-full rounded-xl border text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+                compact ? "p-2" : "p-3"
+              } ${
+                isSelected
+                  ? "border-foreground bg-foreground text-background shadow-sm"
+                  : "border-foreground/10 bg-background text-foreground hover:border-foreground/30 hover:bg-foreground/5"
               }`}
             >
-              {category.label}
-            </span>
-            <span
-              className={`mt-0.5 block font-bold leading-snug ${
-                compact ? "text-[8px]" : "text-[10px]"
-              } ${isSelected ? "text-background/70" : "text-gray-500"}`}
-            >
-              {category.definition}
-            </span>
-          </button>
-        );
-      })}
+              <span
+                className={`block font-black uppercase tracking-widest ${
+                  compact ? "text-[9px]" : "text-[10px]"
+                }`}
+              >
+                {category.label}
+              </span>
+              <span
+                className={`mt-0.5 block font-bold leading-snug ${
+                  compact ? "text-[8px]" : "text-[10px]"
+                } ${isSelected ? "text-background/70" : "text-gray-500"}`}
+              >
+                {category.definition}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {behavioralSignal && (
+        <p
+          aria-live="polite"
+          className={`border-l border-foreground/10 pl-3 font-bold leading-snug text-gray-500 ${
+            compact ? "text-[8px]" : "text-[10px]"
+          }`}
+        >
+          {behavioralSignal}
+        </p>
+      )}
     </div>
   );
 }
