@@ -26,6 +26,14 @@ interface LedgerState {
   analytics: AnalyticsSummary | null;
 }
 
+/**
+ * UTILITY: Consistent Currency Formatting
+ * Forces lowercase 'h' as requested.
+ */
+const formatKSh = (amt: number) => {
+  return `KSh ${Math.round(amt).toLocaleString()}`;
+};
+
 export default function Dashboard() {
   // ATOMIC DATA STATE
   const [ledger, setLedger] = useState<LedgerState>({
@@ -70,7 +78,7 @@ export default function Dashboard() {
   const [liquidityInput, setLiquidityInput] = useState("");
 
   /**
-   * REFRESH & ANALYZE (Behavioral Presence Orchestrator)
+   * REFRESH & ANALYZE (Centralized Intelligence Trigger)
    */
   const refreshAndReAnalyze = useCallback(
     async (userId: string, currentLiquidity: number) => {
@@ -79,27 +87,21 @@ export default function Dashboard() {
         const data = await getDeployments();
         const castedData = (data || []) as Deployment[];
 
-        // Update Core Ledger Truth
         setLedger({
           deployments: castedData,
           analytics: generateSummary(castedData, currentLiquidity),
         });
 
-        // Recalculate Intelligence State
         const insight = await generateKairosAIInsight(
           castedData,
           currentLiquidity,
           kairosInsight,
         );
-
-        // Persist if it's a new or significant signal
         if (insight.is_new_signal) {
           await saveInsight(insight, userId);
         }
-
         setKairosInsight(insight);
       } catch {
-        console.warn("Analytics Sync: Deferred. Network unstable.");
         setGlobalError("Behavioral sync lagging. Data integrity maintained.");
       } finally {
         setIsIntelligenceSyncing(false);
@@ -144,7 +146,6 @@ export default function Dashboard() {
       ) {
         setKairosInsight(savedInsights[0]);
       } else if (requestId === fetchCount.current) {
-        // Initialize empty state presence
         const initial = await generateKairosAIInsight(
           [],
           currentLiquidity,
@@ -229,7 +230,7 @@ export default function Dashboard() {
 
   async function handleDelete(id: string) {
     if (isExecuting.current) return;
-    if (!confirm("Delete record?")) return;
+    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
 
     setDeletingId(id);
     isExecuting.current = true;
@@ -315,7 +316,7 @@ export default function Dashboard() {
             <span className="text-gray-500">DASHBOARD</span>
           </h1>
           <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
-            Financial Intelligence System v2.0
+            Financial Intelligence System v2.1
           </p>
         </div>
 
@@ -355,11 +356,7 @@ export default function Dashboard() {
             ) : (
               <>
                 <span className="text-2xl font-black tabular-nums text-foreground text-center">
-                  {liquidity.toLocaleString("en-KE", {
-                    style: "currency",
-                    currency: "KSh",
-                    maximumFractionDigits: 0,
-                  })}
+                  {formatKSh(liquidity)}
                 </span>
                 <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-2xl transition-opacity">
                   <span className="text-[10px] font-black uppercase tracking-tighter">
@@ -374,11 +371,7 @@ export default function Dashboard() {
               Daily Burn
             </span>
             <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {ledger.analytics?.dailyBurnRate.toLocaleString("en-KE", {
-                style: "currency",
-                currency: "KSh",
-                maximumFractionDigits: 0,
-              })}
+              {formatKSh(ledger.analytics?.dailyBurnRate || 0)}
             </span>
           </div>
         </div>
@@ -457,7 +450,7 @@ export default function Dashboard() {
                   <input
                     type="text"
                     disabled={isActionLoading}
-                    placeholder="e.g. BTC Buy"
+                    placeholder="e.g. Asset Acquisition"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
@@ -629,8 +622,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <p className="text-[8px] font-bold text-background/40 uppercase tracking-tight">
-                  * Calculated against {liquidity.toLocaleString()} KSh
-                  operational truth
+                  * Calculated against {formatKSh(liquidity)} operational truth
                 </p>
               </div>
             )}
@@ -643,7 +635,7 @@ export default function Dashboard() {
           {ledger.deployments.length === 0 && !globalError && (
             <div className="bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-4xl p-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
               <div className="max-w-md mx-auto">
-                <div className="w-20 h-20 bg-foreground/5 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                <div className="w-20 h-20 bg-foreground/5 rounded-3xl flex items-center justify-center mx-auto mb-8 text-foreground">
                   <svg
                     width="40"
                     height="40"
@@ -651,7 +643,6 @@ export default function Dashboard() {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    className="text-gray-500"
                   >
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </svg>
@@ -665,7 +656,7 @@ export default function Dashboard() {
                   intelligence engine.
                 </p>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 text-center">
                     <span className="text-xs font-black text-foreground">
                       LEAD
                     </span>
@@ -673,7 +664,7 @@ export default function Dashboard() {
                       Assets generate future value
                     </span>
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 text-center">
                     <span className="text-xs font-black text-foreground">
                       GROW
                     </span>
@@ -681,7 +672,7 @@ export default function Dashboard() {
                       Skills improve earning ability
                     </span>
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 text-center">
                     <span className="text-xs font-black text-foreground">
                       MULTIPLY
                     </span>
@@ -721,11 +712,7 @@ export default function Dashboard() {
                               {cat}
                             </span>
                             <span className="text-lg font-black text-foreground tabular-nums group-hover:text-black dark:group-hover:text-white">
-                              {amt.toLocaleString("en-KE", {
-                                style: "currency",
-                                currency: "KSh",
-                                maximumFractionDigits: 0,
-                              })}
+                              {formatKSh(amt)}
                             </span>
                           </div>
                           <span className="text-sm font-black text-gray-400">
@@ -817,12 +804,14 @@ export default function Dashboard() {
                           </select>
                           <div className="flex gap-2">
                             <button
+                              disabled={updatingId === deployment.id}
                               onClick={() => setEditingId(null)}
                               className="text-xs font-black text-gray-500 uppercase px-3 py-1 disabled:opacity-50"
                             >
                               Cancel
                             </button>
                             <button
+                              disabled={updatingId === deployment.id}
                               onClick={() => handleUpdate(deployment.id)}
                               className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
                             >
@@ -884,10 +873,7 @@ export default function Dashboard() {
 
                         <div className="text-right flex flex-col items-end">
                           <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                            {Number(deployment.amount).toLocaleString("en-KE", {
-                              style: "currency",
-                              currency: "KSh",
-                            })}
+                            {formatKSh(deployment.amount)}
                           </p>
                           <div className="mt-1 flex items-center gap-3">
                             <button
