@@ -1,197 +1,292 @@
-# AXIOM
+AXIOM
 
-Axiom is an AI-powered financial intelligence system that helps users understand, track, and improve their financial behavior through structured data analysis and AI-generated insights.
+Axiom is a behavioral financial intelligence system designed to help users understand how capital is being deployed over time.
 
-It is built around a strict separation between:
+It is not a budgeting app.
 
-* financial truth (database)
-* computed analytics (backend logic)
-* AI interpretation (insights layer)
+It is not a passive expense tracker.
 
----
+Axiom treats money as:
 
-# 🧠 CORE PRINCIPLE
+deployable strategic capital.
 
-> Transactions are truth. Everything else is interpretation.
+The system analyzes where capital flows, what behavioral patterns emerge, and whether those deployments are increasing or degrading long-term financial positioning.
 
-The system is designed so that:
+🧠 CORE PRINCIPLE
 
-* financial data is deterministic
-* analytics are derived
-* AI never becomes a source of truth
+Financial events are truth. Everything else is interpretation.
 
----
+Axiom is built around three strict layers:
 
-# 🏗️ ARCHITECTURE DECISION
+Layer	Responsibility
+Financial Truth	Immutable deployment records
+Derived Intelligence	Deterministic analytics
+Interpretation Layer	Kairos behavioral insights
 
-Axiom follows **Architecture A**:
+The system is intentionally designed so that:
 
-```
-Next.js (Frontend + Server Actions)
+raw financial data remains authoritative
+analytics remain reproducible
+interpretation remains non-authoritative
+🏗️ SYSTEM ARCHITECTURE
+
+Axiom follows Architecture A:
+
+Next.js (UI + Server Actions)
         ↓
-Backend Logic Layer (services / lib)
+Application Logic Layer (/lib)
         ↓
 Supabase (PostgreSQL + Auth)
         ↓
-AI Layer (external API - undecided)
-```
+Kairos Intelligence Layer
+🧭 ARCHITECTURAL PHILOSOPHY
 
-### Why this architecture:
+The architecture exists to preserve:
 
-* Keeps control of business logic inside the application layer
-* Prevents database logic leakage into the frontend
-* Allows swapping AI providers without rewriting core system
-* Maintains a single source of truth in Supabase
+traceability
+determinism
+explainability
+strict data ownership boundaries
 
----
+The frontend is never authoritative.
 
-# 🗄️ DATABASE (SUPABASE)
+The database is always the source of financial truth.
 
-Axiom uses **Supabase** as its backend infrastructure:
+Kairos interprets behavior but cannot mutate financial state.
 
-* PostgreSQL database (source of truth)
-* Authentication (Supabase Auth or future custom layer)
-* Row Level Security (RLS) for user isolation
+🗄️ DATABASE MODEL (SUPABASE)
 
-### Core data entities:
+Axiom uses Supabase for:
 
-* Users
-* Accounts
-* Transactions
-* Categories
-* Budgets
-* Goals
+PostgreSQL storage
+Authentication
+Row Level Security (RLS)
+User isolation
+🔐 SOURCE OF TRUTH MODEL
+1. FINANCIAL TRUTH (Canonical Layer)
 
-All financial computations derive from these entities.
+Stored in Supabase:
 
----
+deployments
+accounts
+categories
+goals
+behavioral metadata
 
-# 🤖 AI LAYER (UNDECIDED)
+These are immutable financial records.
 
-The AI provider has NOT been selected yet.
+This layer is authoritative.
 
-Planned role of AI:
+2. DERIVED ANALYTICS (Deterministic Layer)
 
-* interpret financial behavior
-* generate insights and patterns
-* explain spending habits
-* assist goal tracking
-* provide strategic financial guidance
+Computed from raw financial events:
 
-### Key constraint:
+capital allocation
+daily burn rate
+operational runway
+category concentration
+capital efficiency
+trend analysis
 
-AI is READ-ONLY over financial truth.
+These values are reproducible from underlying records.
 
-It can:
+No derived value exists without traceable source data.
 
-* analyze
-* explain
-* suggest
+3. INTERPRETATION LAYER (Kairos)
 
-It cannot:
+Kairos generates:
 
-* modify financial records
-* fabricate data
-* override database truth
+behavioral observations
+allocation warnings
+efficiency analysis
+strategic signals
+trend interpretations
 
----
+Kairos does NOT:
 
-# 📁 PROJECT STRUCTURE
+create financial truth
+overwrite records
+modify balances
+fabricate data
 
-```
-/app                → Next.js routes (UI + server actions)
-/components        → UI components
+Kairos is interpretative only.
+
+🧠 RETURN-BASED TAXONOMY SYSTEM
+
+Axiom classifies deployments according to expected return profile.
+
+The system intentionally avoids traditional “expense categories.”
+
+Core Categories
+Category	Meaning
+Asset	Expected future value generation
+Skill	Improves earning capability
+Leverage	Multiplies output or saves time
+Experience	Intentional quality-of-life deployment
+Leakage	Non-strategic or impulsive deployment
+⚠️ TAXONOMY ENFORCEMENT
+
+Axiom enforces strict classification integrity.
+
+Rules:
+
+every deployment must be intentionally classified
+“Leakage” cannot occur silently
+invalid categories are rejected before DB write
+all inputs are normalized before persistence
+
+Validation is enforced through:
+
+src/lib/finance/validateDeployment.ts
+
+This creates:
+
+analytics consistency
+insight reliability
+long-term behavioral coherence
+🤖 KAIROS ENGINE
+
+Kairos is the behavioral intelligence layer of Axiom.
+
+It is intentionally:
+
+restrained
+analytical
+minimal
+deterministic
+
+Kairos behaves like:
+
+an operational analyst observing capital behavior over time.
+
+NOT:
+
+a chatbot
+a motivational coach
+a conversational assistant
+🧠 BEHAVIORAL PRESENCE SYSTEM
+
+Kairos includes a Behavioral Presence Layer.
+
+The goal is:
+
+make the system feel observant without becoming theatrical.
+
+This includes:
+
+post-deployment insight reactions
+temporal trend awareness
+narrative continuity
+insight severity prioritization
+signal filtering and deduplication
+
+Kairos only speaks when:
+
+meaningful behavioral changes occur
+strategic conditions deteriorate
+allocation patterns shift materially
+
+Silence is intentional.
+
+📊 CORE ANALYTICS ENGINE
+
+Current deterministic analytics include:
+
+Daily Burn Rate
+Projected Operational Runway
+Capital Allocation Distribution
+Category Trend Analysis
+Capital Efficiency Signals
+
+These calculations live inside:
+
+src/lib/analytics
+
+The UI never owns analytical truth.
+
+📁 PROJECT STRUCTURE
+/app
+  → Next.js routes + UI rendering
+
+/components
+  → visual system components
+
 /lib
-  /finance         → financial logic (transactions, budgets, calculations)
-  /ai              → AI orchestration layer (prompts, context building)
-  /db              → Supabase client + data access layer
-  /analytics       → derived metrics & insights
+  /analytics
+    → deterministic metrics + calculations
 
-/prisma (optional) → not primary, Supabase is main DB
-/prompts           → system prompts for AI
-/docs              → architecture + system design docs
-```
+  /finance
+    → validation + financial rules
 
----
+  /db
+    → Supabase access layer
 
-# 💡 SOURCE OF TRUTH MODEL
+  /kairos
+    → behavioral interpretation engine
 
-### 1. RAW DATA (Supabase)
+  /types
+    → shared domain types
 
-* Transactions
-* Accounts
-* Budgets
-* Goals
+/prompts
+  → future AI/system prompts
 
-This is immutable truth.
+/docs
+  → architecture + system documentation
+🔐 SECURITY MODEL
 
----
+Axiom assumes all client input is untrusted.
 
-### 2. DERIVED DATA (Backend logic)
+Security guarantees:
 
-* Monthly spending
-* Category breakdowns
-* Net worth calculations
-* Trend analysis
+strict Row Level Security (RLS)
+user-isolated financial truth
+authenticated access only
+server-side sensitive operations
+no service role key exposure
+no direct AI write access
+⚙️ ENGINEERING PRINCIPLES
+1. Single Source of Truth
 
-These are computed from raw data.
+Supabase owns canonical financial state.
 
----
+2. Deterministic Analytics
 
-### 3. AI INSIGHTS (Interpretation layer)
+All metrics must be traceable to financial events.
 
-* Behavioral patterns
-* Financial observations
-* Suggestions
-* Risk signals
+3. Strict Layer Separation
 
-These are probabilistic, not factual.
+UI, analytics, persistence, and interpretation remain isolated.
 
----
+4. Explainability Over Complexity
 
-# 🔐 SECURITY MODEL
+Prefer understandable systems over opaque automation.
 
-* Supabase Row Level Security enforced per user
-* No cross-user data access
-* Server-side Supabase operations for sensitive logic
-* No financial secrets exposed to client or AI layer
+5. Controlled Intelligence
 
----
+Kairos interprets behavior but never becomes authoritative.
 
-# ⚙️ DEVELOPMENT PRIORITIES
+🚫 NON-NEGOTIABLE RULES
+AI never writes financial truth
+financial logic cannot exist in multiple places
+frontend state is never authoritative
+derived metrics must remain reproducible
+all strategic insights must trace back to deployments
+taxonomy integrity must remain enforced
+🎯 PRODUCT PHILOSOPHY
 
-1. Stable Supabase schema
-2. Clean financial transaction system
-3. Server-side business logic layer
-4. AI integration layer (provider later)
-5. Dashboard + analytics UI
-6. Behavioral intelligence system
+Axiom is designed to feel:
 
----
-
-# 🎯 DESIGN PHILOSOPHY
-
-Axiom is built to feel:
-
-* minimal
-* analytical
-* calm
-* structured
-* intelligence-driven
+analytical
+restrained
+calm
+precise
+operational
+intelligence-driven
 
 Avoid:
 
-* gamification noise
-* unnecessary complexity
-* multiple conflicting sources of truth
-* emotional manipulation UX
-
----
-
-# ⚠️ NON-NEGOTIABLE RULES
-
-* There is only one source of truth: Supabase
-* AI never writes financial data
-* Business logic must not be duplicated across layers
-* Derived metrics must always be traceable to transactions
-* System must remain explainable at all times
+gamification
+dopamine loops
+noisy AI behavior
+manipulative UX
+inflated productivity theatrics
