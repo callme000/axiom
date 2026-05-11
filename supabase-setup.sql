@@ -9,7 +9,11 @@ CREATE TABLE IF NOT EXISTS public.deployments (
     amount NUMERIC(15, 2) NOT NULL,
     category TEXT NOT NULL,
     impact_score INTEGER DEFAULT 0,
+<<<<<<< HEAD
     advanced_context JSONB NOT NULL DEFAULT '{}'::jsonb,
+=======
+    advanced_context JSONB DEFAULT '{}'::jsonb,
+>>>>>>> 41913c834896734927b1e32cff59691e1448743f
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
@@ -18,6 +22,7 @@ ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS category TEXT;
 ALTER TABLE public.deployments ALTER COLUMN category DROP DEFAULT;
 ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS impact_score INTEGER DEFAULT 0;
 ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS advanced_context JSONB DEFAULT '{}'::jsonb;
+<<<<<<< HEAD
 UPDATE public.deployments SET advanced_context = '{}'::jsonb WHERE advanced_context IS NULL;
 ALTER TABLE public.deployments ALTER COLUMN advanced_context SET DEFAULT '{}'::jsonb;
 ALTER TABLE public.deployments ALTER COLUMN advanced_context SET NOT NULL;
@@ -48,6 +53,8 @@ CHECK (
         OR jsonb_typeof(advanced_context -> 'tags') = 'array'
     )
 ) NOT VALID;
+=======
+>>>>>>> 41913c834896734927b1e32cff59691e1448743f
 
 -- 2. User Settings (Removing 1M balance assumption)
 CREATE TABLE IF NOT EXISTS public.user_settings (

@@ -222,12 +222,28 @@ export default function Dashboard() {
         throw new Error("Strategic classification required");
       }
 
+<<<<<<< HEAD
       const snapshot = await createDeploymentAction({
         title,
         amount: Number(amount),
         category,
         advancedContext,
       });
+=======
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Session unverified");
+
+      await createDeployment(
+        title,
+        Number(amount),
+        user.id,
+        category,
+        0,
+        advancedContext,
+      );
+>>>>>>> 41913c834896734927b1e32cff59691e1448743f
 
       setTitle("");
       setAmount("");

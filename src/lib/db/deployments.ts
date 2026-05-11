@@ -4,6 +4,15 @@ import {
   hasDeploymentAdvancedContext,
   type DeploymentAdvancedContextInput,
 } from "../finance/deploymentContext";
+<<<<<<< HEAD
+=======
+
+function isMissingAdvancedContextColumn(error: { message?: string }) {
+  return Boolean(
+    error.message?.toLowerCase().includes("advanced_context"),
+  );
+}
+>>>>>>> 41913c834896734927b1e32cff59691e1448743f
 
 function isMissingAdvancedContextColumn(error: { message?: string }) {
   return Boolean(
