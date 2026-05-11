@@ -1,4 +1,5 @@
 import { MetadataQualitySummary } from "../finance/metadataQuality";
+import { DeploymentAdvancedContext } from "../finance/deploymentContext";
 
 export interface Deployment {
   id: string;
@@ -6,6 +7,7 @@ export interface Deployment {
   created_at: string;
   category?: string | null;
   title: string;
+  advanced_context?: DeploymentAdvancedContext | null;
 }
 
 export interface AnalyticsSummary {

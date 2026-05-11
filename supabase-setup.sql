@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.deployments (
     amount NUMERIC(15, 2) NOT NULL,
     category TEXT DEFAULT 'Unclassified',
     impact_score INTEGER DEFAULT 0,
+    advanced_context JSONB DEFAULT '{}'::jsonb,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
@@ -16,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.deployments (
 ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Unclassified';
 ALTER TABLE public.deployments ALTER COLUMN category SET DEFAULT 'Unclassified';
 ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS impact_score INTEGER DEFAULT 0;
+ALTER TABLE public.deployments ADD COLUMN IF NOT EXISTS advanced_context JSONB DEFAULT '{}'::jsonb;
 
 -- 2. User Settings (Removing 1M balance assumption)
 CREATE TABLE IF NOT EXISTS public.user_settings (

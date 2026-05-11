@@ -3,6 +3,7 @@ import { evaluateInsights } from "../insights/generateInsights";
 import { generateSummary } from "../analytics/engine";
 import { Deployment } from "../analytics/types";
 import { MetadataQualitySummary } from "../finance/metadataQuality";
+import { DeploymentAdvancedContext } from "../finance/deploymentContext";
 
 export type DeploymentInput = {
   id?: string;
@@ -10,6 +11,7 @@ export type DeploymentInput = {
   amount: number;
   created_at?: string;
   category?: string | null;
+  advanced_context?: DeploymentAdvancedContext | null;
 };
 
 export type InsightSeverity = "passive" | "advisory" | "critical";
@@ -59,6 +61,7 @@ export async function generateKairosAIInsight(
     amount: d.amount,
     created_at: d.created_at || new Date().toISOString(),
     category: d.category,
+    advanced_context: d.advanced_context,
   }));
 
   // 3. Generate Analytics Context (Source of Truth)

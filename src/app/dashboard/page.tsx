@@ -17,6 +17,10 @@ import {
   TAXONOMY_CATEGORIES,
 } from "@/lib/finance/taxonomy";
 import { evaluateMetadataQuality } from "@/lib/finance/metadataQuality";
+import {
+  EXPECTED_RETURN_HORIZONS,
+  type DeploymentAdvancedContextInput,
+} from "@/lib/finance/deploymentContext";
 
 type Deployment = {
   id: string;
@@ -37,6 +41,12 @@ interface LedgerState {
  */
 const formatKSh = (amt: number) => {
   return `KSh ${Math.round(amt).toLocaleString()}`;
+};
+
+const EMPTY_ADVANCED_CONTEXT: DeploymentAdvancedContextInput = {
+  associatedAccount: "",
+  expectedReturnHorizon: "",
+  tags: "",
 };
 
 function CategorySelector({
@@ -128,9 +138,15 @@ export default function Dashboard() {
   // FORM STATE
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [isAdvancedContextOpen, setIsAdvancedContextOpen] = useState(false);
+  const [advancedContext, setAdvancedContext] =
+    useState<DeploymentAdvancedContextInput>({ ...EMPTY_ADVANCED_CONTEXT });
   const titleMetadataQuality = evaluateMetadataQuality(title);
   const showTitleQualityHint =
     title.trim().length > 0 && titleMetadataQuality.isLowQuality;
+  const advancedTagsValue = Array.isArray(advancedContext.tags)
+    ? advancedContext.tags.join(", ")
+    : advancedContext.tags || "";
 
   // EXECUTION LOCKS
   const isExecuting = useRef(false);
@@ -267,11 +283,20 @@ export default function Dashboard() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Session unverified");
 
-      await createDeployment(title, Number(amount), user.id, category);
+      await createDeployment(
+        title,
+        Number(amount),
+        user.id,
+        category,
+        0,
+        advancedContext,
+      );
 
       setTitle("");
       setAmount("");
       setCategory("Unclassified");
+      setAdvancedContext({ ...EMPTY_ADVANCED_CONTEXT });
+      setIsAdvancedContextOpen(false);
 
       await refreshAndReAnalyze(user.id, liquidity);
     } catch (err: unknown) {
@@ -578,6 +603,124 @@ export default function Dashboard() {
                         if (formError) setFormError(null);
                       }}
                     />
+                  </div>
+                </div>
+
+                <div className="border-t border-foreground/10 pt-2">
+                  <button
+                    type="button"
+                    disabled={isActionLoading}
+                    aria-expanded={isAdvancedContextOpen}
+                    aria-controls="advanced-context-drawer"
+                    onClick={() =>
+                      setIsAdvancedContextOpen((isOpen) => !isOpen)
+                    }
+                    className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                      Advanced Context
+                    </span>
+                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500">
+                      Optional
+                      <span
+                        className={`inline-block transition-transform duration-300 ${
+                          isAdvancedContextOpen ? "rotate-180" : ""
+                        }`}
+                        aria-hidden="true"
+                      >
+                        v
+                      </span>
+                    </span>
+                  </button>
+
+                  <div
+                    id="advanced-context-drawer"
+                    aria-hidden={!isAdvancedContextOpen}
+                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                      isAdvancedContextOpen
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="space-y-3 pt-3">
+                        <div>
+                          <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                            Associated Account
+                          </label>
+                          <input
+                            type="text"
+                            disabled={
+                              isActionLoading || !isAdvancedContextOpen
+                            }
+                            placeholder="e.g. Brokerage, operations"
+                            value={advancedContext.associatedAccount || ""}
+                            onChange={(e) => {
+                              setAdvancedContext((current) => ({
+                                ...current,
+                                associatedAccount: e.target.value,
+                              }));
+                              if (formError) setFormError(null);
+                            }}
+                            className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                              Return Horizon
+                            </label>
+                            <select
+                              disabled={
+                                isActionLoading || !isAdvancedContextOpen
+                              }
+                              value={advancedContext.expectedReturnHorizon || ""}
+                              onChange={(e) => {
+                                setAdvancedContext((current) => ({
+                                  ...current,
+                                  expectedReturnHorizon: e.target.value,
+                                }));
+                                if (formError) setFormError(null);
+                              }}
+                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold disabled:opacity-50"
+                            >
+                              <option value="">Unspecified</option>
+                              {EXPECTED_RETURN_HORIZONS.map((horizon) => (
+                                <option
+                                  key={horizon.value}
+                                  value={horizon.value}
+                                >
+                                  {horizon.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                              Tags
+                            </label>
+                            <input
+                              type="text"
+                              disabled={
+                                isActionLoading || !isAdvancedContextOpen
+                              }
+                              placeholder="ops, recurring"
+                              value={advancedTagsValue}
+                              onChange={(e) => {
+                                setAdvancedContext((current) => ({
+                                  ...current,
+                                  tags: e.target.value,
+                                }));
+                                if (formError) setFormError(null);
+                              }}
+                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
