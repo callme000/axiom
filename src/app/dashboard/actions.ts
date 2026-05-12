@@ -53,14 +53,16 @@ function normalizeSavedInsight(row: Record<string, unknown>): KairosInsight {
 
   return {
     type: row.type as KairosInsight["type"],
-    severity: (metadata.severity as KairosInsight["severity"]) || "passive",
+    severity: (metadata.severity as KairosInsight["severity"]) || "observation",
     category: row.category as KairosInsight["category"],
     confidence: Number(row.confidence),
     message: String(row.message || ""),
-    timestamp: String(metadata.timestamp || row.created_at || new Date().toISOString()),
+    supportingSignal: String(metadata.supporting_signal || ""),
+    timestamp: String(
+      metadata.timestamp || row.created_at || new Date().toISOString(),
+    ),
     metadataQuality:
-      metadata.metadata_quality &&
-      typeof metadata.metadata_quality === "object"
+      metadata.metadata_quality && typeof metadata.metadata_quality === "object"
         ? (metadata.metadata_quality as KairosInsight["metadataQuality"])
         : undefined,
     related_ids: Array.isArray(metadata.related_ids)
@@ -127,7 +129,9 @@ export async function getDashboardSnapshotAction() {
   return buildDashboardSnapshot();
 }
 
-export async function createDeploymentAction(input: CreateDeploymentActionInput) {
+export async function createDeploymentAction(
+  input: CreateDeploymentActionInput,
+) {
   const supabase = await createClient();
   const {
     data: { user },

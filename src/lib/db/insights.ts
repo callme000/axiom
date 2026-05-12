@@ -16,6 +16,7 @@ export async function saveInsight(
       related_ids: insight.related_ids || [],
       metadata_quality: insight.metadataQuality || null,
       severity: insight.severity,
+      supporting_signal: insight.supportingSignal,
       timestamp: insight.timestamp,
       source: "server_action",
     },

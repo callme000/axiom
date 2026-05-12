@@ -14,11 +14,15 @@ export type DeploymentInput = {
   advanced_context?: DeploymentAdvancedContext | null;
 };
 
-export type InsightSeverity = "passive" | "advisory" | "critical";
+export type InsightSeverity =
+  | "observation"
+  | "advisory"
+  | "warning"
+  | "critical";
 
 export interface KairosInsight {
   type: "warning" | "info" | "pattern" | "opportunity";
-  severity: InsightSeverity; // New: production-safe classification
+  severity: InsightSeverity;
   category:
     | "capital_efficiency"
     | "spending_habit"
@@ -26,10 +30,11 @@ export interface KairosInsight {
     | "system";
   confidence: number;
   message: string;
-  timestamp: string; // New: for temporal continuity
+  supportingSignal?: string; // Factual supporting signal layer
+  timestamp: string;
   metadataQuality?: MetadataQualitySummary;
   related_ids?: string[];
-  is_new_signal?: boolean; // New: for UX transition logic
+  is_new_signal?: boolean;
 }
 
 /**
@@ -45,12 +50,14 @@ export async function generateKairosAIInsight(
   if (!deployments || deployments.length === 0) {
     return {
       type: "info",
-      severity: "passive",
+      severity: "observation",
       category: "system",
       confidence: 1.0,
       timestamp: new Date().toISOString(),
       message:
-        "Intelligence engine dormant. Awaiting financial deployment signals to begin behavioral analysis.",
+        "Intelligence engine dormant. Awaiting financial deployment signals.",
+      supportingSignal:
+        "Operational observation: 0 deployments detected in current window.",
     };
   }
 
