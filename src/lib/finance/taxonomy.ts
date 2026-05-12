@@ -3,8 +3,17 @@
  * Centralized definitions for the financial intelligence system.
  */
 
+export const VALID_CATEGORIES = [
+  "Asset",
+  "Skill",
+  "Leverage",
+  "Experience",
+  "Leakage",
+] as const;
+export type ValidCategory = (typeof VALID_CATEGORIES)[number];
+
 export interface TaxonomyCategory {
-  value: string;
+  value: ValidCategory;
   label: string;
   definition: string;
   behavioralSignal: string;
@@ -46,11 +55,11 @@ export const TAXONOMY_CATEGORIES: TaxonomyCategory[] = [
 ];
 
 export const isValidCategory = (value: string): boolean => {
-  return TAXONOMY_CATEGORIES.some((c) => c.value === value);
+  return VALID_CATEGORIES.includes(value as ValidCategory);
 };
 
 export const formatTaxonomyCategoryList = (): string => {
-  return TAXONOMY_CATEGORIES.map((c) => c.value).join(", ");
+  return VALID_CATEGORIES.join(", ");
 };
 
 export const getTaxonomyDefinition = (value: string) => {
