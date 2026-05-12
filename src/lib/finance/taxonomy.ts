@@ -45,6 +45,14 @@ export const TAXONOMY_CATEGORIES: TaxonomyCategory[] = [
   },
 ];
 
+export const isValidCategory = (value: string): boolean => {
+  return TAXONOMY_CATEGORIES.some((c) => c.value === value);
+};
+
+export const formatTaxonomyCategoryList = (): string => {
+  return TAXONOMY_CATEGORIES.map((c) => c.value).join(", ");
+};
+
 export const getTaxonomyDefinition = (value: string) => {
   return TAXONOMY_CATEGORIES.find((c) => c.value === value)?.definition || "";
 };

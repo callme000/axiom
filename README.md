@@ -51,11 +51,12 @@ Axiom classifies every dollar by its **expected return profile**.
 | **Skill** | Improves future earning capability (Courses, Books, Coaching) |
 | **Leverage** | Multiplies output or saves time (Software, Automation, Outsourcing) |
 | **Experience** | Intentional quality-of-life deployment (Travel, Family) |
-| **Leakage** | Non-strategic capital drift (Default fallback for mindless spend) |
+| **Leakage** | Non-strategic capital drift (Mindless spending without intent) |
 
 💧 LIQUIDITY MANAGEMENT
-The system tracks **Total Liquidity** (Total investable liquid capital) to drive the **Operational Runway** engine.
-- Users can update their "Truth" (starting balance) directly from the dashboard.
+The system tracks **Total Liquidity** to drive the **Operational Runway** engine. 
+- **Total Liquidity** represents your total investable liquid capital (cash, near-cash assets).
+- Users can update their "Truth" (starting balance) using the **"Set starting liquidity"** action in the header.
 - Runway is calculated as: `Total Liquidity / Daily Burn Rate`.
 
 📁 PROJECT STRUCTURE
@@ -71,4 +72,4 @@ The system tracks **Total Liquidity** (Total investable liquid capital) to drive
 3. Frontend state is never authoritative.
 4. Taxonomy integrity must remain enforced via the **Taxonomy Gate**.
 
-Axiom v1: Stabilized, Coherent, and Strategically Aware.
+Axiom v1: Stabilized, Coherent, and Strategically Aware. (Production Locked)

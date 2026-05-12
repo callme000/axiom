@@ -1,21 +1,24 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase";
 import {
-  getDeployments,
-  createDeployment,
-  updateDeployment,
-  deleteDeployment,
-} from "@/lib/db/deployments";
-import { saveInsight, getInsights } from "@/lib/db/insights";
-import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
-import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
-import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
+  createDeploymentAction,
+  deleteDeploymentAction,
+  getDashboardSnapshotAction,
+  updateDeploymentAction,
+  updateLiquidityAction,
+  type DashboardSnapshot,
+} from "./actions";
+import type { AnalyticsSummary } from "@/lib/analytics";
 import {
-  TAXONOMY_CATEGORIES,
   getTaxonomyBehavioralSignal,
+  TAXONOMY_CATEGORIES,
 } from "@/lib/finance/taxonomy";
+import { evaluateMetadataQuality } from "@/lib/finance/metadataQuality";
+import {
+  EXPECTED_RETURN_HORIZONS,
+  type DeploymentAdvancedContextInput,
+} from "@/lib/finance/deploymentContext";
 
 type Deployment = {
   id: string;
@@ -30,13 +33,21 @@ interface LedgerState {
   analytics: AnalyticsSummary | null;
 }
 
+type KairosInsight = DashboardSnapshot["kairosInsight"];
+
 const formatKSh = (amt: number) => {
   return `KSh ${Math.round(amt).toLocaleString()}`;
 };
 
+const EMPTY_ADVANCED_CONTEXT: DeploymentAdvancedContextInput = {
+  associatedAccount: "",
+  expectedReturnHorizon: "",
+  tags: "",
+};
+
 /**
  * COMPONENT: Taxonomy Category Selector
- * Provides strategic definitions for each return type.
+ * Implementation of the "Taxonomy Clarity Layer".
  */
 function CategorySelector({
   value,
@@ -45,43 +56,73 @@ function CategorySelector({
   compact = false,
 }: {
   value: string;
-  onChange: (cat: string) => void;
+  onChange: (category: string) => void;
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const currentSignal = getTaxonomyBehavioralSignal(value);
+  const behavioralSignal = getTaxonomyBehavioralSignal(value);
 
   return (
-    <div className="space-y-4">
+    <div className={compact ? "space-y-2" : "space-y-4"}>
       <div
-        className={`grid ${compact ? "grid-cols-1 gap-2" : "grid-cols-1 sm:grid-cols-2 gap-3"}`}
+        role="radiogroup"
+        aria-label="Capital category"
+        className={
+          compact
+            ? "grid grid-cols-1 gap-1.5"
+            : "grid grid-cols-1 sm:grid-cols-2 gap-3"
+        }
       >
-        {TAXONOMY_CATEGORIES.map((cat) => (
-          <button
-            key={cat.value}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(cat.value)}
-            className={`p-4 rounded-2xl border-2 text-left transition-all ${value === cat.value ? "border-foreground bg-foreground text-background shadow-xl" : "border-foreground/5 bg-background hover:border-foreground/20"}`}
-          >
-            <span className="block text-[10px] font-black uppercase tracking-widest mb-1">
-              {cat.label}
-            </span>
-            <span
-              className={`block text-[9px] font-bold leading-tight ${value === cat.value ? "opacity-70" : "text-gray-500"}`}
+        {TAXONOMY_CATEGORIES.map((category) => {
+          const isSelected = value === category.value;
+
+          return (
+            <button
+              key={category.value}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              disabled={disabled}
+              onClick={() => onChange(category.value)}
+              className={`w-full rounded-2xl border-2 text-left transition-all group disabled:cursor-not-allowed disabled:opacity-50 ${
+                compact ? "p-3" : "p-4"
+              } ${
+                isSelected
+                  ? "border-foreground bg-foreground text-background shadow-xl scale-[1.02]"
+                  : "border-foreground/5 bg-background text-foreground hover:border-foreground/20 hover:bg-foreground/5"
+              }`}
             >
-              {cat.definition}
-            </span>
-          </button>
-        ))}
+              <div className="flex items-center justify-between">
+                <span
+                  className={`block font-black uppercase tracking-widest ${compact ? "text-[9px]" : "text-[10px]"}`}
+                >
+                  {category.label}
+                </span>
+                {isSelected && (
+                  <span className="w-1.5 h-1.5 bg-background rounded-full animate-pulse"></span>
+                )}
+              </div>
+              <span
+                className={`mt-1 block font-bold leading-snug ${
+                  compact ? "text-[8px]" : "text-[9px]"
+                } ${isSelected ? "text-background/70" : "text-gray-500"}`}
+              >
+                {category.definition}
+              </span>
+            </button>
+          );
+        })}
       </div>
-      {value !== "Unclassified" && (
-        <div className="p-3 bg-foreground/5 border-l-2 border-foreground rounded-r-xl animate-in fade-in slide-in-from-left-2">
-          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">
-            Behavioral Signal
+
+      {value !== "Unclassified" && behavioralSignal && (
+        <div className="p-4 bg-foreground/5 border-l-2 border-foreground rounded-r-2xl animate-in fade-in slide-in-from-left-2 duration-500">
+          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1 opacity-60">
+            Behavioral Intelligence Signal
           </p>
-          <p className="text-[10px] font-bold text-foreground leading-tight italic">
-            {currentSignal}
+          <p
+            className={`font-bold leading-snug text-foreground italic ${compact ? "text-[9px]" : "text-[11px]"}`}
+          >
+            &ldquo;{behavioralSignal}&rdquo;
           </p>
         </div>
       )}
@@ -99,8 +140,16 @@ export default function Dashboard() {
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
+
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [isAdvancedContextOpen, setIsAdvancedContextOpen] = useState(false);
+  const [advancedContext, setAdvancedContext] =
+    useState<DeploymentAdvancedContextInput>({ ...EMPTY_ADVANCED_CONTEXT });
+
+  const titleMetadataQuality = evaluateMetadataQuality(title);
+  const showTitleQualityHint =
+    title.trim().length > 0 && titleMetadataQuality.isLowQuality;
 
   const isExecuting = useRef(false);
   const fetchCount = useRef(0);
@@ -111,6 +160,7 @@ export default function Dashboard() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [isIntelligenceSyncing, setIsIntelligenceSyncing] = useState(false);
+
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [liquidityError, setLiquidityError] = useState<string | null>(null);
@@ -124,65 +174,30 @@ export default function Dashboard() {
   const [isEditingLiquidity, setIsEditingLiquidity] = useState(false);
   const [liquidityInput, setLiquidityInput] = useState("");
 
-  const refreshAndReAnalyze = useCallback(
-    async (userId: string, currentLiquidity: number) => {
-      setIsIntelligenceSyncing(true);
-      try {
-        const data = await getDeployments();
-        const castedData = (data || []) as Deployment[];
-        setLedger({
-          deployments: castedData,
-          analytics: generateSummary(castedData, currentLiquidity),
-        });
-        const insight = await generateKairosAIInsight(
-          castedData,
-          currentLiquidity,
-          kairosInsight,
-        );
-        if (insight.is_new_signal) await saveInsight(insight, userId);
-        setKairosInsight(insight);
-      } catch {
-        setGlobalError("Behavioral sync lagging. Data integrity maintained.");
-      } finally {
-        setIsIntelligenceSyncing(false);
-      }
-    },
-    [kairosInsight],
-  );
+  const applyDashboardSnapshot = useCallback((snapshot: DashboardSnapshot) => {
+    if (!snapshot.authenticated) return;
+    setLiquidity(snapshot.liquidity);
+    setLiquidityInput(snapshot.liquidity.toString());
+    setLedger({
+      deployments: snapshot.deployments as Deployment[],
+      analytics: snapshot.analytics,
+    });
+    setKairosInsight(snapshot.kairosInsight);
+  }, []);
 
   const fetchDashboardData = useCallback(async () => {
     const requestId = ++fetchCount.current;
     setGlobalError(null);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) return;
-      const [deploymentsData, settings] = await Promise.all([
-        getDeployments(),
-        getUserSettings(),
-      ]);
+      const snapshot = await getDashboardSnapshotAction();
       if (requestId !== fetchCount.current) return;
-      const currentLiquidity = Number(settings.total_liquidity);
-      setLiquidity(currentLiquidity);
-      setLiquidityInput(currentLiquidity.toString());
-      setLedger({
-        deployments: (deploymentsData || []) as Deployment[],
-        analytics: generateSummary(deploymentsData || [], currentLiquidity),
-      });
-      const savedInsights = await getInsights(1);
-      if (
-        requestId === fetchCount.current &&
-        savedInsights &&
-        savedInsights.length > 0
-      )
-        setKairosInsight(savedInsights[0]);
+      applyDashboardSnapshot(snapshot);
     } catch {
       setGlobalError("Connectivity failure. Intelligence layer offline.");
     } finally {
       if (requestId === fetchCount.current) setIsInitialLoading(false);
     }
-  }, []);
+  }, [applyDashboardSnapshot]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -195,23 +210,29 @@ export default function Dashboard() {
     setIsActionLoading(true);
     setFormError(null);
     isExecuting.current = true;
+    setIsIntelligenceSyncing(true);
+
     try {
       if (category === "Unclassified")
-        throw new Error("Strategic classification required");
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Session unverified");
-      await createDeployment(title, Number(amount), user.id, category);
+        throw new Error("Strategic classification required before execution");
+      const snapshot = await createDeploymentAction({
+        title,
+        amount: Number(amount),
+        category,
+        advancedContext,
+      });
       setTitle("");
       setAmount("");
       setCategory("Unclassified");
-      await refreshAndReAnalyze(user.id, liquidity);
+      setAdvancedContext({ ...EMPTY_ADVANCED_CONTEXT });
+      setIsAdvancedContextOpen(false);
+      applyDashboardSnapshot(snapshot);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : "Deployment failed");
     } finally {
       setIsActionLoading(false);
       isExecuting.current = false;
+      setIsIntelligenceSyncing(false);
     }
   }
 
@@ -220,42 +241,37 @@ export default function Dashboard() {
     setIsLiquidityLoading(true);
     setLiquidityError(null);
     isExecuting.current = true;
+    setIsIntelligenceSyncing(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Unauthenticated");
       const newAmount = Number(liquidityInput);
       if (isNaN(newAmount)) throw new Error("Invalid value");
-      await updateLiquidity(newAmount);
-      setLiquidity(newAmount);
+      const snapshot = await updateLiquidityAction(newAmount);
       setIsEditingLiquidity(false);
-      await refreshAndReAnalyze(user.id, newAmount);
+      applyDashboardSnapshot(snapshot);
     } catch {
       setLiquidityError("Update failed");
     } finally {
       setIsLiquidityLoading(false);
       isExecuting.current = false;
+      setIsIntelligenceSyncing(false);
     }
   }
 
   async function handleDelete(id: string) {
     if (isExecuting.current) return;
-    if (!confirm("Delete record?")) return;
+    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
     setDeletingId(id);
     isExecuting.current = true;
+    setIsIntelligenceSyncing(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-      await deleteDeployment(id);
-      await refreshAndReAnalyze(user.id, liquidity);
+      const snapshot = await deleteDeploymentAction(id);
+      applyDashboardSnapshot(snapshot);
     } catch {
       setGlobalError("Deletion interrupted.");
     } finally {
       setDeletingId(null);
       isExecuting.current = false;
+      setIsIntelligenceSyncing(false);
     }
   }
 
@@ -272,25 +288,23 @@ export default function Dashboard() {
     if (isExecuting.current) return;
     setUpdatingId(id);
     isExecuting.current = true;
+    setIsIntelligenceSyncing(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
       if (!editForm.title.trim()) throw new Error("Title required");
       if (Number(editForm.amount) <= 0) throw new Error("Amount invalid");
-      await updateDeployment(id, {
+      const snapshot = await updateDeploymentAction(id, {
         title: editForm.title,
         amount: Number(editForm.amount),
         category: editForm.category,
       });
       setEditingId(null);
-      await refreshAndReAnalyze(user.id, liquidity);
+      applyDashboardSnapshot(snapshot);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Update failed");
     } finally {
       setUpdatingId(null);
       isExecuting.current = false;
+      setIsIntelligenceSyncing(false);
     }
   }
 
@@ -301,6 +315,10 @@ export default function Dashboard() {
           <div className="space-y-3">
             <div className="h-12 w-64 bg-foreground/5 rounded-2xl"></div>
             <div className="h-4 w-48 bg-foreground/5 rounded-full"></div>
+          </div>
+          <div className="flex gap-4">
+            <div className="h-20 w-40 bg-foreground/5 rounded-2xl"></div>
+            <div className="h-20 w-40 bg-foreground/5 rounded-2xl"></div>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -317,12 +335,11 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex flex-col gap-1">
           <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase hover:text-gray-400 transition-colors cursor-default">
-            AXIOM <span className="hidden md:inline">::</span> <span className="text-gray-500">DASHBOARD</span>
+            AXIOM <span className="hidden md:inline">::</span>{" "}
+            <span className="text-gray-500">DASHBOARD</span>
           </h1>
           <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
             Financial Intelligence System v2.4-SYNC-CONFIRMED
-          </p>
-
           </p>
         </div>
 
@@ -338,12 +355,12 @@ export default function Dashboard() {
                 onClick={() =>
                   !isLiquidityLoading && setIsEditingLiquidity(true)
                 }
-                className="p-1 rounded hover:bg-foreground/5 transition-colors"
+                className="p-1 rounded hover:bg-foreground/10 transition-colors text-foreground"
                 title="Set starting liquid capital"
               >
                 <svg
-                  width="12"
-                  height="12"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -368,7 +385,7 @@ export default function Dashboard() {
                   onClick={() => handleUpdateLiquidity()}
                   className="bg-foreground text-background text-[8px] font-black py-1 rounded disabled:opacity-50"
                 >
-                  {isLiquidityLoading ? "SYNCING..." : "CONFIRM TRUTH"}
+                  {isLiquidityLoading ? "SYNCING..." : "SET LIQUIDITY TRUTH"}
                 </button>
               </div>
             ) : (
@@ -433,11 +450,9 @@ export default function Dashboard() {
       <div
         className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
       >
-        {/* Left Sidebar: Controls & Intelligence */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-background border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
             <div className="absolute -top-24 -left-24 w-48 h-48 bg-foreground/5 blur-3xl rounded-full transition-all group-hover:bg-foreground/10"></div>
-
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-foreground rounded-xl flex items-center justify-center">
@@ -448,7 +463,6 @@ export default function Dashboard() {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="3"
-                    className="text-background"
                   >
                     <path d="M12 5v14M5 12h14" />
                   </svg>
@@ -457,7 +471,6 @@ export default function Dashboard() {
                   Deploy Capital
                 </h2>
               </div>
-
               <form onSubmit={handleAddDeployment} className="space-y-5">
                 <div>
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
@@ -466,7 +479,7 @@ export default function Dashboard() {
                   <input
                     type="text"
                     disabled={isActionLoading}
-                    placeholder="e.g. Asset Acquisition"
+                    placeholder="What is this capital achieving?"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
@@ -475,8 +488,12 @@ export default function Dashboard() {
                     className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
                     required
                   />
+                  {showTitleQualityHint && (
+                    <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-gray-500">
+                      Specific labels improve future analysis.
+                    </p>
+                  )}
                 </div>
-
                 <div className="space-y-4">
                   <div>
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
@@ -502,11 +519,125 @@ export default function Dashboard() {
                     <CategorySelector
                       disabled={isActionLoading}
                       value={category}
-                      onChange={(next) => {
-                        setCategory(next);
+                      onChange={(nextCategory) => {
+                        setCategory(nextCategory);
                         if (formError) setFormError(null);
                       }}
                     />
+                  </div>
+                </div>
+
+                {/* Advanced Context Drawer */}
+                <div className="border-t border-foreground/10 pt-2">
+                  <button
+                    type="button"
+                    disabled={isActionLoading}
+                    aria-expanded={isAdvancedContextOpen}
+                    aria-controls="advanced-context-drawer"
+                    onClick={() =>
+                      setIsAdvancedContextOpen((isOpen) => !isOpen)
+                    }
+                    className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                      Advanced Context
+                    </span>
+                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500">
+                      Optional
+                      <span
+                        className={`inline-block transition-transform duration-300 ${isAdvancedContextOpen ? "rotate-180" : ""}`}
+                        aria-hidden="true"
+                      >
+                        v
+                      </span>
+                    </span>
+                  </button>
+                  <div
+                    id="advanced-context-drawer"
+                    aria-hidden={!isAdvancedContextOpen}
+                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isAdvancedContextOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="space-y-3 pt-3">
+                        <div>
+                          <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                            Associated Account
+                          </label>
+                          <input
+                            type="text"
+                            disabled={isActionLoading || !isAdvancedContextOpen}
+                            placeholder="e.g. Brokerage, operations"
+                            value={advancedContext.associatedAccount || ""}
+                            onChange={(e) => {
+                              setAdvancedContext((current) => ({
+                                ...current,
+                                associatedAccount: e.target.value,
+                              }));
+                              if (formError) setFormError(null);
+                            }}
+                            className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                              Return Horizon
+                            </label>
+                            <select
+                              disabled={
+                                isActionLoading || !isAdvancedContextOpen
+                              }
+                              value={
+                                advancedContext.expectedReturnHorizon || ""
+                              }
+                              onChange={(e) => {
+                                setAdvancedContext((current) => ({
+                                  ...current,
+                                  expectedReturnHorizon: e.target.value,
+                                }));
+                                if (formError) setFormError(null);
+                              }}
+                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold disabled:opacity-50"
+                            >
+                              <option value="">Unspecified</option>
+                              {EXPECTED_RETURN_HORIZONS.map((horizon) => (
+                                <option
+                                  key={horizon.value}
+                                  value={horizon.value}
+                                >
+                                  {horizon.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                              Tags
+                            </label>
+                            <input
+                              type="text"
+                              disabled={
+                                isActionLoading || !isAdvancedContextOpen
+                              }
+                              placeholder="ops, recurring"
+                              value={
+                                typeof advancedContext.tags === "string"
+                                  ? advancedContext.tags
+                                  : advancedContext.tags?.join(", ") || ""
+                              }
+                              onChange={(e) => {
+                                setAdvancedContext((current) => ({
+                                  ...current,
+                                  tags: e.target.value,
+                                }));
+                                if (formError) setFormError(null);
+                              }}
+                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -530,7 +661,6 @@ export default function Dashboard() {
                     </p>
                   </div>
                 )}
-
                 <button
                   type="submit"
                   disabled={isActionLoading}
@@ -563,7 +693,6 @@ export default function Dashboard() {
                   {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
                 </span>
               </div>
-
               <div className="space-y-4">
                 {kairosInsight ? (
                   <div
@@ -617,7 +746,6 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-
             {ledger.analytics && (
               <div className="mt-8 flex flex-col gap-2">
                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
@@ -639,7 +767,7 @@ export default function Dashboard() {
 
         {/* Main: Analysis & History */}
         <div className="lg:col-span-8 space-y-10">
-          {/* Empty State: Aliveness / Onboarding */}
+          {/* Empty State Onboarding */}
           {ledger.deployments.length === 0 && !globalError && (
             <div className="bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-4xl p-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
               <div className="max-w-md mx-auto">
@@ -702,7 +830,6 @@ export default function Dashboard() {
                 </h2>
                 <div className="h-0.5 w-12 bg-foreground/10"></div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Object.entries(ledger.analytics.categoryBreakdown)
                   .sort(([, a], [, b]) => b - a)
@@ -756,7 +883,6 @@ export default function Dashboard() {
                   </span>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 gap-4">
                 {ledger.deployments.map((deployment) => (
                   <div
@@ -873,7 +999,6 @@ export default function Dashboard() {
                             </div>
                           </div>
                         </div>
-
                         <div className="text-right flex flex-col items-end">
                           <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
                             {formatKSh(deployment.amount)}
