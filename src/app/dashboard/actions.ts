@@ -7,16 +7,23 @@ import {
   updateDeployment,
   deleteDeployment,
 } from "@/lib/db/deployments";
+import {
+  getAccounts,
+  createAccount,
+  updateAccount,
+  deleteAccount,
+} from "@/lib/db/accounts";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { getInsights, saveInsight } from "@/lib/db/insights";
 import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, type AnalyticsSummary } from "@/lib/analytics";
-import type { Deployment } from "@/lib/analytics/types";
+import type { Deployment, Account } from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
 
 export interface DashboardSnapshot {
   authenticated: boolean;
   deployments: Deployment[];
+  accounts: Account[];
   analytics: AnalyticsSummary | null;
   liquidity: number;
   kairosInsight: KairosInsight | null;
@@ -27,18 +34,28 @@ export interface CreateDeploymentActionInput {
   amount: number;
   category: string;
   advancedContext?: DeploymentAdvancedContextInput;
+  accountId?: string;
 }
 
 export interface UpdateDeploymentActionInput {
   title: string;
   amount: number;
   category: string;
+  accountId?: string;
+}
+
+export interface CreateAccountActionInput {
+  account_name: string;
+  account_type: string;
+  current_balance: number;
+  institution?: string;
 }
 
 function unauthenticatedSnapshot(): DashboardSnapshot {
   return {
     authenticated: false,
     deployments: [],
+    accounts: [],
     analytics: null,
     liquidity: 0,
     kairosInsight: null,
@@ -82,12 +99,14 @@ async function buildDashboardSnapshot(
 
   if (!user) return unauthenticatedSnapshot();
 
-  const [deploymentsData, settings] = await Promise.all([
+  const [deploymentsData, accountsData, settings] = await Promise.all([
     getDeployments(supabase),
+    getAccounts(supabase),
     getUserSettings(supabase),
   ]);
 
   const deployments = (deploymentsData || []) as Deployment[];
+  const accounts = (accountsData || []) as Account[];
   const liquidity = Number(settings.total_liquidity);
   const analytics = generateSummary(deployments, liquidity);
   const savedInsights = await getInsights(supabase, 1);
@@ -100,6 +119,7 @@ async function buildDashboardSnapshot(
     return {
       authenticated: true,
       deployments,
+      accounts,
       analytics,
       liquidity,
       kairosInsight: previousInsight,
@@ -119,6 +139,7 @@ async function buildDashboardSnapshot(
   return {
     authenticated: true,
     deployments,
+    accounts,
     analytics,
     liquidity,
     kairosInsight,
@@ -194,6 +215,48 @@ export async function updateLiquidityAction(amount: number) {
   if (!user) return unauthenticatedSnapshot();
 
   await updateLiquidity(supabase, amount);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function createAccountAction(input: CreateAccountActionInput) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await createAccount(supabase, user.id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function updateAccountAction(
+  id: string,
+  input: Partial<CreateAccountActionInput>,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await updateAccount(supabase, id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function deleteAccountAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await deleteAccount(supabase, id);
 
   return buildDashboardSnapshot({ forceInsightEvaluation: true });
 }

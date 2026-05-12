@@ -1,5 +1,8 @@
 import { MetadataQualitySummary } from "../finance/metadataQuality";
 import { DeploymentAdvancedContext } from "../finance/deploymentContext";
+import { Account } from "../finance/accounts";
+
+export type { Account, AccountType } from "../finance/accounts";
 
 export interface Deployment {
   id: string;
@@ -8,6 +11,7 @@ export interface Deployment {
   category?: string | null;
   title: string;
   advanced_context?: DeploymentAdvancedContext | null;
+  account_id?: string | null;
 }
 
 export interface AnalyticsSummary {

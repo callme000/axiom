@@ -19,6 +19,8 @@ import {
   EXPECTED_RETURN_HORIZONS,
   type DeploymentAdvancedContextInput,
 } from "@/lib/finance/deploymentContext";
+import { AccountSection } from "./AccountSection";
+import type { Account } from "@/lib/finance/accounts";
 
 type Deployment = {
   id: string;
@@ -30,6 +32,7 @@ type Deployment = {
 
 interface LedgerState {
   deployments: Deployment[];
+  accounts: Account[];
   analytics: AnalyticsSummary | null;
 }
 
@@ -133,6 +136,7 @@ function CategorySelector({
 export default function Dashboard() {
   const [ledger, setLedger] = useState<LedgerState>({
     deployments: [],
+    accounts: [],
     analytics: null,
   });
   const [liquidity, setLiquidity] = useState<number>(0);
@@ -180,6 +184,7 @@ export default function Dashboard() {
     setLiquidityInput(snapshot.liquidity.toString());
     setLedger({
       deployments: snapshot.deployments as Deployment[],
+      accounts: snapshot.accounts,
       analytics: snapshot.analytics,
     });
     setKairosInsight(snapshot.kairosInsight);
@@ -672,394 +677,401 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Behavioral Presence Section */}
-          <div
-            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
-          >
-            <div>
-              <div className="flex items-center justify-between mb-8 opacity-60">
-                <div className="flex items-center gap-2">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  >
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                  </svg>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                    Intelligence Presence ::{" "}
-                    {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
-                  </span>
-                </div>
-                {kairosInsight && (
-                  <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                    Confidence: {(kairosInsight.confidence * 100).toFixed(0)}%
-                  </span>
-                )}
-              </div>
-              <div className="space-y-6">
-                {kairosInsight ? (
-                  <div
-                    className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
-                  >
-                    <p className="text-base md:text-lg font-bold leading-tight text-background">
-                      <span className="opacity-40 font-black uppercase text-[10px] mr-2 tracking-tighter not-italic">
-                        Kairos:
-                      </span>
-                      &ldquo;{kairosInsight.message}&rdquo;
-                    </p>
-
-                    {kairosInsight.supportingSignal && (
-                      <div className="mt-4 p-4 bg-background/5 rounded-2xl border-l-2 border-background/20">
-                        <p className="text-[9px] font-black text-background/40 uppercase tracking-widest mb-1">
-                          Supporting Signal Layer
-                        </p>
-                        <p className="text-xs font-bold leading-snug text-background/80">
-                          {kairosInsight.supportingSignal}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="mt-8 flex items-center gap-6 border-t border-background/5 pt-6">
-                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest opacity-30">
-                          Severity
-                        </span>
-                        <span
-                          className={`text-[10px] font-black uppercase tracking-wider ${
-                            kairosInsight.severity === "critical"
-                              ? "text-orange-400"
-                              : kairosInsight.severity === "warning"
-                                ? "text-yellow-500/80"
-                                : "text-blue-300/80"
-                          }`}
-                        >
-                          {kairosInsight.severity}
-                        </span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest opacity-30">
-                          Last Updated
-                        </span>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-background/60">
-                          {new Date(kairosInsight.timestamp).toLocaleTimeString(
-                            [],
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              second: "2-digit",
-                            },
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3 opacity-20">
-                    <div className="h-4 bg-background/20 rounded-full w-full"></div>
-                    <div className="h-4 bg-background/20 rounded-full w-3/4"></div>
-                    <p className="text-[10px] font-black uppercase mt-6 tracking-widest">
-                      Initializing observation protocols...
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            {ledger.analytics && (
-              <div className="mt-10 flex flex-col gap-3">
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-40">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${isIntelligenceSyncing ? "bg-orange-400 animate-ping" : "bg-background animate-pulse"}`}
-                    ></span>
-                    Deterministic Runway:{" "}
-                    {ledger.analytics.runwayDays
-                      ? `${Math.round(ledger.analytics.runwayDays)} Days`
-                      : "Stable / Infinite"}
-                  </div>
-                </div>
-                <p className="text-[7px] font-bold text-background/30 uppercase tracking-[0.1em] leading-tight">
-                  Intelligence presence is restrained. Signals are derived from
-                  direct ledger analysis. No motive inferred.
-                </p>
-              </div>
-            )}
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <AccountSection
+              accounts={ledger.accounts}
+              onSnapshot={applyDashboardSnapshot}
+            />
           </div>
         </div>
 
-        {/* Main: Analysis & History */}
-        <div className="lg:col-span-8 space-y-10">
-          {/* Empty State Onboarding */}
-          {ledger.deployments.length === 0 && !globalError && (
-            <div className="bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-4xl p-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
-              <div className="max-w-md mx-auto">
-                <div className="w-20 h-20 bg-foreground/5 rounded-3xl flex items-center justify-center mx-auto mb-8 text-foreground">
-                  <svg
-                    width="40"
-                    height="40"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </div>
-                <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase mb-4">
-                  Establish Financial Truth
-                </h2>
-                <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed mb-10">
-                  Axiom is observing your capital behavior. Begin by deploying
-                  funds into Assets, Skills, or Leverage to initialize the
-                  intelligence engine.
-                </p>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-1 text-center">
-                    <span className="text-xs font-black text-foreground">
-                      LEAD
-                    </span>
-                    <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
-                      Assets generate future value
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1 text-center">
-                    <span className="text-xs font-black text-foreground">
-                      GROW
-                    </span>
-                    <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
-                      Skills improve earning ability
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1 text-center">
-                    <span className="text-xs font-black text-foreground">
-                      MULTIPLY
-                    </span>
-                    <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
-                      Leverage saves operational time
-                    </span>
-                  </div>
-                </div>
+        {/* Behavioral Presence Section */}
+        <div
+          className={`lg:col-span-8 bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
+        >
+          <div>
+            <div className="flex items-center justify-between mb-8 opacity-60">
+              <div className="flex items-center gap-2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                </svg>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                  Intelligence Presence ::{" "}
+                  {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
+                </span>
               </div>
+              {kairosInsight && (
+                <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                  Confidence: {(kairosInsight.confidence * 100).toFixed(0)}%
+                </span>
+              )}
             </div>
-          )}
+            <div className="space-y-6">
+              {kairosInsight ? (
+                <div
+                  className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
+                >
+                  <p className="text-base md:text-lg font-bold leading-tight text-background">
+                    <span className="opacity-40 font-black uppercase text-[10px] mr-2 tracking-tighter not-italic">
+                      Kairos:
+                    </span>
+                    &ldquo;{kairosInsight.message}&rdquo;
+                  </p>
 
-          {/* Capital Allocation Section */}
-          {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-black text-foreground tracking-tight">
-                  Capital Allocation
-                </h2>
-                <div className="h-0.5 w-12 bg-foreground/10"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(ledger.analytics.categoryBreakdown)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([cat, amt]) => {
-                    const percentage =
-                      (amt / ledger.analytics!.totalDeployed) * 100;
-                    return (
-                      <div
-                        key={cat}
-                        className="bg-background border rounded-4xl p-5 shadow-sm hover:border-foreground/20 transition-all group"
+                  {kairosInsight.supportingSignal && (
+                    <div className="mt-4 p-4 bg-background/5 rounded-2xl border-l-2 border-background/20">
+                      <p className="text-[9px] font-black text-background/40 uppercase tracking-widest mb-1">
+                        Supporting Signal Layer
+                      </p>
+                      <p className="text-xs font-bold leading-snug text-background/80">
+                        {kairosInsight.supportingSignal}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-8 flex items-center gap-6 border-t border-background/5 pt-6">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest opacity-30">
+                        Severity
+                      </span>
+                      <span
+                        className={`text-[10px] font-black uppercase tracking-wider ${
+                          kairosInsight.severity === "critical"
+                            ? "text-orange-400"
+                            : kairosInsight.severity === "warning"
+                              ? "text-yellow-500/80"
+                              : "text-blue-300/80"
+                        }`}
                       >
-                        <div className="flex justify-between items-end mb-3">
-                          <div>
-                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">
-                              {cat}
-                            </span>
-                            <span className="text-lg font-black text-foreground tabular-nums group-hover:text-black dark:group-hover:text-white">
-                              {formatKSh(amt)}
-                            </span>
-                          </div>
-                          <span className="text-sm font-black text-gray-400">
-                            {Math.round(percentage)}%
-                          </span>
-                        </div>
-                        <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-foreground transition-all duration-1000 ease-out"
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          {/* Deployment History Section */}
-          {ledger.deployments.length > 0 && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">
-                    Recent History
-                  </h2>
-                  <div className="h-0.5 w-12 bg-foreground/10"></div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                    Chronological Stream
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                {ledger.deployments.map((deployment) => (
-                  <div
-                    key={deployment.id}
-                    className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
-                  >
-                    {editingId === deployment.id ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <input
-                            type="text"
-                            disabled={updatingId === deployment.id}
-                            value={editForm.title}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                title: e.target.value,
-                              })
-                            }
-                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
-                          />
-                          <input
-                            type="number"
-                            disabled={updatingId === deployment.id}
-                            value={editForm.amount}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                amount: e.target.value,
-                              })
-                            }
-                            className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="min-w-0 flex-1">
-                            <CategorySelector
-                              disabled={updatingId === deployment.id}
-                              value={editForm.category}
-                              onChange={(nextCategory) =>
-                                setEditForm({
-                                  ...editForm,
-                                  category: nextCategory,
-                                })
-                              }
-                              compact
-                            />
-                          </div>
-                          <div className="flex shrink-0 gap-2 pt-1">
-                            <button
-                              disabled={updatingId === deployment.id}
-                              onClick={() => setEditingId(null)}
-                              className="text-xs font-black text-gray-500 uppercase px-3 py-1 disabled:opacity-50"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              disabled={updatingId === deployment.id}
-                              onClick={() => handleUpdate(deployment.id)}
-                              className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
-                            >
-                              {updatingId === deployment.id
-                                ? "SAVING..."
-                                : "Save"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-5">
-                          <div
-                            className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
-                          >
-                            <svg
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                            >
-                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                            </svg>
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-black text-xl text-foreground transition-colors leading-none">
-                                {deployment.title}
-                              </h3>
-                              <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
-                                {deployment.category || "Unclassified"}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
-                              <span>
-                                {new Date(
-                                  deployment.created_at,
-                                ).toLocaleDateString(undefined, {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </span>
-                              <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                              <span>
-                                {new Date(
-                                  deployment.created_at,
-                                ).toLocaleTimeString(undefined, {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right flex flex-col items-end">
-                          <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                            {formatKSh(deployment.amount)}
-                          </p>
-                          <div className="mt-1 flex items-center gap-3">
-                            <button
-                              disabled={deletingId !== null}
-                              onClick={() => startEdit(deployment)}
-                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              disabled={deletingId !== null}
-                              onClick={() => handleDelete(deployment.id)}
-                              className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
-                            >
-                              {deletingId === deployment.id
-                                ? "DELETING..."
-                                : "Delete"}
-                            </button>
-                            <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
-                              <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                                Verified
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                        {kairosInsight.severity}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase tracking-widest opacity-30">
+                        Last Updated
+                      </span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-background/60">
+                        {new Date(kairosInsight.timestamp).toLocaleTimeString(
+                          [],
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          },
+                        )}
+                      </span>
+                    </div>
                   </div>
-                ))}
+                </div>
+              ) : (
+                <div className="space-y-3 opacity-20">
+                  <div className="h-4 bg-background/20 rounded-full w-full"></div>
+                  <div className="h-4 bg-background/20 rounded-full w-3/4"></div>
+                  <p className="text-[10px] font-black uppercase mt-6 tracking-widest">
+                    Initializing observation protocols...
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          {ledger.analytics && (
+            <div className="mt-10 flex flex-col gap-3">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-40">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${isIntelligenceSyncing ? "bg-orange-400 animate-ping" : "bg-background animate-pulse"}`}
+                  ></span>
+                  Deterministic Runway:{" "}
+                  {ledger.analytics.runwayDays
+                    ? `${Math.round(ledger.analytics.runwayDays)} Days`
+                    : "Stable / Infinite"}
+                </div>
               </div>
+              <p className="text-[7px] font-bold text-background/30 uppercase tracking-[0.1em] leading-tight">
+                Intelligence presence is restrained. Signals are derived from
+                direct ledger analysis. No motive inferred.
+              </p>
             </div>
           )}
         </div>
+      </div>
+
+      {/* Main: Analysis & History */}
+      <div className="lg:col-span-8 space-y-10">
+        {/* Empty State Onboarding */}
+        {ledger.deployments.length === 0 && !globalError && (
+          <div className="bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-4xl p-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="max-w-md mx-auto">
+              <div className="w-20 h-20 bg-foreground/5 rounded-3xl flex items-center justify-center mx-auto mb-8 text-foreground">
+                <svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase mb-4">
+                Establish Financial Truth
+              </h2>
+              <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed mb-10">
+                Axiom is observing your capital behavior. Begin by deploying
+                funds into Assets, Skills, or Leverage to initialize the
+                intelligence engine.
+              </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex flex-col gap-1 text-center">
+                  <span className="text-xs font-black text-foreground">
+                    LEAD
+                  </span>
+                  <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                    Assets generate future value
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 text-center">
+                  <span className="text-xs font-black text-foreground">
+                    GROW
+                  </span>
+                  <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                    Skills improve earning ability
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 text-center">
+                  <span className="text-xs font-black text-foreground">
+                    MULTIPLY
+                  </span>
+                  <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                    Leverage saves operational time
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Capital Allocation Section */}
+        {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
+          <div className="lg:col-span-12 space-y-6 animate-in fade-in duration-500">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-black text-foreground tracking-tight">
+                Capital Allocation
+              </h2>
+              <div className="h-0.5 w-12 bg-foreground/10"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(ledger.analytics.categoryBreakdown)
+                .sort(([, a], [, b]) => b - a)
+                .map(([cat, amt]) => {
+                  const percentage =
+                    (amt / ledger.analytics!.totalDeployed) * 100;
+                  return (
+                    <div
+                      key={cat}
+                      className="bg-background border rounded-4xl p-5 shadow-sm hover:border-foreground/20 transition-all group"
+                    >
+                      <div className="flex justify-between items-end mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">
+                            {cat}
+                          </span>
+                          <span className="text-lg font-black text-foreground tabular-nums group-hover:text-black dark:group-hover:text-white">
+                            {formatKSh(amt)}
+                          </span>
+                        </div>
+                        <span className="text-sm font-black text-gray-400">
+                          {Math.round(percentage)}%
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-foreground transition-all duration-1000 ease-out"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* Deployment History Section */}
+        {ledger.deployments.length > 0 && (
+          <div className="lg:col-span-12 space-y-6 animate-in fade-in duration-500">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-black text-foreground tracking-tight">
+                  Recent History
+                </h2>
+                <div className="h-0.5 w-12 bg-foreground/10"></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  Chronological Stream
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              {ledger.deployments.map((deployment) => (
+                <div
+                  key={deployment.id}
+                  className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
+                >
+                  {editingId === deployment.id ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <input
+                          type="text"
+                          disabled={updatingId === deployment.id}
+                          value={editForm.title}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              title: e.target.value,
+                            })
+                          }
+                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
+                        />
+                        <input
+                          type="number"
+                          disabled={updatingId === deployment.id}
+                          value={editForm.amount}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              amount: e.target.value,
+                            })
+                          }
+                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <CategorySelector
+                            disabled={updatingId === deployment.id}
+                            value={editForm.category}
+                            onChange={(nextCategory) =>
+                              setEditForm({
+                                ...editForm,
+                                category: nextCategory,
+                              })
+                            }
+                            compact
+                          />
+                        </div>
+                        <div className="flex shrink-0 gap-2 pt-1">
+                          <button
+                            disabled={updatingId === deployment.id}
+                            onClick={() => setEditingId(null)}
+                            className="text-xs font-black text-gray-500 uppercase px-3 py-1 disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            disabled={updatingId === deployment.id}
+                            onClick={() => handleUpdate(deployment.id)}
+                            className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
+                          >
+                            {updatingId === deployment.id
+                              ? "SAVING..."
+                              : "Save"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-5">
+                        <div
+                          className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
+                        >
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          >
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-black text-xl text-foreground transition-colors leading-none">
+                              {deployment.title}
+                            </h3>
+                            <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
+                              {deployment.category || "Unclassified"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
+                            <span>
+                              {new Date(
+                                deployment.created_at,
+                              ).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                            <span>
+                              {new Date(
+                                deployment.created_at,
+                              ).toLocaleTimeString(undefined, {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right flex flex-col items-end">
+                        <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
+                          {formatKSh(deployment.amount)}
+                        </p>
+                        <div className="mt-1 flex items-center gap-3">
+                          <button
+                            disabled={deletingId !== null}
+                            onClick={() => startEdit(deployment)}
+                            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            disabled={deletingId !== null}
+                            onClick={() => handleDelete(deployment.id)}
+                            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
+                          >
+                            {deletingId === deployment.id
+                              ? "DELETING..."
+                              : "Delete"}
+                          </button>
+                          <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
+                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+                              Verified
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
