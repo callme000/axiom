@@ -15,15 +15,10 @@ export async function saveInsight(
     metadata: {
       related_ids: insight.related_ids || [],
       metadata_quality: insight.metadataQuality || null,
-<<<<<<< HEAD
       severity: insight.severity,
       timestamp: insight.timestamp,
       source: "server_action",
     },
-=======
-      source: "client_engine"
-    }
->>>>>>> 41913c834896734927b1e32cff59691e1448743f
   });
 
   if (error) {

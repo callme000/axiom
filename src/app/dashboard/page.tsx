@@ -1,24 +1,21 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 import {
-  createDeploymentAction,
-  deleteDeploymentAction,
-  getDashboardSnapshotAction,
-  updateDeploymentAction,
-  updateLiquidityAction,
-  type DashboardSnapshot,
-} from "./actions";
-import type { AnalyticsSummary } from "@/lib/analytics";
+  getDeployments,
+  createDeployment,
+  updateDeployment,
+  deleteDeployment,
+} from "@/lib/db/deployments";
+import { saveInsight, getInsights } from "@/lib/db/insights";
+import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
+import { generateKairosAIInsight, KairosInsight } from "@/lib/ai/kairos";
+import { generateSummary, AnalyticsSummary } from "@/lib/analytics";
 import {
-  getTaxonomyBehavioralSignal,
   TAXONOMY_CATEGORIES,
+  getTaxonomyBehavioralSignal,
 } from "@/lib/finance/taxonomy";
-import { evaluateMetadataQuality } from "@/lib/finance/metadataQuality";
-import {
-  EXPECTED_RETURN_HORIZONS,
-  type DeploymentAdvancedContextInput,
-} from "@/lib/finance/deploymentContext";
 
 type Deployment = {
   id: string;
@@ -33,22 +30,14 @@ interface LedgerState {
   analytics: AnalyticsSummary | null;
 }
 
-type KairosInsight = DashboardSnapshot["kairosInsight"];
-
-/**
- * UTILITY: Consistent Currency Formatting
- * Forces lowercase 'h' as requested.
- */
 const formatKSh = (amt: number) => {
   return `KSh ${Math.round(amt).toLocaleString()}`;
 };
 
-const EMPTY_ADVANCED_CONTEXT: DeploymentAdvancedContextInput = {
-  associatedAccount: "",
-  expectedReturnHorizon: "",
-  tags: "",
-};
-
+/**
+ * COMPONENT: Taxonomy Category Selector
+ * Provides strategic definitions for each return type.
+ */
 function CategorySelector({
   value,
   onChange,
@@ -56,75 +45,51 @@ function CategorySelector({
   compact = false,
 }: {
   value: string;
-  onChange: (category: string) => void;
+  onChange: (cat: string) => void;
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const behavioralSignal = getTaxonomyBehavioralSignal(value);
+  const currentSignal = getTaxonomyBehavioralSignal(value);
 
   return (
-    <div className={compact ? "space-y-2" : "space-y-3"}>
+    <div className="space-y-4">
       <div
-        role="radiogroup"
-        aria-label="Capital category"
-        className={
-          compact ? "grid grid-cols-1 gap-1.5" : "grid grid-cols-1 gap-2"
-        }
+        className={`grid ${compact ? "grid-cols-1 gap-2" : "grid-cols-1 sm:grid-cols-2 gap-3"}`}
       >
-        {TAXONOMY_CATEGORIES.map((category) => {
-          const isSelected = value === category.value;
-
-          return (
-            <button
-              key={category.value}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              disabled={disabled}
-              onClick={() => onChange(category.value)}
-              className={`w-full rounded-xl border text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
-                compact ? "p-2" : "p-3"
-              } ${
-                isSelected
-                  ? "border-foreground bg-foreground text-background shadow-sm"
-                  : "border-foreground/10 bg-background text-foreground hover:border-foreground/30 hover:bg-foreground/5"
-              }`}
+        {TAXONOMY_CATEGORIES.map((cat) => (
+          <button
+            key={cat.value}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(cat.value)}
+            className={`p-4 rounded-2xl border-2 text-left transition-all ${value === cat.value ? "border-foreground bg-foreground text-background shadow-xl" : "border-foreground/5 bg-background hover:border-foreground/20"}`}
+          >
+            <span className="block text-[10px] font-black uppercase tracking-widest mb-1">
+              {cat.label}
+            </span>
+            <span
+              className={`block text-[9px] font-bold leading-tight ${value === cat.value ? "opacity-70" : "text-gray-500"}`}
             >
-              <span
-                className={`block font-black uppercase tracking-widest ${
-                  compact ? "text-[9px]" : "text-[10px]"
-                }`}
-              >
-                {category.label}
-              </span>
-              <span
-                className={`mt-0.5 block font-bold leading-snug ${
-                  compact ? "text-[8px]" : "text-[10px]"
-                } ${isSelected ? "text-background/70" : "text-gray-500"}`}
-              >
-                {category.definition}
-              </span>
-            </button>
-          );
-        })}
+              {cat.definition}
+            </span>
+          </button>
+        ))}
       </div>
-
-      {behavioralSignal && (
-        <p
-          aria-live="polite"
-          className={`border-l border-foreground/10 pl-3 font-bold leading-snug text-gray-500 ${
-            compact ? "text-[8px]" : "text-[10px]"
-          }`}
-        >
-          {behavioralSignal}
-        </p>
+      {value !== "Unclassified" && (
+        <div className="p-3 bg-foreground/5 border-l-2 border-foreground rounded-r-xl animate-in fade-in slide-in-from-left-2">
+          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">
+            Behavioral Signal
+          </p>
+          <p className="text-[10px] font-bold text-foreground leading-tight italic">
+            {currentSignal}
+          </p>
+        </div>
       )}
     </div>
   );
 }
 
 export default function Dashboard() {
-  // ATOMIC DATA STATE
   const [ledger, setLedger] = useState<LedgerState>({
     deployments: [],
     analytics: null,
@@ -134,37 +99,22 @@ export default function Dashboard() {
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
-
-  // FORM STATE
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [isAdvancedContextOpen, setIsAdvancedContextOpen] = useState(false);
-  const [advancedContext, setAdvancedContext] =
-    useState<DeploymentAdvancedContextInput>({ ...EMPTY_ADVANCED_CONTEXT });
-  const titleMetadataQuality = evaluateMetadataQuality(title);
-  const showTitleQualityHint =
-    title.trim().length > 0 && titleMetadataQuality.isLowQuality;
-  const advancedTagsValue = Array.isArray(advancedContext.tags)
-    ? advancedContext.tags.join(", ")
-    : advancedContext.tags || "";
 
-  // EXECUTION LOCKS
   const isExecuting = useRef(false);
   const fetchCount = useRef(0);
 
-  // LOADING & ERROR STATES
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isLiquidityLoading, setIsLiquidityLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-
-  // ERROR STATES
+  const [isIntelligenceSyncing, setIsIntelligenceSyncing] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [liquidityError, setLiquidityError] = useState<string | null>(null);
 
-  // Edit State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     title: "",
@@ -174,35 +124,65 @@ export default function Dashboard() {
   const [isEditingLiquidity, setIsEditingLiquidity] = useState(false);
   const [liquidityInput, setLiquidityInput] = useState("");
 
-  const applyDashboardSnapshot = useCallback((snapshot: DashboardSnapshot) => {
-    if (!snapshot.authenticated) return;
-
-    setLiquidity(snapshot.liquidity);
-    setLiquidityInput(snapshot.liquidity.toString());
-    setLedger({
-      deployments: snapshot.deployments as Deployment[],
-      analytics: snapshot.analytics,
-    });
-    setKairosInsight(snapshot.kairosInsight);
-  }, []);
+  const refreshAndReAnalyze = useCallback(
+    async (userId: string, currentLiquidity: number) => {
+      setIsIntelligenceSyncing(true);
+      try {
+        const data = await getDeployments();
+        const castedData = (data || []) as Deployment[];
+        setLedger({
+          deployments: castedData,
+          analytics: generateSummary(castedData, currentLiquidity),
+        });
+        const insight = await generateKairosAIInsight(
+          castedData,
+          currentLiquidity,
+          kairosInsight,
+        );
+        if (insight.is_new_signal) await saveInsight(insight, userId);
+        setKairosInsight(insight);
+      } catch {
+        setGlobalError("Behavioral sync lagging. Data integrity maintained.");
+      } finally {
+        setIsIntelligenceSyncing(false);
+      }
+    },
+    [kairosInsight],
+  );
 
   const fetchDashboardData = useCallback(async () => {
     const requestId = ++fetchCount.current;
     setGlobalError(null);
-
     try {
-      const snapshot = await getDashboardSnapshotAction();
-
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      const [deploymentsData, settings] = await Promise.all([
+        getDeployments(),
+        getUserSettings(),
+      ]);
       if (requestId !== fetchCount.current) return;
-      applyDashboardSnapshot(snapshot);
+      const currentLiquidity = Number(settings.total_liquidity);
+      setLiquidity(currentLiquidity);
+      setLiquidityInput(currentLiquidity.toString());
+      setLedger({
+        deployments: (deploymentsData || []) as Deployment[],
+        analytics: generateSummary(deploymentsData || [], currentLiquidity),
+      });
+      const savedInsights = await getInsights(1);
+      if (
+        requestId === fetchCount.current &&
+        savedInsights &&
+        savedInsights.length > 0
+      )
+        setKairosInsight(savedInsights[0]);
     } catch {
       setGlobalError("Connectivity failure. Intelligence layer offline.");
     } finally {
-      if (requestId === fetchCount.current) {
-        setIsInitialLoading(false);
-      }
+      if (requestId === fetchCount.current) setIsInitialLoading(false);
     }
-  }, [applyDashboardSnapshot]);
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -212,46 +192,21 @@ export default function Dashboard() {
   async function handleAddDeployment(e: React.FormEvent) {
     e.preventDefault();
     if (isExecuting.current) return;
-
     setIsActionLoading(true);
     setFormError(null);
     isExecuting.current = true;
-
     try {
-      if (category === "Unclassified") {
+      if (category === "Unclassified")
         throw new Error("Strategic classification required");
-      }
-
-<<<<<<< HEAD
-      const snapshot = await createDeploymentAction({
-        title,
-        amount: Number(amount),
-        category,
-        advancedContext,
-      });
-=======
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Session unverified");
-
-      await createDeployment(
-        title,
-        Number(amount),
-        user.id,
-        category,
-        0,
-        advancedContext,
-      );
->>>>>>> 41913c834896734927b1e32cff59691e1448743f
-
+      await createDeployment(title, Number(amount), user.id, category);
       setTitle("");
       setAmount("");
       setCategory("Unclassified");
-      setAdvancedContext({ ...EMPTY_ADVANCED_CONTEXT });
-      setIsAdvancedContextOpen(false);
-
-      applyDashboardSnapshot(snapshot);
+      await refreshAndReAnalyze(user.id, liquidity);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : "Deployment failed");
     } finally {
@@ -265,14 +220,17 @@ export default function Dashboard() {
     setIsLiquidityLoading(true);
     setLiquidityError(null);
     isExecuting.current = true;
-
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Unauthenticated");
       const newAmount = Number(liquidityInput);
       if (isNaN(newAmount)) throw new Error("Invalid value");
-
-      const snapshot = await updateLiquidityAction(newAmount);
+      await updateLiquidity(newAmount);
+      setLiquidity(newAmount);
       setIsEditingLiquidity(false);
-      applyDashboardSnapshot(snapshot);
+      await refreshAndReAnalyze(user.id, newAmount);
     } catch {
       setLiquidityError("Update failed");
     } finally {
@@ -283,14 +241,16 @@ export default function Dashboard() {
 
   async function handleDelete(id: string) {
     if (isExecuting.current) return;
-    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
-
+    if (!confirm("Delete record?")) return;
     setDeletingId(id);
     isExecuting.current = true;
-
     try {
-      const snapshot = await deleteDeploymentAction(id);
-      applyDashboardSnapshot(snapshot);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      await deleteDeployment(id);
+      await refreshAndReAnalyze(user.id, liquidity);
     } catch {
       setGlobalError("Deletion interrupted.");
     } finally {
@@ -312,18 +272,20 @@ export default function Dashboard() {
     if (isExecuting.current) return;
     setUpdatingId(id);
     isExecuting.current = true;
-
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
       if (!editForm.title.trim()) throw new Error("Title required");
       if (Number(editForm.amount) <= 0) throw new Error("Amount invalid");
-
-      const snapshot = await updateDeploymentAction(id, {
+      await updateDeployment(id, {
         title: editForm.title,
         amount: Number(editForm.amount),
         category: editForm.category,
       });
       setEditingId(null);
-      applyDashboardSnapshot(snapshot);
+      await refreshAndReAnalyze(user.id, liquidity);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Update failed");
     } finally {
@@ -354,27 +316,43 @@ export default function Dashboard() {
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex flex-col gap-1">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase hover:text-gray-400 transition-colors cursor-default">
-            AXIOM <span className="hidden md:inline">::</span>{" "}
-            <span className="text-gray-500">DASHBOARD</span>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase hover:text-gray-400 transition-colors cursor-default">
+            AXIOM <span className="hidden md:inline">::</span> <span className="text-gray-500">DASHBOARD</span>
           </h1>
           <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
-            Financial Intelligence System v2.3-PROD-READY
+            Financial Intelligence System v2.4-SYNC-CONFIRMED
+          </p>
+
           </p>
         </div>
 
         <div className="flex gap-4">
           <div
-            className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group cursor-pointer transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/5"}`}
-            onClick={() =>
-              !isEditingLiquidity &&
-              !isLiquidityLoading &&
-              setIsEditingLiquidity(true)
-            }
+            className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/5"}`}
           >
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
-              {liquidityError ? "Update Error" : "Total Liquidity"}
-            </span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                {liquidityError ? "Update Error" : "Total Liquidity"}
+              </span>
+              <button
+                onClick={() =>
+                  !isLiquidityLoading && setIsEditingLiquidity(true)
+                }
+                className="p-1 rounded hover:bg-foreground/5 transition-colors"
+                title="Set starting liquid capital"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </button>
+            </div>
             {isEditingLiquidity ? (
               <div className="flex flex-col gap-2">
                 <input
@@ -387,29 +365,24 @@ export default function Dashboard() {
                 />
                 <button
                   disabled={isLiquidityLoading}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUpdateLiquidity();
-                  }}
+                  onClick={() => handleUpdateLiquidity()}
                   className="bg-foreground text-background text-[8px] font-black py-1 rounded disabled:opacity-50"
                 >
-                  {isLiquidityLoading ? "SYNCING..." : "SAVE TRUTH"}
+                  {isLiquidityLoading ? "SYNCING..." : "CONFIRM TRUTH"}
                 </button>
               </div>
             ) : (
-              <>
-                <span className="text-2xl font-black tabular-nums text-foreground text-center">
+              <div className="flex flex-col text-center">
+                <span className="text-2xl font-black tabular-nums text-foreground">
                   {formatKSh(liquidity)}
                 </span>
-                <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-2xl transition-opacity">
-                  <span className="text-[10px] font-black uppercase tracking-tighter">
-                    Edit Liquidity
-                  </span>
-                </div>
-              </>
+                <p className="text-[7px] font-black text-gray-500 uppercase tracking-tight mt-1 opacity-60">
+                  Total investable liquid capital
+                </p>
+              </div>
             )}
           </div>
-          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/5">
+          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/5 justify-center">
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
               Daily Burn
             </span>
@@ -493,7 +466,7 @@ export default function Dashboard() {
                   <input
                     type="text"
                     disabled={isActionLoading}
-                    placeholder="What is this capital achieving?"
+                    placeholder="e.g. Asset Acquisition"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
@@ -502,11 +475,6 @@ export default function Dashboard() {
                     className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
                     required
                   />
-                  {showTitleQualityHint && (
-                    <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-gray-500">
-                      Specific labels improve future analysis.
-                    </p>
-                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -529,134 +497,16 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                      Category
+                      Strategic Classification
                     </label>
                     <CategorySelector
                       disabled={isActionLoading}
                       value={category}
-                      onChange={(nextCategory) => {
-                        setCategory(nextCategory);
+                      onChange={(next) => {
+                        setCategory(next);
                         if (formError) setFormError(null);
                       }}
                     />
-                  </div>
-                </div>
-
-                <div className="border-t border-foreground/10 pt-2">
-                  <button
-                    type="button"
-                    disabled={isActionLoading}
-                    aria-expanded={isAdvancedContextOpen}
-                    aria-controls="advanced-context-drawer"
-                    onClick={() =>
-                      setIsAdvancedContextOpen((isOpen) => !isOpen)
-                    }
-                    className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
-                  >
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
-                      Advanced Context
-                    </span>
-                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500">
-                      Optional
-                      <span
-                        className={`inline-block transition-transform duration-300 ${
-                          isAdvancedContextOpen ? "rotate-180" : ""
-                        }`}
-                        aria-hidden="true"
-                      >
-                        v
-                      </span>
-                    </span>
-                  </button>
-
-                  <div
-                    id="advanced-context-drawer"
-                    aria-hidden={!isAdvancedContextOpen}
-                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
-                      isAdvancedContextOpen
-                        ? "grid-rows-[1fr] opacity-100"
-                        : "grid-rows-[0fr] opacity-0"
-                    }`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="space-y-3 pt-3">
-                        <div>
-                          <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                            Associated Account
-                          </label>
-                          <input
-                            type="text"
-                            disabled={
-                              isActionLoading || !isAdvancedContextOpen
-                            }
-                            placeholder="e.g. Brokerage, operations"
-                            value={advancedContext.associatedAccount || ""}
-                            onChange={(e) => {
-                              setAdvancedContext((current) => ({
-                                ...current,
-                                associatedAccount: e.target.value,
-                              }));
-                              if (formError) setFormError(null);
-                            }}
-                            className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                              Return Horizon
-                            </label>
-                            <select
-                              disabled={
-                                isActionLoading || !isAdvancedContextOpen
-                              }
-                              value={advancedContext.expectedReturnHorizon || ""}
-                              onChange={(e) => {
-                                setAdvancedContext((current) => ({
-                                  ...current,
-                                  expectedReturnHorizon: e.target.value,
-                                }));
-                                if (formError) setFormError(null);
-                              }}
-                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold disabled:opacity-50"
-                            >
-                              <option value="">Unspecified</option>
-                              {EXPECTED_RETURN_HORIZONS.map((horizon) => (
-                                <option
-                                  key={horizon.value}
-                                  value={horizon.value}
-                                >
-                                  {horizon.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
-                              Tags
-                            </label>
-                            <input
-                              type="text"
-                              disabled={
-                                isActionLoading || !isAdvancedContextOpen
-                              }
-                              placeholder="ops, recurring"
-                              value={advancedTagsValue}
-                              onChange={(e) => {
-                                setAdvancedContext((current) => ({
-                                  ...current,
-                                  tags: e.target.value,
-                                }));
-                                if (formError) setFormError(null);
-                              }}
-                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -694,7 +544,7 @@ export default function Dashboard() {
 
           {/* Behavioral Presence Section */}
           <div
-            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/50" : ""}`}
+            className={`bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-50 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/50" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
           >
             <div>
               <div className="flex items-center gap-2 mb-6 opacity-60">
