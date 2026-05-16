@@ -7,11 +7,10 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
-export default function Home() {
+export default function SignUp() {
   const router = useRouter();
 
   useEffect(() => {
-    // Listen for auth changes to handle client-side redirect
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -25,9 +24,6 @@ export default function Home() {
     };
   }, [router]);
 
-  // Middleware handles redirection to /dashboard if logged in on request.
-  // This client component is now strictly for rendering the login form.
-
   return (
     <main className="min-h-screen flex items-center justify-center bg-background text-foreground p-6 relative overflow-hidden">
       {/* Background Glow */}
@@ -36,23 +32,28 @@ export default function Home() {
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-12 group">
           <div className="relative mb-6">
-            <div className="w-16 h-16 bg-foreground rounded-3xl rotate-6 transition-transform group-hover:rotate-12 group-hover:scale-110"></div>
-            <div className="absolute inset-0 w-16 h-16 bg-foreground/20 rounded-3xl -rotate-12 scale-95 transition-transform group-hover:-rotate-18"></div>
+            <div className="w-16 h-16 bg-foreground rounded-3xl rotate-12 transition-transform group-hover:rotate-6 group-hover:scale-110 shadow-2xl"></div>
+            <div className="absolute inset-0 w-16 h-16 bg-foreground/20 rounded-3xl -rotate-6 scale-95 transition-transform group-hover:-rotate-12"></div>
             <div className="absolute inset-0 flex items-center justify-center font-black text-background text-2xl">
               A
             </div>
           </div>
-          <h1 className="text-6xl font-black tracking-tighter uppercase">
-            AXIOM
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-center">
+            INITIALIZE <span className="text-gray-500">ACCESS</span>
           </h1>
-          <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3">
-            Intelligence Layer / Financial Truth
+          <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3 text-center">
+            Deploy your personal intelligence layer
           </p>
         </div>
 
-        <div className="bg-background/40 backdrop-blur-xl p-10 rounded-[2.5rem] border-2 border-foreground/5 shadow-2xl">
+        <div className="bg-background/40 backdrop-blur-xl p-10 rounded-[2.5rem] border-2 border-foreground/5 shadow-2xl relative">
+          <div className="absolute -top-3 left-10 px-4 py-1 bg-foreground text-background text-[8px] font-black uppercase tracking-widest rounded-full">
+            New Protocol Initialization
+          </div>
+
           <Auth
             supabaseClient={supabase}
+            view="sign_up"
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -80,20 +81,11 @@ export default function Home() {
             }}
             localization={{
               variables: {
-                sign_in: {
-                  email_label: "Identifier",
-                  password_label: "Access Key",
-                  button_label: "Authorize Session",
-                  link_text: "Already have access? Authorize session",
-                },
                 sign_up: {
                   email_label: "Professional Email",
                   password_label: "Access Key",
-                  button_label: "Initialize Axiom Access",
-                  link_text: "Don't have an account? Initialize access",
-                },
-                forgotten_password: {
-                  link_text: "Recover access key?",
+                  button_label: "Begin Initialization",
+                  link_text: "Already authorized? Access terminal",
                 },
               },
             }}
@@ -103,20 +95,18 @@ export default function Home() {
 
           <div className="mt-8 text-center">
             <Link
-              href="/signup"
+              href="/"
               className="text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-foreground transition-colors"
             >
-              Initialize New Protocol Access
+              Return to Authorization
             </Link>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center gap-4">
+        <div className="mt-12 flex flex-col items-center gap-4 text-center">
           <div className="h-[1px] w-12 bg-foreground/10"></div>
-          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest text-center max-w-[200px] leading-relaxed">
-            Authorized Personnel Only
-            <br />
-            Secure Encrypted Session
+          <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest leading-relaxed max-w-xs opacity-60">
+            Initialization grants read-write access to the Axiom deterministic ledger. Secure your access key immediately after authorization.
           </p>
         </div>
       </div>
