@@ -20,7 +20,9 @@ import {
   type DeploymentAdvancedContextInput,
 } from "@/lib/finance/deploymentContext";
 import { AccountSection } from "./AccountSection";
+import { LiabilitySection } from "./LiabilitySection";
 import type { Account } from "@/lib/finance/accounts";
+import type { Liability } from "@/lib/finance/liabilities";
 
 type Deployment = {
   id: string;
@@ -33,13 +35,16 @@ type Deployment = {
 interface LedgerState {
   deployments: Deployment[];
   accounts: Account[];
+  liabilities: Liability[];
   analytics: AnalyticsSummary | null;
 }
 
 type KairosInsight = DashboardSnapshot["kairosInsight"];
 
 const formatKSh = (amt: number) => {
-  return `KSh ${Math.round(amt).toLocaleString()}`;
+  const isNegative = amt < 0;
+  const absAmt = Math.abs(amt);
+  return `${isNegative ? "-" : ""}KSh ${Math.round(absAmt).toLocaleString()}`;
 };
 
 const EMPTY_ADVANCED_CONTEXT: DeploymentAdvancedContextInput = {
@@ -137,6 +142,7 @@ export default function Dashboard() {
   const [ledger, setLedger] = useState<LedgerState>({
     deployments: [],
     accounts: [],
+    liabilities: [],
     analytics: null,
   });
   const [liquidity, setLiquidity] = useState<number>(0);
@@ -185,6 +191,7 @@ export default function Dashboard() {
     setLedger({
       deployments: snapshot.deployments as Deployment[],
       accounts: snapshot.accounts,
+      liabilities: snapshot.liabilities,
       analytics: snapshot.analytics,
     });
     setKairosInsight(snapshot.kairosInsight);
@@ -348,7 +355,18 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end">
+          <div className="bg-foreground/5 border border-foreground/5 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/5 justify-center">
+            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
+              Net Worth
+            </span>
+            <span
+              className={`text-2xl font-black tabular-nums text-center ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
+            >
+              {formatKSh(ledger.analytics?.netWorth || 0)}
+            </span>
+          </div>
+
           <div
             className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/5"}`}
           >
@@ -406,10 +424,10 @@ export default function Dashboard() {
           </div>
           <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/5 justify-center">
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
-              Daily Burn
+              Total Liabilities
             </span>
             <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {formatKSh(ledger.analytics?.dailyBurnRate || 0)}
+              {formatKSh(ledger.analytics?.totalLiabilities || 0)}
             </span>
           </div>
         </div>
@@ -680,6 +698,13 @@ export default function Dashboard() {
           <div className="bg-background border rounded-3xl p-8 shadow-2xl">
             <AccountSection
               accounts={ledger.accounts}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <LiabilitySection
+              liabilities={ledger.liabilities}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>

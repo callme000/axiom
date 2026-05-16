@@ -13,17 +13,24 @@ import {
   updateAccount,
   deleteAccount,
 } from "@/lib/db/accounts";
+import {
+  getLiabilities,
+  createLiability,
+  updateLiability,
+  deleteLiability,
+} from "@/lib/db/liabilities";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { getInsights, saveInsight } from "@/lib/db/insights";
 import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, type AnalyticsSummary } from "@/lib/analytics";
-import type { Deployment, Account } from "@/lib/analytics/types";
+import type { Deployment, Account, Liability } from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
 
 export interface DashboardSnapshot {
   authenticated: boolean;
   deployments: Deployment[];
   accounts: Account[];
+  liabilities: Liability[];
   analytics: AnalyticsSummary | null;
   liquidity: number;
   kairosInsight: KairosInsight | null;
@@ -51,11 +58,22 @@ export interface CreateAccountActionInput {
   institution?: string;
 }
 
+export interface CreateLiabilityActionInput {
+  liability_name: string;
+  liability_type: string;
+  outstanding_balance: number;
+  interest_rate?: number;
+  minimum_payment?: number;
+  due_date?: string | null;
+  institution?: string;
+}
+
 function unauthenticatedSnapshot(): DashboardSnapshot {
   return {
     authenticated: false,
     deployments: [],
     accounts: [],
+    liabilities: [],
     analytics: null,
     liquidity: 0,
     kairosInsight: null,
@@ -99,16 +117,24 @@ async function buildDashboardSnapshot(
 
   if (!user) return unauthenticatedSnapshot();
 
-  const [deploymentsData, accountsData, settings] = await Promise.all([
-    getDeployments(supabase),
-    getAccounts(supabase),
-    getUserSettings(supabase),
-  ]);
+  const [deploymentsData, accountsData, liabilitiesData, settings] =
+    await Promise.all([
+      getDeployments(supabase),
+      getAccounts(supabase),
+      getLiabilities(supabase),
+      getUserSettings(supabase),
+    ]);
 
   const deployments = (deploymentsData || []) as Deployment[];
   const accounts = (accountsData || []) as Account[];
+  const liabilities = (liabilitiesData || []) as Liability[];
   const liquidity = Number(settings.total_liquidity);
-  const analytics = generateSummary(deployments, liquidity);
+  const analytics = generateSummary(
+    deployments,
+    liquidity,
+    accounts,
+    liabilities,
+  );
   const savedInsights = await getInsights(supabase, 1);
   const previousInsight =
     savedInsights && savedInsights.length > 0
@@ -120,6 +146,7 @@ async function buildDashboardSnapshot(
       authenticated: true,
       deployments,
       accounts,
+      liabilities,
       analytics,
       liquidity,
       kairosInsight: previousInsight,
@@ -140,6 +167,7 @@ async function buildDashboardSnapshot(
     authenticated: true,
     deployments,
     accounts,
+    liabilities,
     analytics,
     liquidity,
     kairosInsight,
@@ -257,6 +285,48 @@ export async function deleteAccountAction(id: string) {
   if (!user) return unauthenticatedSnapshot();
 
   await deleteAccount(supabase, id);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function createLiabilityAction(input: CreateLiabilityActionInput) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await createLiability(supabase, user.id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function updateLiabilityAction(
+  id: string,
+  input: Partial<CreateLiabilityActionInput>,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await updateLiability(supabase, id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function deleteLiabilityAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await deleteLiability(supabase, id);
 
   return buildDashboardSnapshot({ forceInsightEvaluation: true });
 }

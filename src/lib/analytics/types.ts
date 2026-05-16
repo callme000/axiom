@@ -1,8 +1,10 @@
 import { MetadataQualitySummary } from "../finance/metadataQuality";
 import { DeploymentAdvancedContext } from "../finance/deploymentContext";
 import { Account } from "../finance/accounts";
+import { Liability } from "../finance/liabilities";
 
 export type { Account, AccountType } from "../finance/accounts";
+export type { Liability, LiabilityType } from "../finance/liabilities";
 
 export interface Deployment {
   id: string;
@@ -22,4 +24,9 @@ export interface AnalyticsSummary {
   categoryBreakdown: Record<string, number>;
   deploymentCount: number;
   metadataQuality: MetadataQualitySummary;
+  // Liability System v1
+  totalLiabilities: number;
+  netWorth: number;
+  totalAssets: number;
+  liquidity: number;
 }

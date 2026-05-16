@@ -1,4 +1,4 @@
-import { Deployment, AnalyticsSummary } from "./types";
+import { Deployment, AnalyticsSummary, Account, Liability } from "./types";
 import { summarizeMetadataQuality } from "../finance/metadataQuality";
 
 /**
@@ -8,6 +8,14 @@ import { summarizeMetadataQuality } from "../finance/metadataQuality";
 
 export const calculateTotal = (deployments: Deployment[]): number => {
   return deployments.reduce((sum, d) => sum + Number(d.amount), 0);
+};
+
+export const calculateAccountTotal = (accounts: Account[]): number => {
+  return accounts.reduce((sum, a) => sum + Number(a.current_balance), 0);
+};
+
+export const calculateLiabilityTotal = (liabilities: Liability[]): number => {
+  return liabilities.reduce((sum, l) => sum + Number(l.outstanding_balance), 0);
 };
 
 export const calculateAverage = (deployments: Deployment[]): number => {
@@ -60,18 +68,29 @@ export const getCategoryBreakdown = (
  */
 export const generateSummary = (
   deployments: Deployment[],
-  currentBalance?: number,
+  liquidity: number = 0,
+  accounts: Account[] = [],
+  liabilities: Liability[] = [],
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
   const burnRate = calculateBurnRate(deployments);
+
+  const totalAssets = calculateAccountTotal(accounts);
+  const totalLiabilities = calculateLiabilityTotal(liabilities);
+  const netWorth = totalAssets - totalLiabilities;
 
   return {
     totalDeployed: total,
     averageDeployment: calculateAverage(deployments),
     dailyBurnRate: burnRate,
-    runwayDays: currentBalance ? projectRunway(currentBalance, burnRate) : null,
+    runwayDays: liquidity ? projectRunway(liquidity, burnRate) : null,
     categoryBreakdown: getCategoryBreakdown(deployments),
     deploymentCount: deployments.length,
     metadataQuality: summarizeMetadataQuality(deployments),
+    // Liability System v1
+    totalLiabilities,
+    totalAssets,
+    netWorth,
+    liquidity,
   };
 };

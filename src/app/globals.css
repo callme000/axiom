@@ -3,6 +3,9 @@
 :root {
     --background: #ffffff;
     --foreground: #171717;
+    --input-border: #e5e7eb;
+    --input-placeholder: #9ca3af;
+    --input-label: #6b7280;
 }
 
 /* stylelint-disable at-rule-no-unknown */
@@ -17,6 +20,9 @@
     :root {
         --background: #0a0a0a;
         --foreground: #ededed;
+        --input-border: #333333;
+        --input-placeholder: #666666;
+        --input-label: #999999;
     }
 }
 
