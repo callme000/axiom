@@ -99,7 +99,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Container Name
                 </label>
                 <input
@@ -114,7 +114,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Initial Balance (KSh)
                 </label>
                 <input
@@ -132,7 +132,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Type
                 </label>
                 <select
@@ -150,7 +150,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Institution (Optional)
                 </label>
                 <input
@@ -185,10 +185,10 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
       <div className="grid grid-cols-1 gap-4">
         {accounts.length === 0 ? (
           <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">
+            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
               No financial containers defined.
             </p>
-            <p className="text-gray-400 text-[10px] mt-2 uppercase tracking-tight opacity-60">
+            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
               Infrastructure awareness layer currently offline.
             </p>
           </div>
@@ -196,7 +196,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
           accounts.map((account) => (
             <div
               key={account.id}
-              className="bg-foreground/5 border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+              className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
             >
               <div className="flex items-center justify-between relative z-10">
                 <div className="space-y-1">
@@ -209,7 +209,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                     </h3>
                   </div>
                   {account.institution && (
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
                       {account.institution}
                     </p>
                   )}
@@ -219,13 +219,13 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                     <p className="text-lg font-black tabular-nums text-foreground">
                       {formatKSh(account.current_balance)}
                     </p>
-                    <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest opacity-60">
+                    <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
                       Authoritative Balance
                     </p>
                   </div>
                   <button
                     onClick={() => handleDelete(account.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <svg
                       width="14"

@@ -37,12 +37,14 @@ export default function DashboardError({
           System Interrupted
         </h1>
 
-        <p className="text-gray-500 text-sm font-bold uppercase tracking-widest mb-8 leading-relaxed">
+        <p className="text-foreground/60 text-sm font-bold uppercase tracking-widest mb-8 leading-relaxed">
           The intelligence engine encountered an unhandled exception.
         </p>
 
         <div className="bg-foreground/5 rounded-2xl p-4 mb-8 text-left">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Error Diagnostic</p>
+          <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-2">
+            Error Diagnostic
+          </p>
           <p className="text-xs font-mono text-red-400 break-all leading-tight">
             {error.message || "Unknown cryptographic failure"}
           </p>

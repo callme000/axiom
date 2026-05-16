@@ -44,7 +44,9 @@ export function LiabilitySection({
         liability_type: form.liability_type,
         outstanding_balance: Number(form.outstanding_balance),
         interest_rate: form.interest_rate ? Number(form.interest_rate) : 0,
-        minimum_payment: form.minimum_payment ? Number(form.minimum_payment) : 0,
+        minimum_payment: form.minimum_payment
+          ? Number(form.minimum_payment)
+          : 0,
         institution: form.institution || undefined,
       });
       setForm({
@@ -107,7 +109,7 @@ export function LiabilitySection({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Obligation Name
                 </label>
                 <input
@@ -122,7 +124,7 @@ export function LiabilitySection({
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Outstanding Balance (KSh)
                 </label>
                 <input
@@ -140,7 +142,7 @@ export function LiabilitySection({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Type
                 </label>
                 <select
@@ -158,7 +160,7 @@ export function LiabilitySection({
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Min. Payment
                 </label>
                 <input
@@ -172,7 +174,7 @@ export function LiabilitySection({
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                   Interest (%)
                 </label>
                 <input
@@ -189,7 +191,7 @@ export function LiabilitySection({
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">
+              <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                 Institution (Optional)
               </label>
               <input
@@ -223,10 +225,10 @@ export function LiabilitySection({
       <div className="grid grid-cols-1 gap-4">
         {liabilities.length === 0 ? (
           <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">
+            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
               No financial obligations recorded.
             </p>
-            <p className="text-gray-400 text-[10px] mt-2 uppercase tracking-tight opacity-60">
+            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
               Solvency awareness layer currently optimal.
             </p>
           </div>
@@ -234,7 +236,7 @@ export function LiabilitySection({
           liabilities.map((liability) => (
             <div
               key={liability.id}
-              className="bg-foreground/5 border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+              className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
             >
               <div className="flex items-center justify-between relative z-10">
                 <div className="space-y-1">
@@ -248,7 +250,7 @@ export function LiabilitySection({
                   </div>
                   <div className="flex gap-3">
                     {liability.institution && (
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
                         {liability.institution}
                       </p>
                     )}
@@ -264,13 +266,13 @@ export function LiabilitySection({
                     <p className="text-lg font-black tabular-nums text-foreground">
                       {formatKSh(liability.outstanding_balance)}
                     </p>
-                    <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest opacity-60">
+                    <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
                       Remaining Obligation
                     </p>
                   </div>
                   <button
                     onClick={() => handleDelete(liability.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <svg
                       width="14"

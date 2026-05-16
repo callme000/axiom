@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import {
   createDeploymentAction,
   deleteDeploymentAction,
@@ -97,7 +103,7 @@ function CategorySelector({
               } ${
                 isSelected
                   ? "border-foreground bg-foreground text-background shadow-xl scale-[1.02]"
-                  : "border-foreground/5 bg-background text-foreground hover:border-foreground/20 hover:bg-foreground/5"
+                  : "border-foreground/10 bg-background text-foreground hover:border-foreground/20 hover:bg-foreground/5"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -113,7 +119,7 @@ function CategorySelector({
               <span
                 className={`mt-1 block font-bold leading-snug ${
                   compact ? "text-[8px]" : "text-[9px]"
-                } ${isSelected ? "text-background/70" : "text-gray-500"}`}
+                } ${isSelected ? "text-background/70" : "text-foreground/60"}`}
               >
                 {category.definition}
               </span>
@@ -124,7 +130,7 @@ function CategorySelector({
 
       {value !== "Unclassified" && behavioralSignal && (
         <div className="p-4 bg-foreground/5 border-l-2 border-foreground rounded-r-2xl animate-in fade-in slide-in-from-left-2 duration-500">
-          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1 opacity-60">
+          <p className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-1 opacity-60">
             Behavioral Intelligence Signal
           </p>
           <p
@@ -138,7 +144,15 @@ function CategorySelector({
   );
 }
 
+const emptySubscribe = () => () => {};
+
 export default function Dashboard() {
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+
   const [ledger, setLedger] = useState<LedgerState>({
     deployments: [],
     accounts: [],
@@ -346,18 +360,18 @@ export default function Dashboard() {
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex flex-col gap-1">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase hover:text-gray-400 transition-colors cursor-default">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase hover:text-foreground/40 transition-colors cursor-default">
             AXIOM <span className="hidden md:inline">::</span>{" "}
-            <span className="text-gray-500">DASHBOARD</span>
+            <span className="text-foreground/60">DASHBOARD</span>
           </h1>
-          <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
+          <p className="text-foreground/40 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
             Financial Intelligence System v2.4-SYNC-CONFIRMED
           </p>
         </div>
 
         <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end">
-          <div className="bg-foreground/5 border border-foreground/5 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/5 justify-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
               Net Worth
             </span>
             <span
@@ -368,10 +382,10 @@ export default function Dashboard() {
           </div>
 
           <div
-            className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/5"}`}
+            className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
                 {liquidityError ? "Update Error" : "Total Liquidity"}
               </span>
               <button
@@ -416,14 +430,14 @@ export default function Dashboard() {
                 <span className="text-2xl font-black tabular-nums text-foreground">
                   {formatKSh(liquidity)}
                 </span>
-                <p className="text-[7px] font-black text-gray-500 uppercase tracking-tight mt-1 opacity-60">
+                <p className="text-[7px] font-black text-foreground/60 uppercase tracking-tight mt-1 opacity-60">
                   Total investable liquid capital
                 </p>
               </div>
             )}
           </div>
-          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/5 justify-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">
+          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
               Total Liabilities
             </span>
             <span className="text-2xl font-black tabular-nums text-foreground text-center">
@@ -496,7 +510,7 @@ export default function Dashboard() {
               </div>
               <form onSubmit={handleAddDeployment} className="space-y-5">
                 <div>
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                  <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
                     Strategic Designation
                   </label>
                   <input
@@ -512,14 +526,14 @@ export default function Dashboard() {
                     required
                   />
                   {showTitleQualityHint && (
-                    <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-gray-500">
+                    <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-foreground/60">
                       Specific labels improve future analysis.
                     </p>
                   )}
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
                       Amount (KSh)
                     </label>
                     <input
@@ -536,7 +550,7 @@ export default function Dashboard() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
                       Strategic Classification
                     </label>
                     <CategorySelector
@@ -562,10 +576,10 @@ export default function Dashboard() {
                     }
                     className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
                   >
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">
                       Advanced Context
                     </span>
-                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500">
+                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-foreground/60">
                       Optional
                       <span
                         className={`inline-block transition-transform duration-300 ${isAdvancedContextOpen ? "rotate-180" : ""}`}
@@ -583,7 +597,7 @@ export default function Dashboard() {
                     <div className="overflow-hidden">
                       <div className="space-y-3 pt-3">
                         <div>
-                          <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                          <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
                             Associated Account
                           </label>
                           <input
@@ -603,7 +617,7 @@ export default function Dashboard() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                            <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
                               Return Horizon
                             </label>
                             <select
@@ -634,7 +648,7 @@ export default function Dashboard() {
                             </select>
                           </div>
                           <div>
-                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block ml-1">
+                            <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
                               Tags
                             </label>
                             <input
@@ -727,13 +741,13 @@ export default function Dashboard() {
                 >
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                 </svg>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-background">
                   Intelligence Presence ::{" "}
                   {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
                 </span>
               </div>
               {kairosInsight && (
-                <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                <span className="text-[9px] font-black uppercase tracking-widest text-background/40">
                   Confidence: {(kairosInsight.confidence * 100).toFixed(0)}%
                 </span>
               )}
@@ -744,7 +758,7 @@ export default function Dashboard() {
                   className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
                 >
                   <p className="text-base md:text-lg font-bold leading-tight text-background">
-                    <span className="opacity-40 font-black uppercase text-[10px] mr-2 tracking-tighter not-italic">
+                    <span className="text-background/40 font-black uppercase text-[10px] mr-2 tracking-tighter not-italic">
                       Kairos:
                     </span>
                     &ldquo;{kairosInsight.message}&rdquo;
@@ -761,9 +775,9 @@ export default function Dashboard() {
                     </div>
                   )}
 
-                  <div className="mt-8 flex items-center gap-6 border-t border-background/5 pt-6">
+                  <div className="mt-8 flex items-center gap-6 border-t border-background/10 pt-6">
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest opacity-30">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-background/30">
                         Severity
                       </span>
                       <span
@@ -779,18 +793,19 @@ export default function Dashboard() {
                       </span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest opacity-30">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-background/30">
                         Last Updated
                       </span>
                       <span className="text-[10px] font-black uppercase tracking-wider text-background/60">
-                        {new Date(kairosInsight.timestamp).toLocaleTimeString(
-                          [],
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          },
-                        )}
+                        {isClient
+                          ? new Date(
+                              kairosInsight.timestamp,
+                            ).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                            })
+                          : "--:--:--"}
                       </span>
                     </div>
                   </div>
@@ -799,7 +814,7 @@ export default function Dashboard() {
                 <div className="space-y-3 opacity-20">
                   <div className="h-4 bg-background/20 rounded-full w-full"></div>
                   <div className="h-4 bg-background/20 rounded-full w-3/4"></div>
-                  <p className="text-[10px] font-black uppercase mt-6 tracking-widest">
+                  <p className="text-[10px] font-black uppercase mt-6 tracking-widest text-background">
                     Initializing observation protocols...
                   </p>
                 </div>
@@ -808,7 +823,7 @@ export default function Dashboard() {
           </div>
           {ledger.analytics && (
             <div className="mt-10 flex flex-col gap-3">
-              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-40">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-background/40">
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${isIntelligenceSyncing ? "bg-orange-400 animate-ping" : "bg-background animate-pulse"}`}
@@ -849,7 +864,7 @@ export default function Dashboard() {
               <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase mb-4">
                 Establish Financial Truth
               </h2>
-              <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed mb-10">
+              <p className="text-foreground/60 text-sm font-bold uppercase tracking-widest leading-relaxed mb-10">
                 Axiom is observing your capital behavior. Begin by deploying
                 funds into Assets, Skills, or Leverage to initialize the
                 intelligence engine.
@@ -859,7 +874,7 @@ export default function Dashboard() {
                   <span className="text-xs font-black text-foreground">
                     LEAD
                   </span>
-                  <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                  <span className="text-[8px] text-foreground/60 uppercase tracking-widest leading-tight">
                     Assets generate future value
                   </span>
                 </div>
@@ -867,7 +882,7 @@ export default function Dashboard() {
                   <span className="text-xs font-black text-foreground">
                     GROW
                   </span>
-                  <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                  <span className="text-[8px] text-foreground/60 uppercase tracking-widest leading-tight">
                     Skills improve earning ability
                   </span>
                 </div>
@@ -875,7 +890,7 @@ export default function Dashboard() {
                   <span className="text-xs font-black text-foreground">
                     MULTIPLY
                   </span>
-                  <span className="text-[8px] text-gray-500 uppercase tracking-widest leading-tight">
+                  <span className="text-[8px] text-foreground/60 uppercase tracking-widest leading-tight">
                     Leverage saves operational time
                   </span>
                 </div>
@@ -906,14 +921,14 @@ export default function Dashboard() {
                     >
                       <div className="flex justify-between items-end mb-3">
                         <div>
-                          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">
+                          <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest block mb-1">
                             {cat}
                           </span>
                           <span className="text-lg font-black text-foreground tabular-nums group-hover:text-black dark:group-hover:text-white">
                             {formatKSh(amt)}
                           </span>
                         </div>
-                        <span className="text-sm font-black text-gray-400">
+                        <span className="text-sm font-black text-foreground/40">
                           {Math.round(percentage)}%
                         </span>
                       </div>
@@ -941,7 +956,7 @@ export default function Dashboard() {
                 <div className="h-0.5 w-12 bg-foreground/10"></div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
                   Chronological Stream
                 </span>
               </div>
@@ -998,7 +1013,7 @@ export default function Dashboard() {
                           <button
                             disabled={updatingId === deployment.id}
                             onClick={() => setEditingId(null)}
-                            className="text-xs font-black text-gray-500 uppercase px-3 py-1 disabled:opacity-50"
+                            className="text-xs font-black text-foreground/60 uppercase px-3 py-1 disabled:opacity-50"
                           >
                             Cancel
                           </button>
@@ -1036,28 +1051,32 @@ export default function Dashboard() {
                             <h3 className="font-black text-xl text-foreground transition-colors leading-none">
                               {deployment.title}
                             </h3>
-                            <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-gray-400">
+                            <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
                               {deployment.category || "Unclassified"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-500 font-bold uppercase tracking-tighter">
+                          <div className="flex items-center gap-3 text-xs text-foreground/60 font-bold uppercase tracking-tighter">
                             <span>
-                              {new Date(
-                                deployment.created_at,
-                              ).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
+                              {isClient
+                                ? new Date(
+                                    deployment.created_at,
+                                  ).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })
+                                : "--- --, ----"}
                             </span>
                             <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                             <span>
-                              {new Date(
-                                deployment.created_at,
-                              ).toLocaleTimeString(undefined, {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {isClient
+                                ? new Date(
+                                    deployment.created_at,
+                                  ).toLocaleTimeString(undefined, {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "--:--"}
                             </span>
                           </div>
                         </div>
@@ -1070,14 +1089,14 @@ export default function Dashboard() {
                           <button
                             disabled={deletingId !== null}
                             onClick={() => startEdit(deployment)}
-                            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
+                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
                           >
                             Edit
                           </button>
                           <button
                             disabled={deletingId !== null}
                             onClick={() => handleDelete(deployment.id)}
-                            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
+                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
                           >
                             {deletingId === deployment.id
                               ? "DELETING..."
