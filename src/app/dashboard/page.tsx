@@ -355,10 +355,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 pb-20 space-y-20">
+    <div className="max-w-6xl mx-auto p-6 pb-20 space-y-24">
       {/* Zone 1 — FINANCIAL TRUTH */}
-      <section className="space-y-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <section className="space-y-16">
+        {/* Header: Title and Positioning */}
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-10">
           <div className="flex flex-col gap-1">
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase hover:text-foreground/40 transition-colors cursor-default">
               AXIOM <span className="hidden md:inline">::</span>{" "}
@@ -369,103 +370,128 @@ export default function Dashboard() {
             </p>
           </div>
 
+          {/* SUBSECTION A — FINANCIAL POSITION */}
           <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end items-stretch">
-            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 flex flex-col min-w-44 justify-center">
+              <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-2">
                 Net Worth
               </span>
               <span
-                className={`text-2xl font-black tabular-nums text-center ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
+                className={`text-2xl font-black tabular-nums ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
               >
                 {formatKSh(ledger.analytics?.netWorth || 0)}
               </span>
             </div>
 
-            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
-                Strategic Fulfillment
+            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 flex flex-col min-w-44 justify-center">
+              <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-2">
+                Total Assets
               </span>
-              <span className="text-2xl font-black tabular-nums text-foreground text-center">
-                {Math.round(ledger.analytics?.averageGoalProgress || 0)}%
-              </span>
-              {ledger.analytics && ledger.analytics.criticalGoalCount > 0 && (
-                <p className="text-[7px] font-black text-orange-500 uppercase tracking-tight mt-1 text-center">
-                  {ledger.analytics.criticalGoalCount} Critical Objectives
-                </p>
-              )}
-            </div>
-
-            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
-                Monthly Replenishment
-              </span>
-              <span className="text-2xl font-black tabular-nums text-foreground text-center">
-                {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
+              <span className="text-2xl font-black tabular-nums text-foreground">
+                {formatKSh(ledger.analytics?.totalAssets || 0)}
               </span>
             </div>
 
-            <div
-              className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
-                  {liquidityError ? "Update Error" : "Total Liquidity"}
-                </span>
-                <button
-                  onClick={() =>
-                    !isLiquidityLoading && setIsEditingLiquidity(true)
-                  }
-                  className="p-1 rounded hover:bg-foreground/10 transition-colors text-foreground"
-                  title="Set starting liquid capital"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  >
-                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                  </svg>
-                </button>
-              </div>
-              {isEditingLiquidity ? (
-                <div className="flex flex-col gap-2">
-                  <input
-                    autoFocus
-                    type="number"
-                    disabled={isLiquidityLoading}
-                    value={liquidityInput}
-                    onChange={(e) => setLiquidityInput(e.target.value)}
-                    className="bg-background border-none rounded p-1 text-center font-black text-lg w-full focus:outline-none disabled:opacity-50"
-                  />
-                  <button
-                    disabled={isLiquidityLoading}
-                    onClick={() => handleUpdateLiquidity()}
-                    className="bg-foreground text-background text-[8px] font-black py-1 rounded disabled:opacity-50"
-                  >
-                    {isLiquidityLoading ? "SYNCING..." : "SET LIQUIDITY TRUTH"}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col text-center">
-                  <span className="text-2xl font-black tabular-nums text-foreground">
-                    {formatKSh(liquidity)}
-                  </span>
-                  <p className="text-[7px] font-black text-foreground/60 uppercase tracking-tight mt-1 opacity-60">
-                    Total investable liquid capital
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 flex flex-col min-w-44 justify-center">
+              <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-2">
                 Total Liabilities
               </span>
-              <span className="text-2xl font-black tabular-nums text-foreground text-center">
+              <span className="text-2xl font-black tabular-nums text-foreground">
                 {formatKSh(ledger.analytics?.totalLiabilities || 0)}
               </span>
+            </div>
+          </div>
+        </div>
+
+        {/* SUBSECTION B — LIQUIDITY & REPLENISHMENT */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div
+            className={`bg-foreground/5 border rounded-2xl p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
+                {liquidityError ? "Sync Error" : "Liquidity Pool"}
+              </span>
+              <button
+                onClick={() =>
+                  !isLiquidityLoading && setIsEditingLiquidity(true)
+                }
+                className="p-1.5 rounded-lg hover:bg-foreground/10 transition-colors text-foreground/60 hover:text-foreground"
+                title="Set starting liquid capital"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </button>
+            </div>
+            {isEditingLiquidity ? (
+              <div className="flex flex-col gap-2">
+                <input
+                  autoFocus
+                  type="number"
+                  disabled={isLiquidityLoading}
+                  value={liquidityInput}
+                  onChange={(e) => setLiquidityInput(e.target.value)}
+                  className="bg-background border-none rounded p-1 text-center font-black text-xl w-full focus:outline-none disabled:opacity-50"
+                />
+                <button
+                  disabled={isLiquidityLoading}
+                  onClick={() => handleUpdateLiquidity()}
+                  className="bg-foreground text-background text-[10px] font-black py-2 rounded-lg disabled:opacity-50 uppercase tracking-widest"
+                >
+                  {isLiquidityLoading ? "SYNCING..." : "Confirm Liquidity"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <span className="text-4xl font-black tabular-nums text-foreground">
+                  {formatKSh(liquidity)}
+                </span>
+                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
+                  Total investable liquid capital
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
+                Monthly Replenishment
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-4xl font-black tabular-nums text-foreground">
+                {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
+              </span>
+              <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
+                Structural inflow capacity
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
+                Deterministic Runway
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-4xl font-black tabular-nums text-foreground">
+                {ledger.analytics?.runwayDays
+                  ? `${Math.round(ledger.analytics.runwayDays)} Days`
+                  : "Stable"}
+              </span>
+              <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
+                Operational survival window
+              </p>
             </div>
           </div>
         </div>
@@ -507,30 +533,73 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+        {/* SUBSECTION C — FINANCIAL CONTAINERS & OBLIGATIONS */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-4 bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
             <AccountSection
               accounts={ledger.accounts}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+          <div className="lg:col-span-4 bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
             <LiabilitySection
               liabilities={ledger.liabilities}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+          <div className="lg:col-span-4 bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
             <IncomeSection
               incomeStreams={ledger.incomeStreams}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
-            <GoalSection
-              goals={ledger.goals}
-              onSnapshot={applyDashboardSnapshot}
-            />
+        </div>
+
+        {/* Strategic Fulfillment Context (Analytical Summary) */}
+        <div className="bg-foreground border border-foreground/10 rounded-[2.5rem] p-10 text-background shadow-2xl flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-background/5 blur-[80px] rounded-full -mr-32 -mt-32"></div>
+
+          <div className="space-y-2 relative z-10">
+            <h2 className="text-2xl font-black uppercase tracking-[0.1em]">
+              Strategic Fulfillment
+            </h2>
+            <p className="text-background/60 text-sm font-bold uppercase tracking-widest max-w-lg leading-relaxed">
+              Alignment of authoritative capital with defined long-term
+              intentions. Calculated mean across all active objectives.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-12 relative z-10">
+            <div className="text-right">
+              <p className="text-5xl font-black tabular-nums">
+                {Math.round(ledger.analytics?.averageGoalProgress || 0)}%
+              </p>
+              <p className="text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-2">
+                Fulfillment Mean
+              </p>
+            </div>
+
+            {ledger.analytics && ledger.analytics.criticalGoalCount > 0 && (
+              <div className="bg-orange-500 text-background px-6 py-4 rounded-2xl shadow-xl shadow-orange-500/20">
+                <p className="text-sm font-black uppercase tracking-widest leading-none">
+                  {ledger.analytics.criticalGoalCount}
+                </p>
+                <p className="text-[9px] font-black uppercase tracking-tighter mt-1 opacity-80">
+                  Critical
+                </p>
+              </div>
+            )}
+
+            <div className="bg-background/10 h-16 w-[1px] hidden sm:block"></div>
+
+            <div className="text-right">
+              <p className="text-5xl font-black tabular-nums">
+                {ledger.goals.length}
+              </p>
+              <p className="text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-2">
+                Active Intentions
+              </p>
+            </div>
           </div>
         </div>
       </section>

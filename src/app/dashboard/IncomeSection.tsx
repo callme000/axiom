@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { INCOME_TYPES, CADENCES, type IncomeStream } from "@/lib/finance/income";
+import {
+  INCOME_TYPES,
+  CADENCES,
+  type IncomeStream,
+} from "@/lib/finance/income";
 import { calculateMonthlyInflow } from "@/lib/finance/income";
 import {
   createIncomeAction,
@@ -84,7 +88,7 @@ export function IncomeSection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Capital Replenishment
+          Replenishment
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -131,9 +135,7 @@ export function IncomeSection({
                   required
                   placeholder="0.00"
                   value={form.amount}
-                  onChange={(e) =>
-                    setForm({ ...form, amount: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
                 />
               </div>
@@ -201,9 +203,7 @@ export function IncomeSection({
                 type="text"
                 placeholder="e.g. Acme Corp"
                 value={form.source}
-                onChange={(e) =>
-                  setForm({ ...form, source: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, source: e.target.value })}
                 className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
               />
             </div>
@@ -232,7 +232,7 @@ export function IncomeSection({
               No replenishment sources recorded.
             </p>
             <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Inflow awareness layer currently at zero baseline.
+              Add recurring inflows to improve runway accuracy.
             </p>
           </div>
         ) : (
@@ -253,7 +253,8 @@ export function IncomeSection({
                   </div>
                   <div className="flex gap-3">
                     <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
-                      {stream.cadence} • {stream.is_recurring ? "Recurring" : "One-off"}
+                      {stream.cadence} •{" "}
+                      {stream.is_recurring ? "Recurring" : "One-off"}
                     </p>
                     {stream.source && (
                       <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">

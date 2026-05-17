@@ -85,7 +85,7 @@ export function LiabilitySection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Financial Obligations
+          Obligations
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -229,7 +229,7 @@ export function LiabilitySection({
               No financial obligations recorded.
             </p>
             <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Solvency awareness layer currently optimal.
+              Operational capital is currently un-obligated.
             </p>
           </div>
         ) : (

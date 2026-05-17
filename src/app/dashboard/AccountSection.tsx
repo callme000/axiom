@@ -75,7 +75,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Financial Containers
+          Capital Containers
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -115,7 +115,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
               </div>
               <div>
                 <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Initial Balance (KSh)
+                  Current Balance (KSh)
                 </label>
                 <input
                   type="number"
@@ -186,10 +186,10 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
         {accounts.length === 0 ? (
           <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
             <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No financial containers defined.
+              No capital containers defined.
             </p>
             <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Infrastructure awareness layer currently offline.
+              Define accounts to track authoritative capital.
             </p>
           </div>
         ) : (
