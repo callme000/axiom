@@ -1,6 +1,8 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
+import { User } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -9,11 +11,26 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  useEffect(() => {
+    async function getUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    }
+    getUser();
+  }, []);
+
   async function handleLogout() {
     await supabase.auth.signOut();
     // Refresh to trigger middleware redirection
     window.location.href = "/";
   }
+
+  const userInitial = user?.email?.[0].toUpperCase() || "U";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -36,12 +53,60 @@ export default function DashboardLayout({
           </div>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="text-sm font-medium text-gray-500 hover:text-foreground transition"
-        >
-          Logout
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="w-10 h-10 rounded-2xl bg-foreground/5 border border-foreground/10 flex items-center justify-center hover:bg-foreground/10 transition-all group overflow-hidden"
+          >
+            {user?.user_metadata?.avatar_url ? (
+              <img
+                src={user.user_metadata.avatar_url}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="font-black text-foreground/40 group-hover:text-foreground transition-colors">
+                {userInitial}
+              </span>
+            )}
+          </button>
+
+          {isProfileOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsProfileOpen(false)}
+              ></div>
+              <div className="absolute right-0 mt-3 w-56 bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-4 border-b border-foreground/5">
+                  <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1">
+                    Authenticated As
+                  </p>
+                  <p className="text-xs font-bold text-foreground truncate">
+                    {user?.email}
+                  </p>
+                </div>
+                <div className="p-2">
+                  <button
+                    disabled
+                    className="w-full text-left px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest text-foreground/40 cursor-not-allowed flex items-center justify-between"
+                  >
+                    Account Settings
+                    <span className="text-[8px] bg-foreground/5 px-1.5 py-0.5 rounded text-foreground/30">
+                      Soon
+                    </span>
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-colors"
+                  >
+                    Terminate Session
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </header>
       <main className="flex-1">{children}</main>
     </div>

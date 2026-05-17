@@ -194,6 +194,8 @@ export default function Dashboard() {
   const [liquidityError, setLiquidityError] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [ledgerFilter, setLedgerFilter] = useState("all");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
     amount: "",
@@ -369,14 +371,22 @@ export default function Dashboard() {
       <section className="space-y-16">
         {/* Header: Title and Positioning */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-10">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase hover:text-foreground/40 transition-colors cursor-default">
-              AXIOM <span className="hidden md:inline">::</span>{" "}
-              <span className="text-foreground/60">DASHBOARD</span>
-            </h1>
-            <p className="text-foreground/40 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
-              Financial Intelligence System v2.4-SYNC-CONFIRMED
-            </p>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-1.5 bg-foreground rounded-full"></div>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground uppercase hover:text-foreground/80 transition-all cursor-default flex items-baseline gap-3">
+                AXIOM
+                <span className="text-xl md:text-2xl text-foreground/20 font-light lowercase tracking-normal italic hidden sm:block">
+                  intelligence layer
+                </span>
+              </h1>
+            </div>
+            <div className="flex items-center gap-3 ml-5">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <p className="text-foreground/40 text-[10px] md:text-xs font-black uppercase tracking-[0.4em] leading-none">
+                Financial Intelligence System v2.4 :: Sync-Confirmed
+              </p>
+            </div>
           </div>
 
           {/* SUBSECTION A — FINANCIAL POSITION */}
@@ -542,23 +552,29 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* SUBSECTION C — FINANCIAL CONTAINERS & OBLIGATIONS */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-4 bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+        {/* SUBSECTION C — FINANCIAL CONTAINERS, OBLIGATIONS & STRATEGY */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
             <AccountSection
               accounts={ledger.accounts}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="lg:col-span-4 bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
             <LiabilitySection
               liabilities={ledger.liabilities}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="lg:col-span-4 bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
             <IncomeSection
               incomeStreams={ledger.incomeStreams}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+            <GoalSection
+              goals={ledger.goals}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
@@ -1082,9 +1098,87 @@ export default function Dashboard() {
             </h2>
             <div className="h-0.5 w-16 bg-foreground/10"></div>
           </div>
-          <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
-            Audit Trail :: Verified
-          </span>
+          <div className="flex items-center gap-4 relative">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${
+                ledgerFilter !== "all"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-background text-foreground/60 border-foreground/10 hover:border-foreground/20"
+              }`}
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+              >
+                <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+              </svg>
+              {ledgerFilter === "all" ? "Filter" : ledgerFilter}
+            </button>
+
+            {isFilterOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setIsFilterOpen(false)}
+                ></div>
+                <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="p-2 space-y-1">
+                    <button
+                      onClick={() => {
+                        setLedgerFilter("all");
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
+                        ledgerFilter === "all"
+                          ? "bg-foreground text-background"
+                          : "text-foreground/60 hover:bg-foreground/5"
+                      }`}
+                    >
+                      All Signals
+                    </button>
+                    {TAXONOMY_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.value}
+                        onClick={() => {
+                          setLedgerFilter(cat.value);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
+                          ledgerFilter === cat.value
+                            ? "bg-foreground text-background"
+                            : "text-foreground/60 hover:bg-foreground/5"
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => {
+                        setLedgerFilter("Unclassified");
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
+                        ledgerFilter === "Unclassified"
+                          ? "bg-foreground text-background"
+                          : "text-foreground/60 hover:bg-foreground/5"
+                      }`}
+                    >
+                      Unclassified
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <span className="hidden md:inline text-[10px] font-black text-foreground/40 uppercase tracking-widest ml-2">
+              Audit Trail :: Verified
+            </span>
+          </div>
         </div>
 
         {ledger.deployments.length === 0 && !globalError ? (
@@ -1113,155 +1207,161 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {ledger.deployments.map((deployment) => (
-              <div
-                key={deployment.id}
-                className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
-              >
-                {editingId === deployment.id ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        disabled={updatingId === deployment.id}
-                        value={editForm.title}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            title: e.target.value,
-                          })
-                        }
-                        className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
-                      />
-                      <input
-                        type="number"
-                        disabled={updatingId === deployment.id}
-                        value={editForm.amount}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            amount: e.target.value,
-                          })
-                        }
-                        className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <CategorySelector
+            {ledger.deployments
+              .filter(
+                (d) => ledgerFilter === "all" || d.category === ledgerFilter,
+              )
+              .map((deployment) => (
+                <div
+                  key={deployment.id}
+                  className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
+                >
+                  {editingId === deployment.id ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <input
+                          type="text"
                           disabled={updatingId === deployment.id}
-                          value={editForm.category}
-                          onChange={(nextCategory) =>
+                          value={editForm.title}
+                          onChange={(e) =>
                             setEditForm({
                               ...editForm,
-                              category: nextCategory,
+                              title: e.target.value,
                             })
                           }
-                          compact
+                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
+                        />
+                        <input
+                          type="number"
+                          disabled={updatingId === deployment.id}
+                          value={editForm.amount}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              amount: e.target.value,
+                            })
+                          }
+                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
                         />
                       </div>
-                      <div className="flex shrink-0 gap-2 pt-1">
-                        <button
-                          disabled={updatingId === deployment.id}
-                          onClick={() => setEditingId(null)}
-                          className="text-xs font-black text-foreground/60 uppercase px-3 py-1 disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          disabled={updatingId === deployment.id}
-                          onClick={() => handleUpdate(deployment.id)}
-                          className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
-                        >
-                          {updatingId === deployment.id ? "SAVING..." : "Save"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-5">
-                      <div
-                        className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
-                      >
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                        >
-                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                        </svg>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-black text-xl text-foreground transition-colors leading-none">
-                            {deployment.title}
-                          </h3>
-                          <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
-                            {deployment.category || "Unclassified"}
-                          </span>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <CategorySelector
+                            disabled={updatingId === deployment.id}
+                            value={editForm.category}
+                            onChange={(nextCategory) =>
+                              setEditForm({
+                                ...editForm,
+                                category: nextCategory,
+                              })
+                            }
+                            compact
+                          />
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-foreground/60 font-bold uppercase tracking-tighter">
-                          <span>
-                            {isClient
-                              ? new Date(
-                                  deployment.created_at,
-                                ).toLocaleDateString(undefined, {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })
-                              : "--- --, ----"}
-                          </span>
-                          <span className="w-1 h-1 bg-foreground/20 rounded-full"></span>
-                          <span>
-                            {isClient
-                              ? new Date(
-                                  deployment.created_at,
-                                ).toLocaleTimeString(undefined, {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : "--:--"}
-                          </span>
+                        <div className="flex shrink-0 gap-2 pt-1">
+                          <button
+                            disabled={updatingId === deployment.id}
+                            onClick={() => setEditingId(null)}
+                            className="text-xs font-black text-foreground/60 uppercase px-3 py-1 disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            disabled={updatingId === deployment.id}
+                            onClick={() => handleUpdate(deployment.id)}
+                            className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
+                          >
+                            {updatingId === deployment.id
+                              ? "SAVING..."
+                              : "Save"}
+                          </button>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right flex flex-col items-end">
-                      <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                        {formatKSh(deployment.amount)}
-                      </p>
-                      <div className="mt-1 flex items-center gap-3">
-                        <button
-                          disabled={deletingId !== null}
-                          onClick={() => startEdit(deployment)}
-                          className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
+                  ) : (
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-5">
+                        <div
+                          className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
                         >
-                          Edit
-                        </button>
-                        <button
-                          disabled={deletingId !== null}
-                          onClick={() => handleDelete(deployment.id)}
-                          className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
-                        >
-                          {deletingId === deployment.id
-                            ? "DELETING..."
-                            : "Delete"}
-                        </button>
-                        <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
-                          <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                            Verified
-                          </span>
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          >
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-black text-xl text-foreground transition-colors leading-none">
+                              {deployment.title}
+                            </h3>
+                            <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
+                              {deployment.category || "Unclassified"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-foreground/60 font-bold uppercase tracking-tighter">
+                            <span>
+                              {isClient
+                                ? new Date(
+                                    deployment.created_at,
+                                  ).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })
+                                : "--- --, ----"}
+                            </span>
+                            <span className="w-1 h-1 bg-foreground/20 rounded-full"></span>
+                            <span>
+                              {isClient
+                                ? new Date(
+                                    deployment.created_at,
+                                  ).toLocaleTimeString(undefined, {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "--:--"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right flex flex-col items-end">
+                        <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
+                          {formatKSh(deployment.amount)}
+                        </p>
+                        <div className="mt-1 flex items-center gap-3">
+                          <button
+                            disabled={deletingId !== null}
+                            onClick={() => startEdit(deployment)}
+                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            disabled={deletingId !== null}
+                            onClick={() => handleDelete(deployment.id)}
+                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
+                          >
+                            {deletingId === deployment.id
+                              ? "DELETING..."
+                              : "Delete"}
+                          </button>
+                          <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
+                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+                              Verified
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
           </div>
         )}
       </section>
