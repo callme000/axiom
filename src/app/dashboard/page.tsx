@@ -183,19 +183,33 @@ export default function Dashboard() {
   const [advancedContext, setAdvancedContext] =
     useState<DeploymentAdvancedContextInput>({ ...EMPTY_ADVANCED_CONTEXT });
 
-  const titleMetadataQuality = evaluateMetadataQuality(title);
-  const showTitleQualityHint =
-    title.trim().length > 0 && titleMetadataQuality.isLowQuality;
-
-  const isExecuting = useRef(false);
-  const fetchCount = useRef(0);
-
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isLiquidityLoading, setIsLiquidityLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [isIntelligenceSyncing, setIsIntelligenceSyncing] = useState(false);
+
+  const [activeFlashInsight, setActiveFlashInsight] = useState<{
+    message: string;
+    action: string;
+  } | null>(null);
+
+  const titleMetadataQuality = evaluateMetadataQuality(title);
+  const showTitleQualityHint =
+    title.trim().length > 0 && titleMetadataQuality.isLowQuality;
+
+  const isExecuting = useRef(false);
+  const fetchCount = useRef(0);
+  const flashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // Persistence Refinement: Flash insights now remain active until user dismissal
+    // to ensure guidance is fully absorbed.
+    return () => {
+      if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
+    };
+  }, [activeFlashInsight]);
 
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -538,31 +552,46 @@ export default function Dashboard() {
 
         {/* SUBSECTION C — FINANCIAL CONTAINERS, OBLIGATIONS & STRATEGY */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+          <div
+            id="accounts"
+            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+          >
             <AccountSection
               accounts={ledger.accounts}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+          <div
+            id="liabilities"
+            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+          >
             <LiabilitySection
               liabilities={ledger.liabilities}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+          <div
+            id="income"
+            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+          >
             <IncomeSection
               incomeStreams={ledger.incomeStreams}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+          <div
+            id="objectives"
+            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+          >
             <StrategicObjectiveSection
               objectives={ledger.objectives}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
+          <div
+            id="goals"
+            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+          >
             <GoalSection
               goals={ledger.goals}
               onSnapshot={applyDashboardSnapshot}
@@ -609,7 +638,7 @@ export default function Dashboard() {
 
             <div className="text-center md:text-right">
               <p className="text-4xl md:text-5xl font-black tabular-nums">
-                {ledger.goals.length}
+                {ledger.goals.length + ledger.objectives.length}
               </p>
               <p className="text-[8px] md:text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-1 md:mt-2">
                 Active Intentions
@@ -618,6 +647,55 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
+
+      {/* GUIDING STRATEGIC INSIGHT (Persistent bottom-right) */}
+      {activeFlashInsight && (
+        <div className="fixed bottom-8 right-8 z-50 animate-in fade-in slide-in-from-right-8 duration-700 max-w-sm w-full">
+          <div className="bg-background border-2 border-foreground rounded-[2rem] p-6 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] text-foreground relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-foreground/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-foreground/10 transition-colors"></div>
+
+            <div className="flex items-start gap-5 relative z-10">
+              <div className="w-12 h-12 bg-foreground text-background rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4M12 8h.01" />
+                </svg>
+              </div>
+
+              <div className="space-y-1 pr-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 block">
+                  Strategic Guidance
+                </span>
+                <p className="text-sm font-bold leading-relaxed text-foreground">
+                  {activeFlashInsight.message}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between pt-4 border-t border-foreground/5 relative z-10">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-foreground/20 rounded-full"></span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">
+                  {activeFlashInsight.action}
+                </span>
+              </div>
+              <button
+                onClick={() => setActiveFlashInsight(null)}
+                className="px-4 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Zone 2 — DEPLOY CAPITAL (REFINED CONSOLE) */}
       <section
@@ -984,41 +1062,72 @@ export default function Dashboard() {
             {kairosInsight &&
               (kairosInsight.severity === "critical" ||
                 kairosInsight.severity === "warning") &&
-              !kairosInsight.isSilent &&
-              (isKairosAcknowledged ? (
-                <div className="mt-8 flex items-center gap-2 animate-in fade-in duration-1000">
-                  <div className="w-1.5 h-1.5 bg-background/20 rounded-full"></div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-background/40">
-                    Strategic signal acknowledged at:{" "}
-                    {isClient && lastAcknowledgedAt
-                      ? new Date(lastAcknowledgedAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "--:--"}
-                  </p>
-                </div>
-              ) : (
-                <div className="mt-8 p-5 border border-orange-500/30 bg-orange-500/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+              !kairosInsight.isSilent && (
+                <div className="mt-8 p-5 border border-orange-500/30 bg-orange-500/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in duration-700">
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-orange-400 mb-1">
                       Active Operational Signal
                     </p>
                     <p className="text-xs font-bold text-background/80">
-                      Material strategic shift detected. Review required.
+                      {kairosInsight.category === "solvency_pressure"
+                        ? "Liquidity shortfall detected. Immediate structural adjustment required."
+                        : kairosInsight.category === "objective_starvation"
+                          ? "Strategic objective stagnation detected. Review funding velocity."
+                          : kairosInsight.category === "capital_efficiency"
+                            ? "Capital allocation conflict detected. Review deployment behavior."
+                            : "Material strategic shift detected. Review required."}
                     </p>
                   </div>
                   <button
                     onClick={() => {
-                      setIsKairosAcknowledged(true);
-                      setLastAcknowledgedAt(new Date().toISOString());
+                      const targetMap: Record<string, string> = {
+                        solvency_pressure: "objectives",
+                        objective_starvation: "objectives",
+                        capital_efficiency: "deploy",
+                        strategic_alignment: "overview",
+                      };
+                      const targetId =
+                        targetMap[kairosInsight.category] || "overview";
+
+                      // Set Flash Context
+                      setActiveFlashInsight({
+                        message: kairosInsight.message,
+                        action: `Reviewing ${targetId.replace("_", " ")}`,
+                      });
+
+                      // Scroll to target
+                      const element = document.getElementById(targetId);
+                      if (element) {
+                        element.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      }
                     }}
-                    className="px-5 py-2.5 bg-background/10 hover:bg-background/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-background transition-colors shrink-0"
+                    className="px-5 py-2.5 bg-background/10 hover:bg-background/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-background transition-colors shrink-0 flex items-center gap-2"
                   >
-                    Mark Acknowledged
+                    <span>
+                      {kairosInsight.category === "solvency_pressure"
+                        ? "Adjust Objectives"
+                        : kairosInsight.category === "objective_starvation"
+                          ? "View Objectives"
+                          : kairosInsight.category === "capital_efficiency"
+                            ? "Adjust Allocation"
+                            : "Investigate Signal"}
+                    </span>
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                   </button>
                 </div>
-              ))}
+              )}
           </div>
 
           {/* LAYER D — SYSTEM TELEMETRY */}

@@ -53,8 +53,11 @@ export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
   );
 };
 
-export const calculateGoalMetrics = (goals: FinancialGoal[]) => {
-  return goals.reduce(
+export const calculateGoalMetrics = (
+  goals: FinancialGoal[],
+  objectives: StrategicObjective[] = [],
+) => {
+  const goalStats = goals.reduce(
     (acc, goal) => {
       acc.totalTargets += Number(goal.target_amount);
       acc.totalProgress += Number(goal.current_progress);
@@ -71,6 +74,16 @@ export const calculateGoalMetrics = (goals: FinancialGoal[]) => {
       progressSum: 0,
     },
   );
+
+  return objectives.reduce((acc, obj) => {
+    acc.totalTargets += Number(obj.target_amount);
+    acc.totalProgress += Number(obj.current_amount);
+    if (obj.priority_level === "critical" && obj.status === "active") {
+      acc.criticalCount += 1;
+    }
+    acc.progressSum += calculateObjectiveFundingRatio(obj);
+    return acc;
+  }, goalStats);
 };
 
 export const calculateAverage = (deployments: Deployment[]): number => {
@@ -265,7 +278,7 @@ export const generateSummary = (
   const netWorth = totalAssets - totalLiabilities;
 
   const income = calculateIncomeMetrics(incomeStreams);
-  const goalMetrics = calculateGoalMetrics(goals);
+  const goalMetrics = calculateGoalMetrics(goals, objectives);
 
   const strategicAlignment = calculateStrategicAlignment(
     objectives,
@@ -275,6 +288,8 @@ export const generateSummary = (
     burnRate,
     liabilities,
   );
+
+  const totalIntentionsCount = goals.length + objectives.length;
 
   return {
     totalDeployed: total,
@@ -299,7 +314,9 @@ export const generateSummary = (
     totalStrategicTargets: goalMetrics.totalTargets,
     totalCurrentProgress: goalMetrics.totalProgress,
     averageGoalProgress:
-      goals.length > 0 ? goalMetrics.progressSum / goals.length : 0,
+      totalIntentionsCount > 0
+        ? goalMetrics.progressSum / totalIntentionsCount
+        : 0,
     criticalGoalCount: goalMetrics.criticalCount,
     fundingGap: Math.max(
       0,
