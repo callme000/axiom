@@ -9,12 +9,12 @@ interface RunwayCardProps {
 
 export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
   // 1. Logic for determining visual state
-  const isStable = runwayDays === null;
-  const isCritical = !isStable && runwayDays! < 30;
+  const isInfiniteRunway = runwayDays === null;
+  const isCritical = !isInfiniteRunway && runwayDays! < 30;
   const isInsolvent = netWorth < 0;
 
   // 2. Formatting
-  const displayValue = isStable
+  const displayValue = isInfiniteRunway
     ? isInsolvent
       ? "INSOLVENT STABLE"
       : "SYSTEM STABLE"
@@ -22,7 +22,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
 
   // 3. Conditional Styles
   const containerClasses = `bg-foreground/5 border rounded-2xl p-6 md:p-8 flex flex-col justify-between transition-all duration-500 ${
-    isStable
+    isInfiniteRunway
       ? isInsolvent
         ? "border-rose-500/20"
         : "border-emerald-500/10"
@@ -32,7 +32,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
   }`;
 
   const labelClasses = `text-[11px] font-black uppercase tracking-[0.2em] mb-4 ${
-    isStable
+    isInfiniteRunway
       ? isInsolvent
         ? "text-rose-500/50"
         : "text-emerald-500/50"
@@ -42,7 +42,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
   }`;
 
   const valueClasses = `text-4xl font-black tabular-nums transition-colors duration-500 ${
-    isStable
+    isInfiniteRunway
       ? isInsolvent
         ? "text-rose-500/80 font-mono tracking-tighter"
         : "text-emerald-500/80 font-mono tracking-tighter"
@@ -51,7 +51,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
         : "text-foreground"
   }`;
 
-  const description = isStable
+  const description = isInfiniteRunway
     ? isInsolvent
       ? "Burn is absorbed by income, but total liabilities exceed assets."
       : "Net inbound capital completely absorbs current burn rates."
@@ -63,13 +63,13 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
     <div className={containerClasses}>
       <div className="flex items-center justify-between mb-4">
         <span className={labelClasses}>
-          {isStable
+          {isInfiniteRunway
             ? isInsolvent
               ? "Insolvent Stability"
               : "Infinite Stability"
             : "Deterministic Runway"}
         </span>
-        {isStable && !isInsolvent && (
+        {isInfiniteRunway && !isInsolvent && (
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-emerald-500/40 rounded-full animate-pulse"></span>
             <span className="text-[8px] font-black text-emerald-500/40 uppercase tracking-widest">
@@ -77,7 +77,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
             </span>
           </div>
         )}
-        {isStable && isInsolvent && (
+        {isInfiniteRunway && isInsolvent && (
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-rose-500/40 rounded-full animate-pulse"></span>
             <span className="text-[8px] font-black text-rose-500/40 uppercase tracking-widest">
@@ -91,7 +91,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
         <span className={valueClasses}>{displayValue}</span>
         <p
           className={`text-[10px] font-bold uppercase tracking-widest mt-4 ${
-            isStable ? "text-emerald-600/40" : "text-foreground/40"
+            isInfiniteRunway ? "text-emerald-600/40" : "text-foreground/40"
           }`}
         >
           {description}

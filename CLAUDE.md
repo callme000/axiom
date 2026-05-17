@@ -1,4 +1,4 @@
-# CLAUDE.md — AXIOM
+# CLAUDE.md — AXIOM (Phase 5E)
 
 This file defines how Claude (and similar coding agents) should behave when working inside the Axiom codebase.
 
@@ -26,11 +26,13 @@ Axiom architecture:
 ```text id="axm1"
 Next.js (UI + Server Actions)
         ↓
-/lib (business logic layer)
+/lib/analytics (deterministic engine)
+        ↓
+/lib/context (behavioral mapping)
+        ↓
+/lib/ai/kairos (rule-based interpretation)
         ↓
 Supabase (PostgreSQL = source of truth)
-        ↓
-AI layer (optional, external, read-only)
 ```
 
 ---
@@ -41,10 +43,10 @@ Supabase is the **only source of truth**.
 
 Everything financial must originate from:
 
-* transactions
-* accounts
-* budgets
-* goals
+* deployments (manual events)
+* operational_baseline (structural flows)
+* strategic_objectives (intentions)
+* accounts & liabilities
 
 You must NEVER:
 
@@ -61,40 +63,33 @@ You must NEVER:
 Before writing code, always identify:
 
 * What is UI?
-* What is business logic?
-* What is database access?
-* What is derived computation?
+* What is analytics?
+* What is behavioral context?
+* What is interpretation?
 
 Do NOT mix layers.
 
 ---
 
-## 2. NEVER SKIP THE DATA MODEL
+## 2. DATA PIPELINE INTEGRITY
 
-Before implementing features involving money:
-
-You must check:
-
-* What tables are involved?
-* What is the invariant?
-* What is the source of truth?
-
-If unclear → stop and clarify.
+Ensure all evaluation paths use the **Unified Telemetry Configuration**.
+Stream authoritative context from Server Actions to the AI layer to prevent "starved" summaries.
 
 ---
 
-## 3. PREFER SMALL, PURE FUNCTIONS
+## 3. PREFER DETERMINISTIC LOGIC
 
-Financial logic should be:
+Financial interpretation must be:
 
-* deterministic
-* testable
+* threshold-based
+* explainable
 * predictable
 
 Avoid:
 
 * hidden state
-* side effects in calculations
+* Generative AI for core financial assessments
 * deeply nested logic
 
 ---
@@ -110,131 +105,75 @@ Never mutate Supabase directly from UI components.
 
 ---
 
-## 5. SUPABASE SAFETY RULES
-
-When interacting with Supabase:
-
-* assume all client input is untrusted
-* always enforce user ownership filters
-* never bypass Row Level Security assumptions
-* never expose service role keys in client code
-
----
-
 # 💰 FINANCIAL LOGIC RULES
 
-## 1. Transactions are immutable events
+## 1. Deployments are immutable capital events
 
-Do not edit transactions in place unless explicitly required.
-
-Prefer:
-
-* correction entries
-* audit-friendly updates
+Classify every deployment using the **Axiom Taxonomy**:
+Asset, Skill, Leverage, Experience, Maintenance, Leakage.
 
 ---
 
-## 2. Balances are derived
+## 2. Operational Baseline defines structural burn
 
-Account balances should be:
-
-* computed from transactions OR
-* carefully synchronized with strict invariants
-
-Never allow silent drift.
+All recurring outflows (Rent, DCA) must live in the baseline.
+Baseline burn is a mandatory input for runway calculations.
 
 ---
 
-## 3. Categories are labels, not truth
+## 3. Runway is the Resilience Horizon
 
-Categories can be:
-
-* inferred
-* corrected
-* reclassified
-
-They are not financial facts.
+Runway must reflect the **Insolvent Stable** state.
+If `Net Worth < 0`, Runway is `0` regardless of current cash flow.
 
 ---
 
-# 🤖 AI INTEGRATION RULES
+# 🤖 AI INTEGRATION RULES (KAIROS)
 
-(when AI features are used)
+## 1. Kairos is an Interpreter, not a Generator
 
-## 1. AI is read-only
-
-AI must only:
-
-* analyze data
-* generate insights
-* detect patterns
-* explain behavior
-
-AI must NEVER:
-
-* write to database
-* modify financial records
-* generate authoritative financial state
+Kairos analyzes analytics truth against a **Rule Registry**.
+If it cannot be traced to an analytics threshold, Kairos must not say it.
 
 ---
 
-## 2. AI input must be structured
+## 2. Actionable Signals
 
-Never pass raw frontend state to AI.
-
-Only pass:
-
-* validated DB queries
-* aggregated financial summaries
-* sanitized context objects
-
----
-
-## 3. AI outputs are NOT truth
-
-AI outputs are:
-
-* probabilistic
-* interpretive
-* advisory
-
-They must never be stored as financial records.
+Signals in the UI must link to the section where the issue can be fixed.
+Support signals with **Strategic Guidance** popups.
 
 ---
 
 # 🧱 CODE ORGANIZATION RULES
 
-## /lib/finance
+## /lib/analytics
 
-* all financial calculations
-* transaction logic
-* budget logic
+* deterministic financial engine
+* goal & objective progress
 
-## /lib/db
+## /lib/context
 
-* Supabase queries
-* data access layer
+* behavioral trend mapping
+* volatility & discipline analysis
 
-## /lib/ai
+## /lib/ai/kairos
 
-* prompt building
-* AI orchestration
-* insight generation
+* rule-based strategic interpretation
+* high-priority triggers
 
-## /app
+## /app/dashboard
 
 * UI only
-* no business logic
+* category-specific navigation
 
 ---
 
 # 🚨 COMMON MISTAKES TO AVOID
 
-* duplicating financial calculations in UI
-* storing computed balances as truth
-* mixing AI outputs with database state
-* bypassing server logic layer
-* overengineering early abstractions
+* duplicating analytics in UI
+* "starving" the AI layer of context
+* bypass logic in the telemetry pipeline
+* ignoring structural deficits in runway math
 
 ---
 
@@ -245,22 +184,7 @@ If unsure how to implement something:
 1. Choose simplest correct solution
 2. Prefer explicit logic over magic abstraction
 3. Ensure traceability to Supabase data
-4. Ask: “Can this be verified from transactions?”
-
-If not → do not implement yet.
-
----
-
-# 🧪 QUALITY BAR
-
-Every change should satisfy:
-
-* Is it consistent with DB truth?
-* Can it be traced back to transactions?
-* Does it preserve architectural boundaries?
-* Would another engineer understand it without explanation?
-
-If any answer is “no” → revise.
+4. Ask: “Can this be verified from the analytics engine?”
 
 ---
 

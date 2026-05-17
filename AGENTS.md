@@ -1,4 +1,4 @@
-# AGENTS.md — AXIOM v2
+# AGENTS.md — AXIOM v3 (Phase 5E)
 
 This document defines rules for AI coding agents operating inside the Axiom codebase.
 
@@ -13,23 +13,26 @@ Axiom follows **Architecture A**:
 ```text id="a0x1a"
 Next.js (UI + Server Actions)
         ↓
-Application Logic Layer (/lib)
+Application Logic Layer (/lib/analytics)
+        ↓
+Behavioral Context Layer (/lib/context)
+        ↓
+AI Interpretation Layer (/lib/ai/kairos)
         ↓
 Supabase (PostgreSQL + Auth)
-        ↓
-AI Layer (external API - undecided)
 ```
 
 ---
 
 # 🧠 CORE PHILOSOPHY
 
-> The database is truth. Everything else is interpretation or computation.
+> The database is truth. Analytics compute state. AI interprets intent.
 
 Agents must operate under the assumption that:
 
-* Supabase is the only source of financial truth
-* all other layers are derived or representational
+* Supabase is the only source of financial truth.
+* Analytics are deterministic and traceable.
+* Kairos is a restrained interpreter, not a conversational agent.
 
 ---
 
@@ -41,10 +44,10 @@ Supabase contains all canonical financial data:
 
 * users
 * accounts
-* transactions
-* budgets
-* goals
-* categories
+* deployments (Manual Capital Events)
+* operational_baseline (Recurring Capital Flows)
+* strategic_objectives (Directional Intentions)
+* user_settings
 
 Agents must NEVER:
 
@@ -56,16 +59,16 @@ Agents must NEVER:
 
 ## 2. NO DIRECT AI WRITE ACCESS
 
-AI systems (current or future) MUST NOT:
+AI systems (Kairos) MUST NOT:
 
 * insert transactions
 * modify balances
-* alter budgets directly
+* alter objectives directly
 * fabricate financial records
 
 AI is strictly:
 
-> read → analyze → interpret → suggest
+> data → analytics → behavioral context → interpretation
 
 ---
 
@@ -102,209 +105,94 @@ The frontend must NEVER:
 
 ### UI Layer (/app, /components)
 
-* rendering only
+* rendering and user interaction
+* actionable signals (links to corrective sections)
 * no business logic
-* no financial computation
 
-### Application Logic (/lib)
+### Application Logic (/lib/analytics)
 
-* financial calculations
-* validation
-* transformations
-* aggregation logic
+* deterministic financial engine
+* runway and burn calculations
+* alignment pressure scoring
+
+### Behavioral Context (/lib/context)
+
+* aggregation of analytics into behavioral metrics
+* trend analysis (volatility, discipline)
 
 ### Database Layer (/lib/db)
 
-* Supabase queries
-* CRUD operations
+* Supabase queries and CRUD
 * data access abstraction
 
-### AI Layer (/lib/ai)
+### AI Interpretation Layer (/lib/ai/kairos)
 
-* prompts
-* context building
-* insight generation
-* interpretation only
-
----
-
-## 2. NO LOGIC DUPLICATION
-
-If a rule exists in:
-
-* finance calculations
-* transaction handling
-* budget logic
-
-It must exist in ONE place only.
-
-Duplication = architectural failure.
+* rule-based strategic interpretation
+* high-priority trigger evaluation
+* **NO Generative AI** in core loop
 
 ---
 
-## 3. DERIVED DATA MUST BE TRACEABLE
+## 2. DATA PIPELINE INTEGRITY (ZERO STARVATION)
 
-All computed values must be traceable to:
-
-* transactions
-* accounts
-* budgets
-
-No “mystery numbers” allowed.
+All evaluation paths (UI + AI) must consume the **authoritative telemetry state**.
+Avoid redundant DB roundtrips by streaming context from Server Actions directly to the interpretation layer.
 
 ---
 
 # 💰 FINANCIAL ENGINE RULES
 
-## 1. TRANSACTIONS ARE IMMUTABLE EVENTS
+## 1. DEPLOYMENTS ARE IMMUTABLE
 
-A transaction:
+A deployment:
 
-* is never edited in-place (prefer correction entries)
-* is always timestamped
-* is always user-owned
-
----
-
-## 2. BALANCES ARE DERIVED
-
-Account balances must:
-
-* be computed from transactions OR
-* be carefully maintained with strict invariants
-
-Never allow silent drift.
+* is a manual capital event
+* is always classified by taxonomy (Asset, Skill, Leverage, Experience, Maintenance, Leakage)
 
 ---
 
-## 3. CATEGORIES ARE LABELS, NOT TRUTH
+## 2. OPERATIONAL BASELINE IS STRUCTURAL
 
-Categories:
+The baseline:
 
-* can be inferred
-* can be corrected
-* are not financial facts
-
----
-
-# 🤖 AI INTEGRATION RULES
-
-(when AI layer is introduced)
-
-## 1. AI IS NOT A SYSTEM OF RECORD
-
-AI cannot:
-
-* define financial truth
-* persist authoritative data
-* overwrite DB state
+* defines recurring structural outflows (Rent, Subscriptions)
+* defines systemic allocations (Automated Investments)
+* is required for accurate runway/burn truth
 
 ---
 
-## 2. AI IS AN INTERPRETER ONLY
+## 3. RUNWAY (RESILIENCE HORIZON) IS DETERMINISTIC
 
-AI outputs:
+Runway = `Pool / (Deployment Burn + Structural Burn - Income Replenishment)`
 
-* insights
-* explanations
-* behavioral patterns
-* suggestions
-
-Not:
-
-* stored financial facts
-* system state
-* computed balances
+If `Net Worth < 0`, Runway is forced to `0` (Insolvent) to ensure UI honesty.
 
 ---
 
-## 3. AI MUST USE STRUCTURED INPUT ONLY
+# 🤖 AI INTEGRATION RULES (KAIROS)
 
-All AI prompts must be built from:
+## 1. KAIROS IS DETERMINISTIC
 
-* DB queries
-* server-side aggregation
-* sanitized context objects
-
-Never raw frontend state.
+Kairos follows a rule-based registry (`/lib/insights/rules/registry.ts`).
+Every signal must be traceable to a specific analytics threshold.
 
 ---
 
-# ⚙️ DEVELOPMENT RULES
+## 2. THE PHILOSOPHY OF SILENCE
 
-## 1. KEEP THINGS SIMPLE FIRST
-
-Prefer:
-
-* clear functions
-* explicit logic
-* minimal abstraction
-
-Avoid:
-
-* premature microservices
-* event-driven complexity
-* over-engineered pipelines
+If no material structural deterioration exists, Kairos must remain silent.
+*"Silence is intentional"* is a valid and preferred system state.
 
 ---
 
-## 2. EVERY FEATURE MUST ANSWER:
+## 3. SEVERITY CALIBRATION
 
-* What data does it read?
-* What data does it modify?
-* Which layer owns it?
+Signals must follow calibrated severity levels:
 
-If unclear → do not implement yet.
-
----
-
-## 3. NO HIDDEN SIDE EFFECTS
-
-All financial operations must be:
-
-* explicit
-* traceable
-* predictable
-
----
-
-## 4. FAIL LOUDLY, NOT SILENTLY
-
-If something is wrong:
-
-* throw errors
-* block operations
-* do not silently fallback
-
----
-
-# 🔐 SECURITY RULES
-
-* Never expose Supabase service role key in client code
-* All sensitive DB operations must be server-side
-* Validate user ownership before mutations
-* Assume all client input is untrusted
-
----
-
-# 📁 FILE OWNERSHIP MODEL
-
-* `/lib/finance` → financial logic owner
-* `/lib/db` → database access owner
-* `/lib/ai` → AI orchestration owner
-* `/app` → UI + routing only
-
-Agents must NOT move logic across layers without reason.
-
----
-
-# 🚨 COMMON FAILURE MODES TO AVOID
-
-* duplicating transaction logic in UI
-* calculating balances in multiple places
-* letting AI write to DB
-* mixing analytics with raw data
-* bypassing Supabase RLS assumptions
+* **Observation**: Normal stable state.
+* **Advisory**: Minor behavioral drift (e.g., Starvation).
+* **Warning**: Alignment pressure or moderate shortfall.
+* **Critical**: Solvency crisis, runway depletion, or negative net worth.
 
 ---
 
