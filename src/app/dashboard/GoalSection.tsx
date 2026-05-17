@@ -67,7 +67,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
       onSnapshot(snapshot);
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Failed to record strategic goal",
+        err instanceof Error ? err.message : "Failed to record financial goal",
       );
     } finally {
       setIsLoading(false);
@@ -75,7 +75,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("De-initialize this strategic objective?")) return;
+    if (!confirm("Remove this financial goal?")) return;
     setIsLoading(true);
     try {
       const snapshot = await deleteGoalAction(id);
@@ -91,14 +91,14 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Strategic Objectives
+          Financial Goals
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add objective"}
+            {isAdding ? "Cancel" : "+ Add goal"}
           </span>
         </button>
       </div>
@@ -109,7 +109,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Objective Designation
+                  Goal Designation
                 </label>
                 <input
                   type="text"
@@ -203,7 +203,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "INITIALIZING..." : "INITIALIZE OBJECTIVE"}
+              {isLoading ? "INITIALIZING..." : "INITIALIZE GOAL"}
             </button>
           </form>
         </div>
@@ -213,10 +213,10 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
         {goals.length === 0 ? (
           <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
             <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No strategic objectives defined.
+              No financial goals defined.
             </p>
             <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Capital currently operating without long-term intention.
+              Capital currently operating without specific achievement targets.
             </p>
           </div>
         ) : (
@@ -255,7 +255,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                         {Math.round(progress)}%
                       </p>
                       <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                        Objective Fulfullment
+                        Goal Fulfullment
                       </p>
                     </div>
                     <button
