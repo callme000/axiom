@@ -163,40 +163,94 @@ export default function DashboardLayout({
             {activeLabel}
           </span>
         </div>
+
+        {/* Profile trigger moved to top header for mobile */}
         <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 -mr-2 text-foreground/60"
+          onClick={() => setIsProfileOpen(!isProfileOpen)}
+          className="w-8 h-8 rounded-lg bg-foreground/5 border border-foreground/10 flex items-center justify-center overflow-hidden shrink-0"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-          >
-            {isMobileMenuOpen ? (
-              <path d="M18 6L6 18M6 6l12 12" />
-            ) : (
-              <path d="M3 12h18M3 6h18M3 18h18" />
-            )}
-          </svg>
+          {user?.user_metadata?.avatar_url ? (
+            <img
+              src={user.user_metadata.avatar_url}
+              alt="Avatar"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="font-black text-foreground/40 text-[10px]">
+              {userInitial}
+            </span>
+          )}
         </button>
+
+        {isProfileOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setIsProfileOpen(false)}
+            ></div>
+            <div className="absolute top-full right-6 mt-2 w-48 bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="p-4 border-b border-foreground/5">
+                <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest mb-1">
+                  Session Details
+                </p>
+                <p className="text-[10px] font-bold text-foreground truncate">
+                  {user?.email}
+                </p>
+              </div>
+              <div className="p-2">
+                <button
+                  disabled
+                  className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-foreground/40 cursor-not-allowed flex items-center justify-between"
+                >
+                  Settings
+                  <span className="text-[7px] bg-foreground/5 px-1.5 py-0.5 rounded text-foreground/30">
+                    Soon
+                  </span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-colors"
+                >
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </header>
 
-      {/* SIDEBAR OVERLAY (MOBILE) */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
+      {/* MOBILE BOTTOM NAV */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl border-t border-foreground/5 flex items-center justify-around px-4 z-[60] pb-safe">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => scrollToSection(item.id)}
+            className={`flex flex-col items-center gap-1 transition-all duration-300 ${
+              activeSection === item.id
+                ? "text-foreground"
+                : "text-foreground/30"
+            }`}
+          >
+            <span
+              className={`transition-transform duration-300 ${activeSection === item.id ? "scale-110" : ""}`}
+            >
+              {item.icon}
+            </span>
+            <span className="text-[8px] font-black uppercase tracking-[0.2em]">
+              {item.label}
+            </span>
+            {activeSection === item.id && (
+              <div className="w-1 h-1 bg-foreground rounded-full animate-pulse mt-0.5"></div>
+            )}
+          </button>
+        ))}
+      </nav>
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR (DESKTOP ONLY) */}
       <aside
         className={`${
           isSidebarCollapsed ? "md:w-20" : "md:w-64"
-        } ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} border-r border-foreground/5 bg-background flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out`}
+        } hidden md:flex border-r border-foreground/5 bg-background flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out`}
       >
         {/* BRANDING */}
         <div className={`p-8 ${isSidebarCollapsed ? "px-4" : "pb-12"}`}>
@@ -383,7 +437,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-8 md:py-16">
+        <div className="max-w-6xl mx-auto px-6 md:px-12 pt-8 md:py-16 pb-32 md:pb-16">
           {children}
         </div>
       </main>
