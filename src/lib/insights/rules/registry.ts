@@ -29,7 +29,38 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 1. SOLVENCY PRESSURE (Critical/Warning Severity)
+  // 1. STRUCTURAL DEFICIT (Critical Severity)
+  {
+    id: "structural_deficit",
+    priority: "high",
+    condition: (ctx) => {
+      const monthlyBurn = ctx.burnRate.monthlyProjection;
+      const monthlyReplenishment = ctx.totalMonthlyIncome;
+
+      // Trigger if structural burn exceeds income (Structural Deficit)
+      return monthlyBurn > monthlyReplenishment && monthlyBurn > 0;
+    },
+    generate: (ctx) => {
+      const deficit = ctx.burnRate.monthlyProjection - ctx.totalMonthlyIncome;
+      return {
+        type: "warning",
+        severity: "critical",
+        category: "solvency_pressure",
+        timestamp: new Date().toISOString(),
+        message:
+          "Unsustainable structural deficit detected. Monthly structural outflows exceed combined replenishment capacity.",
+        supportingSignals: [
+          `Monthly Deficit: KSh ${Math.round(deficit).toLocaleString()}`,
+          `Replenishment Coverage: ${Math.round((ctx.totalMonthlyIncome / ctx.burnRate.monthlyProjection) * 100)}% of monthly burn.`,
+          `Survival Window: ${ctx.runway.currentDays ? Math.round(ctx.runway.currentDays) : "Unknown"} days remaining.`,
+        ],
+        runway: ctx.runway.currentDays,
+        capitalEfficiency: ctx.capitalEfficiencyScore,
+        isSilent: false,
+      };
+    },
+  },
+  // 2. SOLVENCY PRESSURE (Critical/Warning Severity)
   {
     id: "solvency_pressure",
     priority: "high",

@@ -19,6 +19,7 @@ export interface BehavioralContext {
 
   netWorth: number;
   liquidity: number;
+  totalMonthlyIncome: number;
 
   strategicAlignment: StrategicAlignment;
 
@@ -61,6 +62,7 @@ export interface ContextInput {
     metadataQuality: MetadataQualitySummary;
     netWorth: number;
     liquidity: number;
+    totalMonthlyIncome: number;
     strategicAlignment: StrategicAlignment;
   };
   historicalMetrics?: {
