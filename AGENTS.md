@@ -130,6 +130,7 @@ The frontend must NEVER:
 * rule-based strategic interpretation
 * high-priority trigger evaluation
 * **NO Generative AI** in core loop
+* **Conditional Evaluation Rule**: Passive lookups use the `previousInsight` cache. Action-driven mutations must pass `{ forceInsightEvaluation: true }` to trigger fresh interpretation.
 
 ---
 
@@ -143,8 +144,10 @@ Avoid redundant DB roundtrips by streaming context from Server Actions directly 
 # 💰 FINANCIAL ENGINE RULES
 
 ## 1. DEPLOYMENTS ARE IMMUTABLE
+...
+If `Net Worth < 0`, Runway is forced to `0` (Insolvent) to ensure UI honesty.
+*   **Semantic Standard**: Runway states where replenishment absorbs burn are tracked via the `isInfiniteRunway` property.
 
-A deployment:
 
 * is a manual capital event
 * is always classified by taxonomy (Asset, Skill, Leverage, Experience, Maintenance, Leakage)

@@ -75,6 +75,7 @@ Do NOT mix layers.
 
 Ensure all evaluation paths use the **Unified Telemetry Configuration**.
 Stream authoritative context from Server Actions to the AI layer to prevent "starved" summaries.
+*   **Conditional Evaluation Rule**: Passive lookups must default to `previousInsight` cache to preserve execution speed. Mutations must pass `{ forceInsightEvaluation: true }` to trigger fresh interpretation.
 
 ---
 
@@ -125,6 +126,7 @@ Baseline burn is a mandatory input for runway calculations.
 
 Runway must reflect the **Insolvent Stable** state.
 If `Net Worth < 0`, Runway is `0` regardless of current cash flow.
+*   **Visual State**: Use the structural constant `isInfiniteRunway` to track states where inbound replenishment absorbs current burn.
 
 ---
 
