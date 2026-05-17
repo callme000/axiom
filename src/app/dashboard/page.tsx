@@ -167,6 +167,7 @@ export default function Dashboard() {
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
+  const [isKairosAcknowledged, setIsKairosAcknowledged] = useState(false);
 
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -214,6 +215,9 @@ export default function Dashboard() {
       analytics: snapshot.analytics,
     });
     setKairosInsight(snapshot.kairosInsight);
+    if (snapshot.kairosInsight?.is_new_signal) {
+      setIsKairosAcknowledged(false);
+    }
   }, []);
 
   const fetchDashboardData = useCallback(async () => {
@@ -859,87 +863,93 @@ export default function Dashboard() {
           className={`lg:col-span-8 bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
           <div>
-            <div className="flex items-center justify-between mb-8 opacity-60">
-              <div className="flex items-center gap-2">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                </svg>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-background">
-                  Intelligence Presence ::{" "}
-                  {kairosInsight?.category?.replace("_", " ") || "STANDBY"}
+            {/* LAYER A — OPERATIONAL STATUS BAR */}
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-background/10 pb-4 mb-6">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  </svg>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-background">
+                    {kairosInsight?.category?.replace("_", " ") || "SYSTEM"}
+                  </span>
+                </div>
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-background/60">
+                    Runway:{" "}
+                    {ledger.analytics?.runwayDays
+                      ? `${Math.round(ledger.analytics.runwayDays)} Days`
+                      : "Stable"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                {kairosInsight && (
+                  <span
+                    className={`text-[10px] font-black uppercase tracking-widest ${kairosInsight.severity === "critical" ? "text-orange-400" : kairosInsight.severity === "warning" ? "text-yellow-500/80" : "text-background/60"}`}
+                  >
+                    Severity:{" "}
+                    {kairosInsight.severity.charAt(0).toUpperCase() +
+                      kairosInsight.severity.slice(1)}
+                  </span>
+                )}
+                <span className="text-[10px] font-black uppercase tracking-widest text-background/40">
+                  Last updated:{" "}
+                  {isClient && kairosInsight
+                    ? new Date(kairosInsight.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })
+                    : "--:--:--"}
                 </span>
               </div>
-              {kairosInsight && (
-                <span className="text-[9px] font-black uppercase tracking-widest text-background/40">
-                  Confidence: {(kairosInsight.confidence * 100).toFixed(0)}%
-                </span>
-              )}
             </div>
+
+            {/* LAYER B — CORE ASSESSMENT & SILENCE BEHAVIOR */}
             <div className="space-y-6">
               {kairosInsight ? (
-                <div
-                  className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
-                >
-                  <p className="text-base md:text-lg font-bold leading-tight text-background">
-                    <span className="text-background/40 font-black uppercase text-[10px] mr-2 tracking-tighter not-italic">
-                      Kairos:
-                    </span>
-                    &ldquo;{kairosInsight.message}&rdquo;
-                  </p>
+                kairosInsight.severity === "observation" &&
+                !kairosInsight.is_new_signal ? (
+                  <div className="py-4">
+                    <p className="text-base font-bold leading-tight text-background/60">
+                      No material behavioral shifts detected since{" "}
+                      {isClient
+                        ? new Date(kairosInsight.timestamp).toLocaleTimeString(
+                            [],
+                            { hour: "2-digit", minute: "2-digit" },
+                          )
+                        : "--:--"}
+                      .
+                      <br />
+                      Silence is intentional.
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
+                  >
+                    <p className="text-base md:text-lg font-bold leading-tight text-background">
+                      <span className="text-background/40 font-black uppercase text-[10px] tracking-tighter not-italic block mb-2">
+                        Kairos assessment:
+                      </span>
+                      {kairosInsight.message}
+                    </p>
 
-                  {kairosInsight.supportingSignal && (
-                    <div className="mt-4 p-4 bg-background/5 rounded-2xl border-l-2 border-background/20">
-                      <p className="text-[9px] font-black text-background/40 uppercase tracking-widest mb-1">
-                        Supporting Signal Layer
-                      </p>
-                      <p className="text-xs font-bold leading-snug text-background/80">
+                    {kairosInsight.supportingSignal && (
+                      <p className="text-xs font-bold leading-snug text-background/60 mt-4 border-l-2 border-background/20 pl-3">
                         {kairosInsight.supportingSignal}
                       </p>
-                    </div>
-                  )}
-
-                  <div className="mt-8 flex items-center gap-6 border-t border-background/10 pt-6">
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-background/30">
-                        Severity
-                      </span>
-                      <span
-                        className={`text-[10px] font-black uppercase tracking-wider ${
-                          kairosInsight.severity === "critical"
-                            ? "text-orange-400"
-                            : kairosInsight.severity === "warning"
-                              ? "text-yellow-500/80"
-                              : "text-blue-300/80"
-                        }`}
-                      >
-                        {kairosInsight.severity}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-background/30">
-                        Last Updated
-                      </span>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-background/60">
-                        {isClient
-                          ? new Date(
-                              kairosInsight.timestamp,
-                            ).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              second: "2-digit",
-                            })
-                          : "--:--:--"}
-                      </span>
-                    </div>
+                    )}
                   </div>
-                </div>
+                )
               ) : (
                 <div className="space-y-3 opacity-20">
                   <div className="h-4 bg-background/20 rounded-full w-full"></div>
@@ -950,24 +960,66 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-          </div>
-          {ledger.analytics && (
-            <div className="mt-10 flex flex-col gap-3">
-              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-background/40">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${isIntelligenceSyncing ? "bg-orange-400 animate-ping" : "bg-background animate-pulse"}`}
-                  ></span>
-                  Deterministic Runway:{" "}
-                  {ledger.analytics.runwayDays
-                    ? `${Math.round(ledger.analytics.runwayDays)} Days`
-                    : "Stable / Infinite"}
+
+            {/* ACTIVE SIGNAL MEMORY */}
+            {kairosInsight &&
+              (kairosInsight.severity === "critical" ||
+                kairosInsight.severity === "warning") &&
+              !isKairosAcknowledged && (
+                <div className="mt-8 p-5 border border-orange-500/30 bg-orange-500/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-orange-400 mb-1">
+                      Active Signal
+                    </p>
+                    <p className="text-xs font-bold text-background/80">
+                      {kairosInsight.message}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsKairosAcknowledged(true)}
+                    className="px-5 py-2.5 bg-background/10 hover:bg-background/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-background transition-colors shrink-0"
+                  >
+                    Mark acknowledged
+                  </button>
                 </div>
+              )}
+          </div>
+
+          {/* LAYER C — SUPPORTING SIGNALS */}
+          {ledger.analytics && (
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-background/10 pt-6">
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
+                  Liquidity baseline
+                </p>
+                <p className="text-[11px] font-black tabular-nums text-background/80">
+                  {formatKSh(liquidity)}
+                </p>
               </div>
-              <p className="text-[7px] font-bold text-background/30 uppercase tracking-[0.1em] leading-tight">
-                Intelligence presence is restrained. Signals are derived from
-                direct ledger analysis. No motive inferred.
-              </p>
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
+                  Liabilities
+                </p>
+                <p className="text-[11px] font-black tabular-nums text-background/80">
+                  {formatKSh(ledger.analytics?.totalLiabilities || 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
+                  Monthly replenishment
+                </p>
+                <p className="text-[11px] font-black tabular-nums text-background/80">
+                  {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
+                  Runway delta
+                </p>
+                <p className="text-[11px] font-black tabular-nums text-background/80">
+                  Stable since evaluation
+                </p>
+              </div>
             </div>
           )}
         </div>
