@@ -3,7 +3,6 @@
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +14,8 @@ export default function DashboardLayout({
   const [user, setUser] = useState<User | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     async function getUser() {
@@ -134,7 +135,7 @@ export default function DashboardLayout({
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 40;
+      const offset = 80;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -144,44 +145,94 @@ export default function DashboardLayout({
         top: offsetPosition,
         behavior: "smooth",
       });
+      setIsMobileMenuOpen(false);
     }
   };
 
+  const activeLabel = navItems.find((item) => item.id === activeSection)?.label;
+
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
+    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row">
+      {/* MOBILE HEADER */}
+      <header className="md:hidden h-16 border-b border-foreground/5 bg-background/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-[60]">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-foreground rounded-lg flex items-center justify-center">
+            <span className="font-black text-background text-[8px]">A</span>
+          </div>
+          <span className="text-xs font-black uppercase tracking-widest">
+            {activeLabel}
+          </span>
+        </div>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 -mr-2 text-foreground/60"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+          >
+            {isMobileMenuOpen ? (
+              <path d="M18 6L6 18M6 6l12 12" />
+            ) : (
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            )}
+          </svg>
+        </button>
+      </header>
+
+      {/* SIDEBAR OVERLAY (MOBILE) */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* SIDEBAR */}
-      <aside className="w-64 border-r border-foreground/5 bg-background flex flex-col fixed inset-y-0 left-0 z-50">
+      <aside
+        className={`${
+          isSidebarCollapsed ? "md:w-20" : "md:w-64"
+        } ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} border-r border-foreground/5 bg-background flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out`}
+      >
         {/* BRANDING */}
-        <div className="p-8 pb-12">
+        <div className={`p-8 ${isSidebarCollapsed ? "px-4" : "pb-12"}`}>
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative">
+            <div className="relative shrink-0">
               <div className="w-8 h-8 bg-foreground rounded-xl rotate-3 transition-transform group-hover:rotate-12 group-hover:scale-110"></div>
               <div className="absolute inset-0 w-8 h-8 bg-foreground/20 rounded-xl -rotate-6 scale-95 transition-transform group-hover:-rotate-12"></div>
               <div className="absolute inset-0 flex items-center justify-center font-black text-background text-[10px]">
                 A
               </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-black tracking-tighter uppercase leading-none">
-                AXIOM
-              </span>
-              <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest mt-1">
-                Intelligence Layer
-              </span>
-            </div>
+            {!isSidebarCollapsed && (
+              <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
+                <span className="text-lg font-black tracking-tighter uppercase leading-none">
+                  AXIOM
+                </span>
+                <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest mt-1">
+                  Intelligence Layer
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* NAVIGATION */}
         <nav className="flex-1 px-4 space-y-1">
-          <p className="px-4 text-[9px] font-black text-foreground/30 uppercase tracking-[0.3em] mb-4">
-            Financial Terminal
-          </p>
+          {!isSidebarCollapsed && (
+            <p className="px-4 text-[9px] font-black text-foreground/30 uppercase tracking-[0.3em] mb-4 animate-in fade-in duration-300">
+              Financial Terminal
+            </p>
+          )}
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 group ${
+              className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-4 px-4"} py-3 rounded-2xl transition-all duration-300 group ${
                 activeSection === item.id
                   ? "bg-foreground text-background shadow-lg shadow-foreground/10"
                   : "text-foreground/50 hover:bg-foreground/5 hover:text-foreground"
@@ -192,22 +243,44 @@ export default function DashboardLayout({
               >
                 {item.icon}
               </span>
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                {item.label}
-              </span>
-              {activeSection === item.id && (
+              {!isSidebarCollapsed && (
+                <span className="text-[10px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-300">
+                  {item.label}
+                </span>
+              )}
+              {activeSection === item.id && !isSidebarCollapsed && (
                 <div className="ml-auto w-1.5 h-1.5 bg-background rounded-full animate-pulse"></div>
               )}
             </button>
           ))}
         </nav>
 
+        {/* COLLAPSE TOGGLE (DESKTOP) */}
+        <div className="hidden md:block px-4 mb-4">
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="w-full flex items-center justify-center p-3 rounded-2xl text-foreground/30 hover:text-foreground hover:bg-foreground/5 transition-all"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              className={`transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180" : ""}`}
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+        </div>
+
         {/* USER PROFILE (BOTTOM) */}
         <div className="p-4 mt-auto border-t border-foreground/5">
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-foreground/5 transition-all group text-left"
+              className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-3 p-3"} rounded-2xl hover:bg-foreground/5 transition-all group text-left`}
             >
               <div className="w-9 h-9 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center group-hover:bg-foreground/10 transition-all overflow-hidden shrink-0">
                 {user?.user_metadata?.avatar_url ? (
@@ -222,25 +295,29 @@ export default function DashboardLayout({
                   </span>
                 )}
               </div>
-              <div className="flex flex-col min-w-0">
-                <p className="text-[10px] font-black text-foreground truncate">
-                  {user?.email?.split("@")[0]}
-                </p>
-                <p className="text-[8px] font-bold text-foreground/40 uppercase tracking-widest">
-                  Verified
-                </p>
-              </div>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                className={`ml-auto transition-transform duration-300 ${isProfileOpen ? "rotate-180" : ""}`}
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
+              {!isSidebarCollapsed && (
+                <>
+                  <div className="flex flex-col min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
+                    <p className="text-[10px] font-black text-foreground truncate">
+                      {user?.email?.split("@")[0]}
+                    </p>
+                    <p className="text-[8px] font-bold text-foreground/40 uppercase tracking-widest">
+                      Verified
+                    </p>
+                  </div>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    className={`ml-auto transition-transform duration-300 ${isProfileOpen ? "rotate-180" : ""}`}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </>
+              )}
             </button>
 
             {isProfileOpen && (
@@ -249,7 +326,9 @@ export default function DashboardLayout({
                   className="fixed inset-0 z-10"
                   onClick={() => setIsProfileOpen(false)}
                 ></div>
-                <div className="absolute bottom-full left-0 mb-2 w-full bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div
+                  className={`absolute ${isSidebarCollapsed ? "left-full bottom-0 ml-2" : "bottom-full left-0 mb-2"} w-48 md:w-full bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200`}
+                >
                   <div className="p-4 border-b border-foreground/5">
                     <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest mb-1">
                       Session Details
@@ -283,8 +362,30 @@ export default function DashboardLayout({
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 ml-64 min-h-screen">
-        <div className="max-w-6xl mx-auto px-12 py-16">{children}</div>
+      <main
+        className={`flex-1 min-h-screen transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
+        }`}
+      >
+        {/* DESKTOP STICKY HEADER FOR SECTION TITLE */}
+        <header className="hidden md:flex h-20 sticky top-0 bg-background/50 backdrop-blur-xl z-30 items-center px-12 border-b border-foreground/5">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-black uppercase tracking-tighter">
+              {activeLabel}
+            </h1>
+            <div className="h-4 w-[1px] bg-foreground/10"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
+                Real-time Intelligence Active
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-6xl mx-auto px-6 md:px-12 py-8 md:py-16">
+          {children}
+        </div>
       </main>
     </div>
   );

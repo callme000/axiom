@@ -369,12 +369,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 pb-20 space-y-24">
+    <div className="space-y-24">
       {/* Zone 1 — FINANCIAL TRUTH */}
       <section id="overview" className="space-y-8">
         {/* ROW 1: PRIMARY POSITION */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
               Net Worth
             </span>
@@ -388,7 +388,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
               Total Assets
             </span>
@@ -400,7 +400,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
               Total Liabilities
             </span>
@@ -416,7 +416,7 @@ export default function Dashboard() {
         {/* ROW 2: OPERATIONAL SURVIVAL */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div
-            className={`bg-foreground/5 border rounded-2xl p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
+            className={`bg-foreground/5 border rounded-2xl p-6 md:p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
           >
             <div className="flex items-center justify-between mb-4">
               <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
@@ -471,7 +471,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
                 Monthly Replenishment
@@ -487,7 +487,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
                 Deterministic Runway
@@ -507,7 +507,7 @@ export default function Dashboard() {
         </div>
 
         {globalError && (
-          <div className="bg-red-500/10 border-2 border-red-500/20 p-8 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="bg-red-500/10 border-2 border-red-500/20 p-6 md:p-8 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="flex items-center gap-5 text-center md:text-left">
               <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0">
                 <svg
@@ -545,25 +545,25 @@ export default function Dashboard() {
 
         {/* SUBSECTION C — FINANCIAL CONTAINERS, OBLIGATIONS & STRATEGY */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
             <AccountSection
               accounts={ledger.accounts}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
             <LiabilitySection
               liabilities={ledger.liabilities}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
             <IncomeSection
               incomeStreams={ledger.incomeStreams}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
-          <div className="bg-background border border-foreground/10 rounded-3xl p-8 shadow-2xl">
+          <div className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl">
             <GoalSection
               goals={ledger.goals}
               onSnapshot={applyDashboardSnapshot}
@@ -572,7 +572,7 @@ export default function Dashboard() {
         </div>
 
         {/* Strategic Fulfillment Context (Analytical Summary) */}
-        <div className="bg-foreground border border-foreground/10 rounded-[2.5rem] p-10 text-background shadow-2xl flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative">
+        <div className="bg-foreground border border-foreground/10 rounded-[2.5rem] p-6 md:p-10 text-background shadow-2xl flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-background/5 blur-[80px] rounded-full -mr-32 -mt-32"></div>
 
           <div className="space-y-2 relative z-10">
@@ -625,7 +625,7 @@ export default function Dashboard() {
         id="deploy"
         className={`transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
       >
-        <div className="bg-background border rounded-3xl p-10 shadow-2xl relative overflow-hidden group">
+        <div className="bg-background border rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden group">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-foreground/5 blur-3xl rounded-full transition-all group-hover:bg-foreground/10"></div>
           <div className="relative z-10 max-w-3xl mx-auto">
             <div className="flex items-center gap-4 mb-10">
@@ -871,7 +871,7 @@ export default function Dashboard() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-10"
       >
         <div
-          className={`lg:col-span-8 bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
+          className={`lg:col-span-8 bg-foreground border rounded-3xl p-6 md:p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
           <div>
             {/* LAYER A — OPERATIONAL STATUS BAR */}
