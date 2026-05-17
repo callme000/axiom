@@ -29,6 +29,7 @@ import { AccountSection } from "./AccountSection";
 import { LiabilitySection } from "./LiabilitySection";
 import { IncomeSection } from "./IncomeSection";
 import { GoalSection } from "./GoalSection";
+import { RunwayCard } from "./RunwayCard";
 import type {
   Account,
   Liability,
@@ -487,23 +488,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                Deterministic Runway
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-4xl font-black tabular-nums text-foreground">
-                {ledger.analytics?.runwayDays
-                  ? `${Math.round(ledger.analytics.runwayDays)} Days`
-                  : "Stable"}
-              </span>
-              <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                Operational survival window
-              </p>
-            </div>
-          </div>
+          <RunwayCard runwayDays={ledger.analytics?.runwayDays ?? null} />
         </div>
 
         {globalError && (
@@ -895,9 +880,10 @@ export default function Dashboard() {
                 <div className="hidden sm:flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-background/60">
                     Runway:{" "}
-                    {ledger.analytics?.runwayDays
+                    {ledger.analytics?.runwayDays !== undefined &&
+                    ledger.analytics.runwayDays !== null
                       ? `${Math.round(ledger.analytics.runwayDays)} Days`
-                      : "Stable"}
+                      : "Infinite Stability"}
                   </span>
                 </div>
               </div>
