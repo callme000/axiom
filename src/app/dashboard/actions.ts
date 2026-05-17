@@ -238,22 +238,29 @@ async function buildDashboardSnapshot(
       ? normalizeSavedInsight(savedInsights[0] as Record<string, unknown>)
       : null;
 
-  // ALWAYS evaluate fresh to ensure UI sync
-  const kairosInsight = await generateKairosAIInsight({
-    deployments,
-    liquidity,
-    previousInsight,
-    objectives,
-    accounts,
-    liabilities,
-    incomeStreams,
-    goals,
-    baseline,
-  });
+  let kairosInsight: KairosInsight | null = null;
 
-  // Only save if it's actually a material change (handled inside kairos.ts logic)
-  if (kairosInsight.is_new_signal) {
-    await saveInsight(supabase, kairosInsight, user.id);
+  if (!options.forceInsightEvaluation && previousInsight) {
+    // OPTIMIZATION SHORTCUT: Reuse cached strategic signal
+    kairosInsight = previousInsight;
+  } else {
+    // FRESH EVALUATION: Process authoritative telemetry
+    kairosInsight = await generateKairosAIInsight({
+      deployments,
+      liquidity,
+      previousInsight,
+      objectives,
+      accounts,
+      liabilities,
+      incomeStreams,
+      goals,
+      baseline,
+    });
+
+    // Only save if it's actually a material change
+    if (kairosInsight.is_new_signal) {
+      await saveInsight(supabase, kairosInsight, user.id);
+    }
   }
 
   return {
@@ -267,7 +274,7 @@ async function buildDashboardSnapshot(
     baseline,
     analytics,
     liquidity,
-    kairosInsight, // Authoritative fresh signal
+    kairosInsight,
   };
 }
 
