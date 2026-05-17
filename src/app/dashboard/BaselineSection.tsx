@@ -23,7 +23,10 @@ const CADENCES = [
   { value: "yearly", label: "Yearly" },
 ];
 
-export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) {
+export function BaselineSection({
+  baseline,
+  onSnapshot,
+}: BaselineSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +34,7 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
   const [form, setForm] = useState({
     title: "",
     amount: "",
-    category: "Leakage",
+    category: "Maintenance",
     cadence: "monthly" as BaselineCadence,
     baseline_type: "expense" as "expense" | "allocation",
     notes: "",
@@ -58,7 +61,7 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
       setForm({
         title: "",
         amount: "",
-        category: "Leakage",
+        category: "Maintenance",
         cadence: "monthly",
         baseline_type: "expense",
         notes: "",
@@ -66,14 +69,21 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
       setIsAdding(false);
       onSnapshot(snapshot);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to create baseline entry");
+      setError(
+        err instanceof Error ? err.message : "Failed to create baseline entry",
+      );
     } finally {
       setIsLoading(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this recurring flow? This will shift your baseline burn rate.")) return;
+    if (
+      !confirm(
+        "Remove this recurring flow? This will shift your baseline burn rate.",
+      )
+    )
+      return;
     setIsLoading(true);
     try {
       const snapshot = await deleteOperationalBaselineAction(id);
@@ -114,9 +124,7 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
                   required
                   placeholder="e.g. Rent, Crypto DCA"
                   value={form.title}
-                  onChange={(e) =>
-                    setForm({ ...form, title: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
                 />
               </div>
@@ -129,9 +137,7 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
                   required
                   placeholder="0.00"
                   value={form.amount}
-                  onChange={(e) =>
-                    setForm({ ...form, amount: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
                 />
               </div>
@@ -163,7 +169,10 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
                 <select
                   value={form.cadence}
                   onChange={(e) =>
-                    setForm({ ...form, cadence: e.target.value as BaselineCadence })
+                    setForm({
+                      ...form,
+                      cadence: e.target.value as BaselineCadence,
+                    })
                   }
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
                 >
@@ -181,7 +190,10 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
                 <select
                   value={form.baseline_type}
                   onChange={(e) =>
-                    setForm({ ...form, baseline_type: e.target.value as "expense" | "allocation" })
+                    setForm({
+                      ...form,
+                      baseline_type: e.target.value as "expense" | "allocation",
+                    })
                   }
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
                 >
@@ -227,9 +239,13 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
               <div className="flex items-center justify-between relative z-10">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${
-                      item.baseline_type === 'expense' ? 'bg-orange-500/20 text-orange-600' : 'bg-emerald-500/20 text-emerald-600'
-                    }`}>
+                    <span
+                      className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${
+                        item.baseline_type === "expense"
+                          ? "bg-orange-500/20 text-orange-600"
+                          : "bg-emerald-500/20 text-emerald-600"
+                      }`}
+                    >
                       {item.baseline_type}
                     </span>
                     <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
@@ -249,7 +265,7 @@ export function BaselineSection({ baseline, onSnapshot }: BaselineSectionProps) 
                       {formatKSh(item.amount)}
                     </p>
                     <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                      Amount per {item.cadence.replace('ly', '')}
+                      Amount per {item.cadence.replace("ly", "")}
                     </p>
                   </div>
                   <button

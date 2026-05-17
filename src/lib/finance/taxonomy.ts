@@ -8,6 +8,7 @@ export const VALID_CATEGORIES = [
   "Skill",
   "Leverage",
   "Experience",
+  "Maintenance",
   "Leakage",
 ] as const;
 export type ValidCategory = (typeof VALID_CATEGORIES)[number];
@@ -47,6 +48,13 @@ export const TAXONOMY_CATEGORIES: TaxonomyCategory[] = [
     definition: "Intentional quality-of-life deployment",
     interpretation:
       "Strategic utility. Non-yielding deployments that provide intentional lived-value and mental sustainability.",
+  },
+  {
+    value: "Maintenance",
+    label: "Maintenance",
+    definition: "Structural survival requirements",
+    interpretation:
+      "Operational core. Survival-layer capital needed to maintain your current system (Rent, utilities, basic nourishment).",
   },
   {
     value: "Leakage",
