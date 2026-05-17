@@ -62,6 +62,28 @@ export function isValidStatus(status: string): status is ObjectiveStatus {
  * Validates and normalizes strategic objective data.
  * This is the canonical authority for objective correctness.
  */
+/**
+ * Calculates deterministic objective progress percentage.
+ */
+export function calculateObjectiveProgressPercentage(
+  objective: Pick<StrategicObjective, "current_amount" | "target_amount">,
+): number {
+  if (objective.target_amount <= 0) return 0;
+  return Math.min(
+    100,
+    Math.max(0, (objective.current_amount / objective.target_amount) * 100),
+  );
+}
+
+/**
+ * Calculates the funding ratio (alias for progress for semantic clarity in UI).
+ */
+export function calculateObjectiveFundingRatio(
+  objective: Pick<StrategicObjective, "current_amount" | "target_amount">,
+): number {
+  return calculateObjectiveProgressPercentage(objective);
+}
+
 export function validateObjective(data: {
   objective_name: string;
   objective_type: string;

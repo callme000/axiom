@@ -27,6 +27,12 @@ import {
   deleteIncomeStream,
 } from "@/lib/db/income";
 import { getGoals, createGoal, updateGoal, deleteGoal } from "@/lib/db/goals";
+import {
+  getStrategicObjectives,
+  createStrategicObjective,
+  updateStrategicObjective,
+  deleteStrategicObjective,
+} from "@/lib/db/objectives";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { getInsights, saveInsight } from "@/lib/db/insights";
 import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
@@ -37,6 +43,7 @@ import type {
   Liability,
   IncomeStream,
   FinancialGoal,
+  StrategicObjective,
 } from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
 
@@ -47,6 +54,7 @@ export interface DashboardSnapshot {
   liabilities: Liability[];
   incomeStreams: IncomeStream[];
   goals: FinancialGoal[];
+  objectives: StrategicObjective[];
   analytics: AnalyticsSummary | null;
   liquidity: number;
   kairosInsight: KairosInsight | null;
@@ -106,6 +114,17 @@ export interface CreateGoalActionInput {
   notes?: string;
 }
 
+export interface CreateObjectiveActionInput {
+  objective_name: string;
+  objective_type: string;
+  target_amount: number;
+  current_amount?: number;
+  target_date?: string | null;
+  priority_level: string;
+  status: string;
+  notes?: string;
+}
+
 function unauthenticatedSnapshot(): DashboardSnapshot {
   return {
     authenticated: false,
@@ -114,6 +133,7 @@ function unauthenticatedSnapshot(): DashboardSnapshot {
     liabilities: [],
     incomeStreams: [],
     goals: [],
+    objectives: [],
     analytics: null,
     liquidity: 0,
     kairosInsight: null,
@@ -163,6 +183,7 @@ async function buildDashboardSnapshot(
     liabilitiesData,
     incomeStreamsData,
     goalsData,
+    objectivesData,
     settings,
   ] = await Promise.all([
     getDeployments(supabase),
@@ -170,6 +191,7 @@ async function buildDashboardSnapshot(
     getLiabilities(supabase),
     getIncomeStreams(supabase),
     getGoals(supabase),
+    getStrategicObjectives(supabase),
     getUserSettings(supabase),
   ]);
 
@@ -178,6 +200,7 @@ async function buildDashboardSnapshot(
   const liabilities = (liabilitiesData || []) as Liability[];
   const incomeStreams = (incomeStreamsData || []) as IncomeStream[];
   const goals = (goalsData || []) as FinancialGoal[];
+  const objectives = (objectivesData || []) as StrategicObjective[];
   const liquidity = Number(settings.total_liquidity);
   const analytics = generateSummary(
     deployments,
@@ -201,6 +224,7 @@ async function buildDashboardSnapshot(
       liabilities,
       incomeStreams,
       goals,
+      objectives,
       analytics,
       liquidity,
       kairosInsight: previousInsight,
@@ -224,6 +248,7 @@ async function buildDashboardSnapshot(
     liabilities,
     incomeStreams,
     goals,
+    objectives,
     analytics,
     liquidity,
     kairosInsight,
@@ -550,3 +575,68 @@ export async function deleteGoalAction(id: string) {
     throw error;
   }
 }
+
+export async function createStrategicObjectiveAction(
+  input: CreateObjectiveActionInput,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  try {
+    await createStrategicObjective(supabase, user.id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to create strategic objective:", error);
+    throw error;
+  }
+}
+
+export const createObjectiveAction = createStrategicObjectiveAction;
+
+export async function updateStrategicObjectiveAction(
+  id: string,
+  input: Partial<CreateObjectiveActionInput>,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  try {
+    await updateStrategicObjective(supabase, id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update strategic objective:", error);
+    throw error;
+  }
+}
+
+export const updateObjectiveAction = updateStrategicObjectiveAction;
+
+export async function deleteStrategicObjectiveAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  try {
+    await deleteStrategicObjective(supabase, id);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to delete strategic objective:", error);
+    throw error;
+  }
+}
+
+export const deleteObjectiveAction = deleteStrategicObjectiveAction;

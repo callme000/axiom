@@ -4,6 +4,7 @@ import { Account } from "../finance/accounts";
 import { Liability } from "../finance/liabilities";
 import { IncomeStream } from "../finance/income";
 import { FinancialGoal } from "../finance/goals";
+import { StrategicObjective } from "../finance/objectives";
 
 export type { Account, AccountType } from "../finance/accounts";
 export type { Liability, LiabilityType } from "../finance/liabilities";
@@ -14,6 +15,12 @@ export type {
   GoalPriority,
   GoalStatus,
 } from "../finance/goals";
+export type {
+  StrategicObjective,
+  ObjectiveType,
+  ObjectivePriority,
+  ObjectiveStatus,
+} from "../finance/objectives";
 
 export interface Deployment {
   id: string;
