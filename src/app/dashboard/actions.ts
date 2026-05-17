@@ -150,19 +150,25 @@ function normalizeSavedInsight(row: Record<string, unknown>): KairosInsight {
     type: row.type as KairosInsight["type"],
     severity: (metadata.severity as KairosInsight["severity"]) || "observation",
     category: row.category as KairosInsight["category"],
-    confidence: Number(row.confidence),
     message: String(row.message || ""),
-    supportingSignal: String(metadata.supporting_signal || ""),
+    supportingSignals: Array.isArray(metadata.supporting_signals)
+      ? (metadata.supporting_signals as string[])
+      : metadata.supporting_signal
+        ? [String(metadata.supporting_signal)]
+        : [],
     timestamp: String(
       metadata.timestamp || row.created_at || new Date().toISOString(),
     ),
+    runway: metadata.runway !== undefined ? Number(metadata.runway) : null,
+    capitalEfficiency:
+      metadata.capital_efficiency !== undefined
+        ? Number(metadata.capital_efficiency)
+        : 100,
+    isSilent: Boolean(metadata.is_silent),
     metadataQuality:
       metadata.metadata_quality && typeof metadata.metadata_quality === "object"
         ? (metadata.metadata_quality as KairosInsight["metadataQuality"])
         : undefined,
-    related_ids: Array.isArray(metadata.related_ids)
-      ? (metadata.related_ids as string[])
-      : [],
     is_new_signal: false,
   };
 }
@@ -209,6 +215,7 @@ async function buildDashboardSnapshot(
     liabilities,
     incomeStreams,
     goals,
+    objectives,
   );
   const savedInsights = await getInsights(supabase, 1);
   const previousInsight =

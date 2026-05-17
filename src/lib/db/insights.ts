@@ -10,15 +10,18 @@ export async function saveInsight(
     user_id: userId,
     type: insight.type,
     category: insight.category,
-    confidence: insight.confidence,
+    confidence: 1.0, // Deterministic logic has absolute confidence
     message: insight.message,
     metadata: {
-      related_ids: insight.related_ids || [],
+      related_ids: [],
       metadata_quality: insight.metadataQuality || null,
       severity: insight.severity,
-      supporting_signal: insight.supportingSignal,
+      supporting_signals: insight.supportingSignals,
+      runway: insight.runway,
+      capital_efficiency: insight.capitalEfficiency,
+      is_silent: insight.isSilent,
       timestamp: insight.timestamp,
-      source: "server_action",
+      source: "server_orchestrator_v5e",
     },
   });
 

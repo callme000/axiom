@@ -870,7 +870,7 @@ export default function Dashboard() {
           className={`lg:col-span-8 bg-foreground border rounded-3xl p-6 md:p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
           <div>
-            {/* LAYER A — OPERATIONAL STATUS BAR */}
+            {/* LAYER A — STRATEGIC STATUS BAR (Refined v5E) */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-background/10 pb-4 mb-6">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
@@ -885,16 +885,22 @@ export default function Dashboard() {
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                   </svg>
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-background">
-                    {kairosInsight?.category?.replace("_", " ") || "SYSTEM"}
+                    {kairosInsight?.category?.replace("_", " ") ||
+                      "STRATEGIC EVALUATION"}
+                  </span>
+                </div>
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-background/60">
+                    Efficiency: {kairosInsight?.capitalEfficiency ?? 100}%
                   </span>
                 </div>
                 <div className="hidden sm:flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-background/60">
                     Runway:{" "}
-                    {ledger.analytics?.runwayDays !== undefined &&
-                    ledger.analytics.runwayDays !== null
-                      ? `${Math.round(ledger.analytics.runwayDays)} Days`
-                      : "Infinite Stability"}
+                    {kairosInsight?.runway !== undefined &&
+                    kairosInsight.runway !== null
+                      ? `${Math.round(kairosInsight.runway)} Days`
+                      : "Infinite"}
                   </span>
                 </div>
               </div>
@@ -903,13 +909,11 @@ export default function Dashboard() {
                   <span
                     className={`text-[10px] font-black uppercase tracking-widest ${kairosInsight.severity === "critical" ? "text-orange-400" : kairosInsight.severity === "warning" ? "text-yellow-500/80" : "text-background/60"}`}
                   >
-                    Severity:{" "}
-                    {kairosInsight.severity.charAt(0).toUpperCase() +
-                      kairosInsight.severity.slice(1)}
+                    {kairosInsight.severity.toUpperCase()}
                   </span>
                 )}
                 <span className="text-[10px] font-black uppercase tracking-widest text-background/40">
-                  Last updated:{" "}
+                  Last strategic evaluation:{" "}
                   {isClient && kairosInsight
                     ? new Date(kairosInsight.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -921,21 +925,14 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* LAYER B — CORE ASSESSMENT & SILENCE BEHAVIOR */}
+            {/* LAYER B — PRIMARY ASSESSMENT & SILENCE STATE */}
             <div className="space-y-6">
               {kairosInsight ? (
-                kairosInsight.severity === "observation" &&
-                !kairosInsight.is_new_signal ? (
+                kairosInsight.isSilent ? (
                   <div className="py-4">
-                    <p className="text-base font-bold leading-tight text-background/60">
-                      No material behavioral shifts detected since{" "}
-                      {isClient
-                        ? new Date(kairosInsight.timestamp).toLocaleTimeString(
-                            [],
-                            { hour: "2-digit", minute: "2-digit" },
-                          )
-                        : "--:--"}
-                      .
+                    <p className="text-base font-bold leading-tight text-background/60 italic">
+                      No material structural deterioration detected since
+                      previous evaluation.
                       <br />
                       Silence is intentional.
                     </p>
@@ -946,16 +943,27 @@ export default function Dashboard() {
                   >
                     <p className="text-base md:text-lg font-bold leading-tight text-background">
                       <span className="text-background/40 font-black uppercase text-[10px] tracking-tighter not-italic block mb-2">
-                        Kairos assessment:
+                        Strategic Assessment:
                       </span>
                       {kairosInsight.message}
                     </p>
 
-                    {kairosInsight.supportingSignal && (
-                      <p className="text-xs font-bold leading-snug text-background/60 mt-4 border-l-2 border-background/20 pl-3">
-                        {kairosInsight.supportingSignal}
-                      </p>
-                    )}
+                    {/* LAYER C — SUPPORTING SIGNALS (Deterministic Telemetry) */}
+                    {kairosInsight.supportingSignals &&
+                      kairosInsight.supportingSignals.length > 0 && (
+                        <div className="mt-6 space-y-3">
+                          {kairosInsight.supportingSignals.map(
+                            (signal, idx) => (
+                              <p
+                                key={idx}
+                                className="text-[11px] font-bold leading-snug text-background/60 border-l-2 border-background/20 pl-3"
+                              >
+                                {signal}
+                              </p>
+                            ),
+                          )}
+                        </div>
+                      )}
                   </div>
                 )
               ) : (
@@ -963,7 +971,7 @@ export default function Dashboard() {
                   <div className="h-4 bg-background/20 rounded-full w-full"></div>
                   <div className="h-4 bg-background/20 rounded-full w-3/4"></div>
                   <p className="text-[10px] font-black uppercase mt-6 tracking-widest text-background">
-                    Initializing observation protocols...
+                    Orchestrating strategic evaluation...
                   </p>
                 </div>
               )}
@@ -973,11 +981,12 @@ export default function Dashboard() {
             {kairosInsight &&
               (kairosInsight.severity === "critical" ||
                 kairosInsight.severity === "warning") &&
+              !kairosInsight.isSilent &&
               (isKairosAcknowledged ? (
                 <div className="mt-8 flex items-center gap-2 animate-in fade-in duration-1000">
                   <div className="w-1.5 h-1.5 bg-background/20 rounded-full"></div>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-background/40">
-                    Last acknowledged:{" "}
+                    Strategic signal acknowledged at:{" "}
                     {isClient && lastAcknowledgedAt
                       ? new Date(lastAcknowledgedAt).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -990,10 +999,10 @@ export default function Dashboard() {
                 <div className="mt-8 p-5 border border-orange-500/30 bg-orange-500/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-orange-400 mb-1">
-                      Active Signal
+                      Active Operational Signal
                     </p>
                     <p className="text-xs font-bold text-background/80">
-                      {kairosInsight.message}
+                      Material strategic shift detected. Review required.
                     </p>
                   </div>
                   <button
@@ -1003,13 +1012,13 @@ export default function Dashboard() {
                     }}
                     className="px-5 py-2.5 bg-background/10 hover:bg-background/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-background transition-colors shrink-0"
                   >
-                    Mark acknowledged
+                    Mark Acknowledged
                   </button>
                 </div>
               ))}
           </div>
 
-          {/* LAYER C — SUPPORTING SIGNALS */}
+          {/* LAYER D — SYSTEM TELEMETRY */}
           {ledger.analytics && (
             <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-background/10 pt-6">
               <div>
@@ -1022,7 +1031,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Liabilities
+                  Liability pressure
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
                   {formatKSh(ledger.analytics?.totalLiabilities || 0)}
@@ -1030,7 +1039,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Monthly replenishment
+                  Structural replenishment
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
                   {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
@@ -1038,10 +1047,10 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Runway delta
+                  Runway stability
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
-                  Stable since evaluation
+                  {kairosInsight?.runway !== null ? "Evaluative" : "Structural"}
                 </p>
               </div>
             </div>

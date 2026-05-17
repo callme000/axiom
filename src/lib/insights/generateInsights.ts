@@ -1,5 +1,4 @@
 import { BehavioralContext } from "../context/contextTypes";
-import { weightConfidenceForMetadataQuality } from "../finance/metadataQuality";
 import { InsightEngineResult } from "./types";
 import { rules } from "./rules/registry";
 
@@ -22,10 +21,6 @@ export const evaluateInsights = (
       priority: rule.priority,
       insight: {
         ...insight,
-        confidence: weightConfidenceForMetadataQuality(
-          insight.confidence,
-          context.metadataQuality,
-        ),
       },
     };
   });
@@ -39,7 +34,7 @@ export const evaluateInsights = (
       return priorityScore[b.priority] - priorityScore[a.priority];
     }
 
-    return b.insight.confidence - a.insight.confidence;
+    return 0; // Maintain order within same priority
   });
 
   return {

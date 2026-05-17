@@ -5,6 +5,7 @@ import {
   OBJECTIVE_TYPES,
   OBJECTIVE_PRIORITIES,
   OBJECTIVE_STATUSES,
+  calculateObjectiveProgressPercentage,
   calculateObjectiveFundingRatio,
   type StrategicObjective,
 } from "@/lib/finance/objectives";

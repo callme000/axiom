@@ -4,8 +4,8 @@ import { getAccounts } from "../db/accounts";
 import { getLiabilities } from "../db/liabilities";
 import { getIncomeStreams } from "../db/income";
 import { getGoals } from "../db/goals";
+import { getStrategicObjectives } from "../db/objectives";
 import { getUserSettings } from "../db/settings";
-import { buildBehavioralContext } from "../context/buildBehavioralContext";
 import { generateSummary } from "../analytics/engine";
 import {
   Deployment,
@@ -13,18 +13,10 @@ import {
   Liability,
   IncomeStream,
   FinancialGoal,
+  StrategicObjective,
+  AnalyticsSummary,
 } from "../analytics/types";
 import { MetadataQualitySummary } from "../finance/metadataQuality";
-import { DeploymentAdvancedContext } from "../finance/deploymentContext";
-
-export type DeploymentInput = {
-  id?: string;
-  title: string;
-  amount: number;
-  created_at?: string;
-  category?: string | null;
-  advanced_context?: DeploymentAdvancedContext | null;
-};
 
 export type InsightSeverity =
   | "observation"
@@ -37,22 +29,132 @@ export interface KairosInsight {
   severity: InsightSeverity;
   category:
     | "capital_efficiency"
-    | "spending_habit"
-    | "pattern_recognition"
-    | "system";
-  confidence: number;
+    | "solvency_pressure"
+    | "strategic_alignment"
+    | "objective_starvation";
   message: string;
-  supportingSignal?: string;
+  supportingSignals: string[];
   timestamp: string;
+  runway: number | null;
+  capitalEfficiency: number;
+  isSilent: boolean;
   metadataQuality?: MetadataQualitySummary;
-  related_ids?: string[];
   is_new_signal?: boolean;
+}
+
+/**
+ * Deterministic Strategic Interpretation Logic
+ * Transform analytics truth into restrained operational intelligence.
+ */
+export function interpretStrategicState(
+  analytics: AnalyticsSummary,
+): KairosInsight {
+  const { strategicAlignment, runwayDays, adjustedDailyBurn, netWorth } =
+    analytics;
+  const {
+    alignmentPressure,
+    liquiditySufficiency,
+    objectiveStarvationSignals,
+    strategicAllocationSignals,
+  } = strategicAlignment;
+
+  const supportingSignals: string[] = [];
+  let primaryAssessment = "";
+  let severity: InsightSeverity = "observation";
+  let category: KairosInsight["category"] = "strategic_alignment";
+
+  // 1. Severity Calibration
+  if (
+    alignmentPressure >= 80 ||
+    (runwayDays !== null && runwayDays < 14) ||
+    netWorth < 0
+  ) {
+    severity = "critical";
+  } else if (
+    alignmentPressure >= 50 ||
+    !liquiditySufficiency.isSufficient ||
+    (runwayDays !== null && runwayDays < 30)
+  ) {
+    severity = "warning";
+  } else if (alignmentPressure >= 20 || objectiveStarvationSignals.length > 0) {
+    severity = "advisory";
+  }
+
+  // 2. Primary Assessment & Signal Prioritization
+  if (!liquiditySufficiency.isSufficient) {
+    category = "solvency_pressure";
+    primaryAssessment =
+      "Liquidity reserves are insufficient to satisfy all critical strategic obligations.";
+    supportingSignals.push(liquiditySufficiency.message);
+  } else if (objectiveStarvationSignals.length > 0) {
+    category = "objective_starvation";
+    primaryAssessment = objectiveStarvationSignals[0];
+    if (objectiveStarvationSignals.length > 1) {
+      supportingSignals.push(objectiveStarvationSignals[1]);
+    }
+  } else if (strategicAllocationSignals.length > 0) {
+    category = "capital_efficiency";
+    primaryAssessment = strategicAllocationSignals[0];
+  } else if (alignmentPressure > 0) {
+    primaryAssessment =
+      "Structural alignment pressure detected in current capital deployment patterns.";
+    supportingSignals.push(
+      `Alignment Pressure Score: ${alignmentPressure}/100`,
+    );
+  } else {
+    primaryAssessment =
+      "No material structural deterioration detected since previous evaluation.";
+  }
+
+  // 3. Additional Supporting Signals (Deterministic Telemetry)
+  if (runwayDays !== null && runwayDays < 90) {
+    supportingSignals.push(
+      `Operational runway contraction: ${Math.round(runwayDays)} days remaining at current velocity.`,
+    );
+  }
+
+  if (adjustedDailyBurn > 0) {
+    supportingSignals.push(
+      `Daily burn rate: ${Math.round(adjustedDailyBurn).toLocaleString()} KSh (adjusted for income).`,
+    );
+  }
+
+  // Limit supporting signals to 3
+  const finalSupportingSignals = supportingSignals.slice(0, 3);
+
+  // 4. Silence State Behavior
+  const hasSignals =
+    objectiveStarvationSignals.length > 0 ||
+    strategicAllocationSignals.length > 0 ||
+    !liquiditySufficiency.isSufficient;
+
+  const isSilent =
+    severity === "observation" && alignmentPressure === 0 && !hasSignals;
+
+  if (isSilent) {
+    primaryAssessment =
+      "No material structural deterioration detected since previous evaluation.";
+  }
+
+  return {
+    type:
+      severity === "critical" || severity === "warning" ? "warning" : "info",
+    severity,
+    category,
+    message: primaryAssessment,
+    supportingSignals: finalSupportingSignals,
+    timestamp: new Date().toISOString(),
+    runway: runwayDays,
+    capitalEfficiency: Math.max(0, 100 - alignmentPressure),
+    isSilent,
+    metadataQuality: analytics.metadataQuality,
+    is_new_signal: true,
+  };
 }
 
 /**
  * SERVER-SIDE ORCHESTRATOR: generateSystemInsights
  * Safely hydrates the Kairos AI layer with analytical context.
- * Rule: Read-only. Pure advisory sandbox.
  */
 export async function generateSystemInsights(): Promise<KairosInsight> {
   const supabase = await createClient();
@@ -71,6 +173,7 @@ export async function generateSystemInsights(): Promise<KairosInsight> {
     liabilitiesData,
     incomeStreamsData,
     goalsData,
+    objectivesData,
     settings,
   ] = await Promise.all([
     getDeployments(supabase),
@@ -78,6 +181,7 @@ export async function generateSystemInsights(): Promise<KairosInsight> {
     getLiabilities(supabase),
     getIncomeStreams(supabase),
     getGoals(supabase),
+    getStrategicObjectives(supabase),
     getUserSettings(supabase),
   ]);
 
@@ -86,9 +190,10 @@ export async function generateSystemInsights(): Promise<KairosInsight> {
   const liabilities = (liabilitiesData || []) as Liability[];
   const incomeStreams = (incomeStreamsData || []) as IncomeStream[];
   const goals = (goalsData || []) as FinancialGoal[];
+  const objectives = (objectivesData || []) as StrategicObjective[];
   const liquidity = Number(settings.total_liquidity);
 
-  // 2. Build Deterministic Analytics & Behavioral Context
+  // 2. Build Deterministic Analytics
   const analytics = generateSummary(
     deployments,
     liquidity,
@@ -96,85 +201,20 @@ export async function generateSystemInsights(): Promise<KairosInsight> {
     liabilities,
     incomeStreams,
     goals,
+    objectives,
   );
 
-  const context = buildBehavioralContext(
-    { currentAnalytics: analytics },
-    deployments.map((d) => Number(d.amount)),
-  );
-
-  // 3. Extract Core Metrics for AI Evaluation
-  const runway = context.runway.currentDays;
-  const hhi = context.allocation.concentrationScore;
-  const volatility = context.volatilityScore;
-  const efficiency = context.capitalEfficiencyScore;
-
-  // 4. Construct Highly Constrained System Instructions
-  const systemInstructions = [
-    "Identity: Axiom Kairos Intelligence (Read-Only Advisory).",
-    "Aesthetic: Quiet System. Concise, strategic, desaturated observations.",
-    "Restriction: NO markdown, NO structural tags, NO code generation, NO conversational filler.",
-    "Objective: Analyze risk vectors and capital velocity strictly based on provided metrics.",
-    "Input Framework: HHI (Concentration), Volatility (Erraticism), Efficiency (Score), Runway (Window).",
-    runway === null
-      ? "Runway is stable. Focus strictly on allocation velocity (HHI) and strategic diversification patterns."
-      : runway < 30
-        ? "CRITICAL: Runway < 30 days. Focus strictly on immediate capital mitigation and burn reduction."
-        : "Runway is active. Analyze capital efficiency and deployment discipline.",
-  ];
-
-  // 5. LLM Prompt Construction
-  const prompt = `
-    METRICS:
-    - Runway: ${runway === null ? "Stable (Infinite)" : runway + " days"}
-    - Allocation HHI: ${hhi.toFixed(2)}
-    - Spending Volatility: ${volatility.toFixed(2)}
-    - Efficiency Score: ${efficiency}
-    - Dominant Category: ${context.allocation.dominantCategory}
-    - Flags: ${context.behavioralFlags.join(", ")}
-
-    TASK: Provide a single strategic observation in 15 words or less. Focus on the primary risk vector.
-  `;
-
-  // 6. Execute AI Evaluation Call (Mock implementation for orchestrator structure)
-  // In a real implementation, this would call OpenAI/Anthropic via a secure proxy.
-  const aiResponse = await callAxiomAIProxy(systemInstructions, prompt);
-
-  return {
-    type: runway === null ? "info" : runway < 30 ? "warning" : "pattern",
-    severity:
-      runway === null ? "observation" : runway < 30 ? "critical" : "advisory",
-    category: "capital_efficiency",
-    confidence: 0.95,
-    message: aiResponse,
-    supportingSignal: `HHI: ${hhi.toFixed(2)} | Vol: ${volatility.toFixed(2)}`,
-    timestamp: new Date().toISOString(),
-    metadataQuality: context.metadataQuality,
-    is_new_signal: true,
-  };
+  // 3. Interpret Strategic State (Phase 5E: Deterministic)
+  return interpretStrategicState(analytics);
 }
 
 /**
- * Placeholder for the actual LLM provider integration.
- * In a production environment, this would hit a Vercel AI SDK route or internal proxy.
- */
-async function callAxiomAIProxy(
-  instructions: string[],
-  prompt: string,
-): Promise<string> {
-  // Simulating the "Quiet System" aesthetic output
-  // Real world: return await openai.chat.completions.create(...)
-  return "Capital velocity exceeding replenishment capacity. Mitigation of recurring leakage is mandatory.";
-}
-
-/**
- * Legacy support for deterministic logic if AI is unavailable.
+ * Legacy support for deterministic logic.
  */
 export async function generateKairosAIInsight(
-  deployments: DeploymentInput[],
-  currentBalance?: number,
-  previousInsight?: KairosInsight | null,
+  _deployments?: unknown,
+  _balance?: number,
+  _previousInsight?: KairosInsight | null,
 ): Promise<KairosInsight> {
-  // (Preserving original function signature for backward compatibility)
   return generateSystemInsights();
 }

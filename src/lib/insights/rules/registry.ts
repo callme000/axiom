@@ -15,11 +15,15 @@ export const rules: InsightRule[] = [
     generate: (ctx) => ({
       type: "warning",
       severity: "critical",
-      category: "capital_efficiency",
-      confidence: 0.98,
+      category: "solvency_pressure",
       timestamp: new Date().toISOString(),
       message: `Operational runway has contracted to ${Math.round(ctx.runway.currentDays || 0)} days. Immediate capital preservation required.`,
-      supportingSignal: `Runway Delta: ${ctx.runway.deltaDays >= 0 ? "+" : ""}${Math.round(ctx.runway.deltaDays)} days since last evaluation.`,
+      supportingSignals: [
+        `Runway Delta: ${ctx.runway.deltaDays >= 0 ? "+" : ""}${Math.round(ctx.runway.deltaDays)} days since last evaluation.`,
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
     }),
   },
 
@@ -34,12 +38,16 @@ export const rules: InsightRule[] = [
         type: "warning",
         severity: "critical",
         category: "capital_efficiency",
-        confidence: 0.99,
         timestamp: new Date().toISOString(),
         message: isLeakage
           ? "Capital efficiency crisis detected. Excessive 'Leakage' is compromising long-term sustainability."
           : "Capital efficiency has reached a critical threshold. Current deployment patterns are suboptimal.",
-        supportingSignal: `Efficiency Index: ${ctx.capitalEfficiencyScore}/100 — Dominant: ${ctx.allocation.dominantCategory} (${(ctx.allocation.categoryDistribution[ctx.allocation.dominantCategory] * 100).toFixed(1)}%).`,
+        supportingSignals: [
+          `Efficiency Index: ${ctx.capitalEfficiencyScore}/100 — Dominant: ${ctx.allocation.dominantCategory} (${(ctx.allocation.categoryDistribution[ctx.allocation.dominantCategory] * 100).toFixed(1)}%).`,
+        ],
+        runway: ctx.runway.currentDays,
+        capitalEfficiency: ctx.capitalEfficiencyScore,
+        isSilent: false,
       };
     },
   },
@@ -53,12 +61,16 @@ export const rules: InsightRule[] = [
     generate: (ctx) => ({
       type: "info",
       severity: "advisory",
-      category: "system",
-      confidence: 1.0,
+      category: "strategic_alignment",
       timestamp: new Date().toISOString(),
       message:
         "Unclassified ledger entries detected. Strategize capital intent for accurate efficiency analysis.",
-      supportingSignal: `Metadata Integrity: ${Math.round((ctx.allocation.categoryDistribution["Unclassified"] || 0) * 100)}% of deployments lack strategic classification.`,
+      supportingSignals: [
+        `Metadata Integrity: ${Math.round((ctx.allocation.categoryDistribution["Unclassified"] || 0) * 100)}% of deployments lack strategic classification.`,
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
     }),
   },
 
@@ -70,12 +82,16 @@ export const rules: InsightRule[] = [
     generate: (ctx) => ({
       type: "warning",
       severity: "warning",
-      category: "spending_habit",
-      confidence: 0.9,
+      category: "capital_efficiency",
       timestamp: new Date().toISOString(),
       message:
         "Erratic deployment patterns detected. Inconsistent capital outlays indicate a lack of operational planning.",
-      supportingSignal: `Irregularity Index: HIGH — Volatility score of ${(ctx.volatilityScore * 100).toFixed(1)}% exceeds variance threshold.`,
+      supportingSignals: [
+        `Irregularity Index: HIGH — Volatility score of ${(ctx.volatilityScore * 100).toFixed(1)}% exceeds variance threshold.`,
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
     }),
   },
 
@@ -87,15 +103,19 @@ export const rules: InsightRule[] = [
     generate: (ctx) => {
       const isAsset = ctx.allocation.dominantCategory === "Asset";
       return {
-        type: "opportunity",
+        type: "info",
         severity: "observation",
-        category: "spending_habit",
-        confidence: 0.95,
+        category: "capital_efficiency",
         timestamp: new Date().toISOString(),
         message: isAsset
           ? "High operational discipline in Asset accumulation detected. Consistent deployment provides a stable foundation for scaling."
           : "High operational discipline detected. Consistent spending patterns provide a stable foundation for capital scaling.",
-        supportingSignal: `Stability Metric: ${(100 - ctx.volatilityScore * 100).toFixed(1)}% consistency across ${ctx.deploymentCount} deployments.`,
+        supportingSignals: [
+          `Stability Metric: ${(100 - ctx.volatilityScore * 100).toFixed(1)}% consistency across ${ctx.deploymentCount} deployments.`,
+        ],
+        runway: ctx.runway.currentDays,
+        capitalEfficiency: ctx.capitalEfficiencyScore,
+        isSilent: true,
       };
     },
   },
@@ -108,11 +128,15 @@ export const rules: InsightRule[] = [
     generate: (ctx) => ({
       type: "info",
       severity: "advisory",
-      category: "pattern_recognition",
-      confidence: 0.85,
+      category: "strategic_alignment",
       timestamp: new Date().toISOString(),
       message: `Significant capital concentration detected in ${ctx.allocation.dominantCategory}. Ensure this allocation aligns with strategic intent.`,
-      supportingSignal: `Concentration Score: ${ctx.allocation.concentrationScore.toFixed(2)} — ${ctx.allocation.dominantCategory} represents ${(ctx.allocation.categoryDistribution[ctx.allocation.dominantCategory] * 100).toFixed(1)}% of total deployment.`,
+      supportingSignals: [
+        `Concentration Score: ${ctx.allocation.concentrationScore.toFixed(2)} — ${ctx.allocation.dominantCategory} represents ${(ctx.allocation.categoryDistribution[ctx.allocation.dominantCategory] * 100).toFixed(1)}% of total deployment.`,
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
     }),
   },
 
@@ -121,16 +145,19 @@ export const rules: InsightRule[] = [
     id: "default_pattern",
     priority: "low",
     condition: () => true,
-    generate: () => ({
+    generate: (ctx) => ({
       type: "info",
       severity: "observation",
-      category: "pattern_recognition",
-      confidence: 0.7,
+      category: "strategic_alignment",
       timestamp: new Date().toISOString(),
       message:
         "No material behavioral shifts detected. Silence is intentional.",
-      supportingSignal:
+      supportingSignals: [
         "Observing capital behavior: State remains within normal variance parameters.",
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: true,
     }),
   },
 ];
