@@ -16,7 +16,7 @@ export interface TaxonomyCategory {
   value: ValidCategory;
   label: string;
   definition: string;
-  behavioralSignal: string;
+  interpretation: string;
 }
 
 export const TAXONOMY_CATEGORIES: TaxonomyCategory[] = [
@@ -24,33 +24,36 @@ export const TAXONOMY_CATEGORIES: TaxonomyCategory[] = [
     value: "Asset",
     label: "Asset",
     definition: "Expected future value generation",
-    behavioralSignal: "Strategic wealth foundation. Accumulation phase active.",
+    interpretation:
+      "Strategic capital foundation. These deployments are expected to produce tangible appreciation or yield over time.",
   },
   {
     value: "Skill",
     label: "Skill",
     definition: "Improves future earning capability",
-    behavioralSignal: "Human capital investment. Increasing intrinsic value.",
+    interpretation:
+      "Human capital investment. Deployments into skills increase your intrinsic market value and future inflow capacity.",
   },
   {
     value: "Leverage",
     label: "Leverage",
-    definition: "Multiplies output or saves time",
-    behavioralSignal: "Operational efficiency play. Buying back time.",
+    definition: "Multiplies output or preserves time",
+    interpretation:
+      "Operational efficiency. Leverage deployments are designed to buy back time or multiply the results of your effort.",
   },
   {
     value: "Experience",
     label: "Experience",
     definition: "Intentional quality-of-life deployment",
-    behavioralSignal:
-      "Conscious enjoyment. Strategic buffer for mental health.",
+    interpretation:
+      "Strategic utility. Non-yielding deployments that provide intentional lived-value and mental sustainability.",
   },
   {
     value: "Leakage",
     label: "Leakage",
     definition: "Non-strategic capital drift",
-    behavioralSignal:
-      "Systemic inefficiency. Capital is exiting the system without return.",
+    interpretation:
+      "Systemic inefficiency. Tracked separately to identify recurring capital drift. Excess leakage compresses operational runway.",
   },
 ];
 
@@ -66,8 +69,8 @@ export const getTaxonomyDefinition = (value: string) => {
   return TAXONOMY_CATEGORIES.find((c) => c.value === value)?.definition || "";
 };
 
-export const getTaxonomyBehavioralSignal = (value: string) => {
+export const getTaxonomyInterpretation = (value: string) => {
   return (
-    TAXONOMY_CATEGORIES.find((c) => c.value === value)?.behavioralSignal || ""
+    TAXONOMY_CATEGORIES.find((c) => c.value === value)?.interpretation || ""
   );
 };

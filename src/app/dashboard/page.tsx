@@ -17,7 +17,7 @@ import {
 } from "./actions";
 import type { AnalyticsSummary } from "@/lib/analytics";
 import {
-  getTaxonomyBehavioralSignal,
+  getTaxonomyInterpretation,
   TAXONOMY_CATEGORIES,
 } from "@/lib/finance/taxonomy";
 import { evaluateMetadataQuality } from "@/lib/finance/metadataQuality";
@@ -75,7 +75,7 @@ function CategorySelector({
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const behavioralSignal = getTaxonomyBehavioralSignal(value);
+  const interpretation = getTaxonomyInterpretation(value);
 
   return (
     <div className={compact ? "space-y-2" : "space-y-4"}>
@@ -129,15 +129,15 @@ function CategorySelector({
         })}
       </div>
 
-      {value !== "Unclassified" && behavioralSignal && (
+      {value !== "Unclassified" && interpretation && (
         <div className="p-4 bg-foreground/5 border-l-2 border-foreground rounded-r-2xl animate-in fade-in slide-in-from-left-2 duration-500">
           <p className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-1 opacity-60">
-            Behavioral Intelligence Signal
+            System Interpretation
           </p>
           <p
-            className={`font-bold leading-snug text-foreground italic ${compact ? "text-[9px]" : "text-[11px]"}`}
+            className={`font-bold leading-snug text-foreground ${compact ? "text-[9px]" : "text-[11px]"}`}
           >
-            &ldquo;{behavioralSignal}&rdquo;
+            {interpretation}
           </p>
         </div>
       )}
@@ -246,6 +246,11 @@ export default function Dashboard() {
     try {
       if (category === "Unclassified")
         throw new Error("Strategic classification required before execution");
+
+      if (Number(amount) > liquidity) {
+        throw new Error("Deployment exceeds available liquidity.");
+      }
+
       const snapshot = await createDeploymentAction({
         title,
         amount: Number(amount),
@@ -604,105 +609,120 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Zone 2 — DEPLOY CAPITAL */}
+      {/* Zone 2 — DEPLOY CAPITAL (REFINED CONSOLE) */}
       <section
         className={`transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
       >
-        <div className="bg-background border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+        <div className="bg-background border rounded-3xl p-10 shadow-2xl relative overflow-hidden group">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-foreground/5 blur-3xl rounded-full transition-all group-hover:bg-foreground/10"></div>
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-foreground rounded-xl flex items-center justify-center">
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-12 h-12 bg-foreground rounded-2xl flex items-center justify-center shadow-lg">
                 <svg
-                  width="20"
-                  height="20"
+                  width="24"
+                  height="24"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="3"
+                  className="text-background"
                 >
                   <path d="M12 5v14M5 12h14" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-black text-foreground tracking-tight uppercase">
-                Deploy Capital
-              </h2>
+              <div className="space-y-1">
+                <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">
+                  Deploy Capital
+                </h2>
+                <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">
+                  Strategic Allocation Console :: v1.0
+                </p>
+              </div>
             </div>
-            <form onSubmit={handleAddDeployment} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-5">
-                  <div>
-                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                      Strategic Designation
-                    </label>
-                    <input
-                      type="text"
-                      disabled={isActionLoading}
-                      placeholder="What is this capital achieving?"
-                      value={title}
-                      onChange={(e) => {
-                        setTitle(e.target.value);
-                        if (formError) setFormError(null);
-                      }}
-                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
-                      required
-                    />
-                    {showTitleQualityHint && (
-                      <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-foreground/60">
-                        Specific labels improve future analysis.
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                      Amount (KSh)
-                    </label>
-                    <input
-                      type="number"
-                      disabled={isActionLoading}
-                      placeholder="0.00"
-                      value={amount}
-                      onChange={(e) => {
-                        setAmount(e.target.value);
-                        if (formError) setFormError(null);
-                      }}
-                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-bold tabular-nums disabled:opacity-50"
-                      required
-                    />
-                  </div>
-                </div>
+
+            <form onSubmit={handleAddDeployment} className="space-y-10">
+              {/* Primary Intent Layer */}
+              <div className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                    Strategic Classification
+                  <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
+                    Strategic Designation
                   </label>
-                  <CategorySelector
+                  <input
+                    type="text"
                     disabled={isActionLoading}
-                    value={category}
-                    onChange={(nextCategory) => {
-                      setCategory(nextCategory);
+                    placeholder="What is this capital achieving?"
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
                       if (formError) setFormError(null);
                     }}
+                    className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-5 focus:outline-none focus:border-foreground transition-all text-foreground text-xl placeholder:text-foreground/20 font-bold shadow-sm disabled:opacity-50"
+                    required
                   />
+                  {showTitleQualityHint && (
+                    <p className="mt-3 ml-2 text-[11px] font-bold leading-snug text-orange-500/80 uppercase tracking-tight">
+                      Notice: Strategic clarity improves intelligence signal
+                      quality.
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
+                  <div className="md:col-span-5 space-y-6">
+                    <div>
+                      <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
+                        Deployment Amount (KSh)
+                      </label>
+                      <input
+                        type="number"
+                        disabled={isActionLoading}
+                        placeholder="0.00"
+                        value={amount}
+                        onChange={(e) => {
+                          setAmount(e.target.value);
+                          if (formError) setFormError(null);
+                        }}
+                        className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-5 focus:outline-none focus:border-foreground transition-all text-foreground text-2xl placeholder:text-foreground/20 font-black tabular-nums shadow-sm disabled:opacity-50"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-7">
+                    <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
+                      Strategic Classification
+                    </label>
+                    <CategorySelector
+                      disabled={isActionLoading}
+                      value={category}
+                      onChange={(nextCategory) => {
+                        setCategory(nextCategory);
+                        if (formError) setFormError(null);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Advanced Context Drawer */}
-              <div className="border-t border-foreground/10 pt-4">
+              {/* Infrastructural Layer */}
+              <div className="border-t border-foreground/10 pt-6">
                 <button
                   type="button"
                   disabled={isActionLoading}
                   aria-expanded={isAdvancedContextOpen}
                   aria-controls="advanced-context-drawer"
                   onClick={() => setIsAdvancedContextOpen((isOpen) => !isOpen)}
-                  className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
+                  className="flex w-full items-center justify-between py-2 text-left group disabled:opacity-50"
                 >
-                  <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 group-hover:text-foreground/60 transition-colors">
                     Advanced Context
                   </span>
-                  <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-foreground/60">
-                    Optional
+                  <span className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-foreground/40">
+                    {isAdvancedContextOpen
+                      ? "Hide Options"
+                      : "Reveal Infrastructural Parameters"}
                     <span
-                      className={`inline-block transition-transform duration-300 ${isAdvancedContextOpen ? "rotate-180" : ""}`}
+                      className={`inline-block transition-transform duration-500 ${isAdvancedContextOpen ? "rotate-180" : ""}`}
                       aria-hidden="true"
                     >
                       v
@@ -712,18 +732,18 @@ export default function Dashboard() {
                 <div
                   id="advanced-context-drawer"
                   aria-hidden={!isAdvancedContextOpen}
-                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isAdvancedContextOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                  className={`grid transition-[grid-template-rows,opacity] duration-500 ease-in-out ${isAdvancedContextOpen ? "grid-rows-[1fr] opacity-100 mt-6" : "grid-rows-[0fr] opacity-0"}`}
                 >
                   <div className="overflow-hidden">
-                    <div className="space-y-4 pt-4">
+                    <div className="space-y-6 pb-4">
                       <div>
-                        <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                          Associated Account
+                        <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
+                          Associated Capital Container
                         </label>
                         <input
                           type="text"
                           disabled={isActionLoading || !isAdvancedContextOpen}
-                          placeholder="e.g. Brokerage, operations"
+                          placeholder="e.g. Primary Operations, Savings Pool"
                           value={advancedContext.associatedAccount || ""}
                           onChange={(e) => {
                             setAdvancedContext((current) => ({
@@ -732,13 +752,13 @@ export default function Dashboard() {
                             }));
                             if (formError) setFormError(null);
                           }}
-                          className="w-full border border-foreground/10 bg-background rounded-xl px-4 py-3 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                          className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-foreground/20 font-bold disabled:opacity-50"
                         />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                          <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                            Return Horizon
+                          <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
+                            Expected Return Horizon
                           </label>
                           <select
                             disabled={isActionLoading || !isAdvancedContextOpen}
@@ -750,7 +770,7 @@ export default function Dashboard() {
                               }));
                               if (formError) setFormError(null);
                             }}
-                            className="w-full border border-foreground/10 bg-background rounded-xl px-4 py-3 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold disabled:opacity-50"
+                            className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-black uppercase tracking-tighter appearance-none disabled:opacity-50"
                           >
                             <option value="">Unspecified</option>
                             {EXPECTED_RETURN_HORIZONS.map((horizon) => (
@@ -761,13 +781,13 @@ export default function Dashboard() {
                           </select>
                         </div>
                         <div>
-                          <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                            Tags
+                          <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
+                            Strategic Tags
                           </label>
                           <input
                             type="text"
                             disabled={isActionLoading || !isAdvancedContextOpen}
-                            placeholder="ops, recurring"
+                            placeholder="ops, recurring, essential"
                             value={
                               typeof advancedContext.tags === "string"
                                 ? advancedContext.tags
@@ -780,7 +800,7 @@ export default function Dashboard() {
                               }));
                               if (formError) setFormError(null);
                             }}
-                            className="w-full border border-foreground/10 bg-background rounded-xl px-4 py-3 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                            className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-foreground/20 font-bold disabled:opacity-50"
                           />
                         </div>
                       </div>
@@ -789,33 +809,45 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {formError && (
-                <div className="bg-red-500/10 border-2 border-red-500/20 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    className="text-red-500 shrink-0"
+              {/* Execution Action */}
+              <div className="space-y-4">
+                {formError && (
+                  <div className="bg-red-500/10 border-2 border-red-500/20 p-5 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-300">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      className="text-red-500 shrink-0"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <p className="text-[11px] font-black text-red-600 uppercase tracking-[0.1em] leading-tight">
+                      {formError}
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <button
+                    type="submit"
+                    disabled={isActionLoading}
+                    className={`w-full px-6 py-6 rounded-2xl font-black text-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 shadow-2xl uppercase tracking-[0.2em] ${formError ? "bg-red-600 text-white shadow-red-500/20" : "bg-foreground text-background shadow-foreground/20"}`}
                   >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                  <p className="text-xs font-black text-red-600 uppercase tracking-tight leading-tight">
-                    {formError}
+                    {isActionLoading
+                      ? "INITIALIZING DEPLOYMENT..."
+                      : "Execute deployment"}
+                  </button>
+                  <p className="text-center text-[10px] font-black text-foreground/30 uppercase tracking-[0.1em]">
+                    Deployment becomes part of immutable financial truth once
+                    verified.
                   </p>
                 </div>
-              )}
-              <button
-                type="submit"
-                disabled={isActionLoading}
-                className={`w-full px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl ${formError ? "bg-red-600 text-white shadow-red-500/20" : "bg-foreground text-background shadow-foreground/10"}`}
-              >
-                {isActionLoading ? "PROCESSING..." : "EXECUTE DEPLOYMENT"}
-              </button>
+              </div>
             </form>
           </div>
         </div>
