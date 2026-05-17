@@ -341,225 +341,249 @@ export default function Dashboard() {
 
   if (isInitialLoading) {
     return (
-      <div className="max-w-6xl mx-auto p-6 pb-20 animate-pulse">
+      <div className="max-w-6xl mx-auto p-6 pb-20 animate-pulse space-y-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="space-y-3">
             <div className="h-12 w-64 bg-foreground/5 rounded-2xl"></div>
             <div className="h-4 w-48 bg-foreground/5 rounded-full"></div>
           </div>
-          <div className="flex gap-4">
-            <div className="h-20 w-40 bg-foreground/5 rounded-2xl"></div>
-            <div className="h-20 w-40 bg-foreground/5 rounded-2xl"></div>
-          </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 h-96 bg-foreground/5 rounded-4xl"></div>
-          <div className="lg:col-span-8 h-96 bg-foreground/5 rounded-4xl"></div>
-        </div>
+        <div className="h-96 bg-foreground/5 rounded-4xl"></div>
+        <div className="h-96 bg-foreground/5 rounded-4xl"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 pb-20">
-      {/* Hero Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase hover:text-foreground/40 transition-colors cursor-default">
-            AXIOM <span className="hidden md:inline">::</span>{" "}
-            <span className="text-foreground/60">DASHBOARD</span>
-          </h1>
-          <p className="text-foreground/40 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
-            Financial Intelligence System v2.4-SYNC-CONFIRMED
-          </p>
-        </div>
-
-        <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end items-stretch">
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
-              Net Worth
-            </span>
-            <span
-              className={`text-2xl font-black tabular-nums text-center ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
-            >
-              {formatKSh(ledger.analytics?.netWorth || 0)}
-            </span>
+    <div className="max-w-6xl mx-auto p-6 pb-20 space-y-20">
+      {/* Zone 1 — FINANCIAL TRUTH */}
+      <section className="space-y-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase hover:text-foreground/40 transition-colors cursor-default">
+              AXIOM <span className="hidden md:inline">::</span>{" "}
+              <span className="text-foreground/60">DASHBOARD</span>
+            </h1>
+            <p className="text-foreground/40 text-xs md:text-sm font-bold uppercase tracking-[0.3em]">
+              Financial Intelligence System v2.4-SYNC-CONFIRMED
+            </p>
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
-              Strategic Fulfillment
-            </span>
-            <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {Math.round(ledger.analytics?.averageGoalProgress || 0)}%
-            </span>
-            {ledger.analytics && ledger.analytics.criticalGoalCount > 0 && (
-              <p className="text-[7px] font-black text-orange-500 uppercase tracking-tight mt-1 text-center">
-                {ledger.analytics.criticalGoalCount} Critical Objectives
-              </p>
-            )}
-          </div>
-
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
-              Monthly Replenishment
-            </span>
-            <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
-            </span>
-          </div>
-
-          <div
-            className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
-                {liquidityError ? "Update Error" : "Total Liquidity"}
+          <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end items-stretch">
+            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+                Net Worth
               </span>
-              <button
-                onClick={() =>
-                  !isLiquidityLoading && setIsEditingLiquidity(true)
-                }
-                className="p-1 rounded hover:bg-foreground/10 transition-colors text-foreground"
-                title="Set starting liquid capital"
+              <span
+                className={`text-2xl font-black tabular-nums text-center ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-              </button>
+                {formatKSh(ledger.analytics?.netWorth || 0)}
+              </span>
             </div>
-            {isEditingLiquidity ? (
-              <div className="flex flex-col gap-2">
-                <input
-                  autoFocus
-                  type="number"
-                  disabled={isLiquidityLoading}
-                  value={liquidityInput}
-                  onChange={(e) => setLiquidityInput(e.target.value)}
-                  className="bg-background border-none rounded p-1 text-center font-black text-lg w-full focus:outline-none disabled:opacity-50"
-                />
-                <button
-                  disabled={isLiquidityLoading}
-                  onClick={() => handleUpdateLiquidity()}
-                  className="bg-foreground text-background text-[8px] font-black py-1 rounded disabled:opacity-50"
-                >
-                  {isLiquidityLoading ? "SYNCING..." : "SET LIQUIDITY TRUTH"}
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col text-center">
-                <span className="text-2xl font-black tabular-nums text-foreground">
-                  {formatKSh(liquidity)}
-                </span>
-                <p className="text-[7px] font-black text-foreground/60 uppercase tracking-tight mt-1 opacity-60">
-                  Total investable liquid capital
+
+            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+                Strategic Fulfillment
+              </span>
+              <span className="text-2xl font-black tabular-nums text-foreground text-center">
+                {Math.round(ledger.analytics?.averageGoalProgress || 0)}%
+              </span>
+              {ledger.analytics && ledger.analytics.criticalGoalCount > 0 && (
+                <p className="text-[7px] font-black text-orange-500 uppercase tracking-tight mt-1 text-center">
+                  {ledger.analytics.criticalGoalCount} Critical Objectives
                 </p>
-              </div>
-            )}
-          </div>
-          <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
-            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
-              Total Liabilities
-            </span>
-            <span className="text-2xl font-black tabular-nums text-foreground text-center">
-              {formatKSh(ledger.analytics?.totalLiabilities || 0)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {globalError && (
-        <div className="mb-10 bg-red-500/10 border-2 border-red-500/20 p-8 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="flex items-center gap-5 text-center md:text-left">
-            <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                className="text-red-500"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+              )}
             </div>
-            <div>
-              <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-1">
-                System Anomaly Detected
-              </h3>
-              <p className="text-red-600/70 text-xs font-bold uppercase tracking-widest leading-tight max-w-md">
-                {globalError}
-              </p>
-            </div>
-          </div>
-          <button
-            disabled={isInitialLoading}
-            onClick={fetchDashboardData}
-            className="bg-foreground text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10 disabled:opacity-50"
-          >
-            Attempt Re-Sync
-          </button>
-        </div>
-      )}
 
-      <div
-        className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
-      >
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-foreground/5 blur-3xl rounded-full transition-all group-hover:bg-foreground/10"></div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-foreground rounded-xl flex items-center justify-center">
+            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+                Monthly Replenishment
+              </span>
+              <span className="text-2xl font-black tabular-nums text-foreground text-center">
+                {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
+              </span>
+            </div>
+
+            <div
+              className={`bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
+                  {liquidityError ? "Update Error" : "Total Liquidity"}
+                </span>
+                <button
+                  onClick={() =>
+                    !isLiquidityLoading && setIsEditingLiquidity(true)
+                  }
+                  className="p-1 rounded hover:bg-foreground/10 transition-colors text-foreground"
+                  title="Set starting liquid capital"
+                >
                   <svg
-                    width="20"
-                    height="20"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="3"
                   >
-                    <path d="M12 5v14M5 12h14" />
+                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                   </svg>
-                </div>
-                <h2 className="text-xl font-black text-foreground tracking-tight">
-                  Deploy Capital
-                </h2>
+                </button>
               </div>
-              <form onSubmit={handleAddDeployment} className="space-y-5">
-                <div>
-                  <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                    Strategic Designation
-                  </label>
+              {isEditingLiquidity ? (
+                <div className="flex flex-col gap-2">
                   <input
-                    type="text"
-                    disabled={isActionLoading}
-                    placeholder="What is this capital achieving?"
-                    value={title}
-                    onChange={(e) => {
-                      setTitle(e.target.value);
-                      if (formError) setFormError(null);
-                    }}
-                    className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
-                    required
+                    autoFocus
+                    type="number"
+                    disabled={isLiquidityLoading}
+                    value={liquidityInput}
+                    onChange={(e) => setLiquidityInput(e.target.value)}
+                    className="bg-background border-none rounded p-1 text-center font-black text-lg w-full focus:outline-none disabled:opacity-50"
                   />
-                  {showTitleQualityHint && (
-                    <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-foreground/60">
-                      Specific labels improve future analysis.
-                    </p>
-                  )}
+                  <button
+                    disabled={isLiquidityLoading}
+                    onClick={() => handleUpdateLiquidity()}
+                    className="bg-foreground text-background text-[8px] font-black py-1 rounded disabled:opacity-50"
+                  >
+                    {isLiquidityLoading ? "SYNCING..." : "SET LIQUIDITY TRUTH"}
+                  </button>
                 </div>
-                <div className="space-y-4">
+              ) : (
+                <div className="flex flex-col text-center">
+                  <span className="text-2xl font-black tabular-nums text-foreground">
+                    {formatKSh(liquidity)}
+                  </span>
+                  <p className="text-[7px] font-black text-foreground/60 uppercase tracking-tight mt-1 opacity-60">
+                    Total investable liquid capital
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="bg-foreground/5 border rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+              <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+                Total Liabilities
+              </span>
+              <span className="text-2xl font-black tabular-nums text-foreground text-center">
+                {formatKSh(ledger.analytics?.totalLiabilities || 0)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {globalError && (
+          <div className="bg-red-500/10 border-2 border-red-500/20 p-8 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-center gap-5 text-center md:text-left">
+              <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  className="text-red-500"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-1">
+                  System Anomaly Detected
+                </h3>
+                <p className="text-red-600/70 text-xs font-bold uppercase tracking-widest leading-tight max-w-md">
+                  {globalError}
+                </p>
+              </div>
+            </div>
+            <button
+              disabled={isInitialLoading}
+              onClick={fetchDashboardData}
+              className="bg-foreground text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10 disabled:opacity-50"
+            >
+              Attempt Re-Sync
+            </button>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <AccountSection
+              accounts={ledger.accounts}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <LiabilitySection
+              liabilities={ledger.liabilities}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <IncomeSection
+              incomeStreams={ledger.incomeStreams}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <GoalSection
+              goals={ledger.goals}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Zone 2 — DEPLOY CAPITAL */}
+      <section
+        className={`transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
+      >
+        <div className="bg-background border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-foreground/5 blur-3xl rounded-full transition-all group-hover:bg-foreground/10"></div>
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-foreground rounded-xl flex items-center justify-center">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-black text-foreground tracking-tight uppercase">
+                Deploy Capital
+              </h2>
+            </div>
+            <form onSubmit={handleAddDeployment} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-5">
+                  <div>
+                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
+                      Strategic Designation
+                    </label>
+                    <input
+                      type="text"
+                      disabled={isActionLoading}
+                      placeholder="What is this capital achieving?"
+                      value={title}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (formError) setFormError(null);
+                      }}
+                      className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-4 focus:outline-none focus:border-foreground transition-colors text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                      required
+                    />
+                    {showTitleQualityHint && (
+                      <p className="mt-2 ml-1 text-[10px] font-bold leading-snug text-foreground/60">
+                        Specific labels improve future analysis.
+                      </p>
+                    )}
+                  </div>
                   <div>
                     <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
                       Amount (KSh)
@@ -577,196 +601,159 @@ export default function Dashboard() {
                       required
                     />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                      Strategic Classification
-                    </label>
-                    <CategorySelector
-                      disabled={isActionLoading}
-                      value={category}
-                      onChange={(nextCategory) => {
-                        setCategory(nextCategory);
-                        if (formError) setFormError(null);
-                      }}
-                    />
-                  </div>
                 </div>
-
-                {/* Advanced Context Drawer */}
-                <div className="border-t border-foreground/10 pt-2">
-                  <button
-                    type="button"
+                <div>
+                  <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
+                    Strategic Classification
+                  </label>
+                  <CategorySelector
                     disabled={isActionLoading}
-                    aria-expanded={isAdvancedContextOpen}
-                    aria-controls="advanced-context-drawer"
-                    onClick={() =>
-                      setIsAdvancedContextOpen((isOpen) => !isOpen)
-                    }
-                    className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
-                  >
-                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">
-                      Advanced Context
+                    value={category}
+                    onChange={(nextCategory) => {
+                      setCategory(nextCategory);
+                      if (formError) setFormError(null);
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Advanced Context Drawer */}
+              <div className="border-t border-foreground/10 pt-4">
+                <button
+                  type="button"
+                  disabled={isActionLoading}
+                  aria-expanded={isAdvancedContextOpen}
+                  aria-controls="advanced-context-drawer"
+                  onClick={() => setIsAdvancedContextOpen((isOpen) => !isOpen)}
+                  className="flex w-full items-center justify-between py-2 text-left disabled:opacity-50"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">
+                    Advanced Context
+                  </span>
+                  <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-foreground/60">
+                    Optional
+                    <span
+                      className={`inline-block transition-transform duration-300 ${isAdvancedContextOpen ? "rotate-180" : ""}`}
+                      aria-hidden="true"
+                    >
+                      v
                     </span>
-                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-foreground/60">
-                      Optional
-                      <span
-                        className={`inline-block transition-transform duration-300 ${isAdvancedContextOpen ? "rotate-180" : ""}`}
-                        aria-hidden="true"
-                      >
-                        v
-                      </span>
-                    </span>
-                  </button>
-                  <div
-                    id="advanced-context-drawer"
-                    aria-hidden={!isAdvancedContextOpen}
-                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isAdvancedContextOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="space-y-3 pt-3">
+                  </span>
+                </button>
+                <div
+                  id="advanced-context-drawer"
+                  aria-hidden={!isAdvancedContextOpen}
+                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isAdvancedContextOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="space-y-4 pt-4">
+                      <div>
+                        <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
+                          Associated Account
+                        </label>
+                        <input
+                          type="text"
+                          disabled={isActionLoading || !isAdvancedContextOpen}
+                          placeholder="e.g. Brokerage, operations"
+                          value={advancedContext.associatedAccount || ""}
+                          onChange={(e) => {
+                            setAdvancedContext((current) => ({
+                              ...current,
+                              associatedAccount: e.target.value,
+                            }));
+                            if (formError) setFormError(null);
+                          }}
+                          className="w-full border border-foreground/10 bg-background rounded-xl px-4 py-3 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                            Associated Account
+                            Return Horizon
+                          </label>
+                          <select
+                            disabled={isActionLoading || !isAdvancedContextOpen}
+                            value={advancedContext.expectedReturnHorizon || ""}
+                            onChange={(e) => {
+                              setAdvancedContext((current) => ({
+                                ...current,
+                                expectedReturnHorizon: e.target.value,
+                              }));
+                              if (formError) setFormError(null);
+                            }}
+                            className="w-full border border-foreground/10 bg-background rounded-xl px-4 py-3 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold disabled:opacity-50"
+                          >
+                            <option value="">Unspecified</option>
+                            {EXPECTED_RETURN_HORIZONS.map((horizon) => (
+                              <option key={horizon.value} value={horizon.value}>
+                                {horizon.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
+                            Tags
                           </label>
                           <input
                             type="text"
                             disabled={isActionLoading || !isAdvancedContextOpen}
-                            placeholder="e.g. Brokerage, operations"
-                            value={advancedContext.associatedAccount || ""}
+                            placeholder="ops, recurring"
+                            value={
+                              typeof advancedContext.tags === "string"
+                                ? advancedContext.tags
+                                : advancedContext.tags?.join(", ") || ""
+                            }
                             onChange={(e) => {
                               setAdvancedContext((current) => ({
                                 ...current,
-                                associatedAccount: e.target.value,
+                                tags: e.target.value,
                               }));
                               if (formError) setFormError(null);
                             }}
-                            className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
+                            className="w-full border border-foreground/10 bg-background rounded-xl px-4 py-3 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
                           />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                              Return Horizon
-                            </label>
-                            <select
-                              disabled={
-                                isActionLoading || !isAdvancedContextOpen
-                              }
-                              value={
-                                advancedContext.expectedReturnHorizon || ""
-                              }
-                              onChange={(e) => {
-                                setAdvancedContext((current) => ({
-                                  ...current,
-                                  expectedReturnHorizon: e.target.value,
-                                }));
-                                if (formError) setFormError(null);
-                              }}
-                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold disabled:opacity-50"
-                            >
-                              <option value="">Unspecified</option>
-                              {EXPECTED_RETURN_HORIZONS.map((horizon) => (
-                                <option
-                                  key={horizon.value}
-                                  value={horizon.value}
-                                >
-                                  {horizon.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                              Tags
-                            </label>
-                            <input
-                              type="text"
-                              disabled={
-                                isActionLoading || !isAdvancedContextOpen
-                              }
-                              placeholder="ops, recurring"
-                              value={
-                                typeof advancedContext.tags === "string"
-                                  ? advancedContext.tags
-                                  : advancedContext.tags?.join(", ") || ""
-                              }
-                              onChange={(e) => {
-                                setAdvancedContext((current) => ({
-                                  ...current,
-                                  tags: e.target.value,
-                                }));
-                                if (formError) setFormError(null);
-                              }}
-                              className="w-full border border-foreground/10 bg-background rounded-xl px-3 py-2.5 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-gray-600 font-medium disabled:opacity-50"
-                            />
-                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {formError && (
-                  <div className="bg-red-500/10 border-2 border-red-500/20 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      className="text-red-500 shrink-0"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    <p className="text-xs font-black text-red-600 uppercase tracking-tight leading-tight">
-                      {formError}
-                    </p>
-                  </div>
-                )}
-                <button
-                  type="submit"
-                  disabled={isActionLoading}
-                  className={`w-full px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl ${formError ? "bg-red-600 text-white shadow-red-500/20" : "bg-foreground text-background shadow-foreground/10"}`}
-                >
-                  {isActionLoading ? "PROCESSING..." : "EXECUTE DEPLOYMENT"}
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
-            <AccountSection
-              accounts={ledger.accounts}
-              onSnapshot={applyDashboardSnapshot}
-            />
-          </div>
-
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
-            <LiabilitySection
-              liabilities={ledger.liabilities}
-              onSnapshot={applyDashboardSnapshot}
-            />
-          </div>
-
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
-            <IncomeSection
-              incomeStreams={ledger.incomeStreams}
-              onSnapshot={applyDashboardSnapshot}
-            />
-          </div>
-
-          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
-            <GoalSection
-              goals={ledger.goals}
-              onSnapshot={applyDashboardSnapshot}
-            />
+              {formError && (
+                <div className="bg-red-500/10 border-2 border-red-500/20 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    className="text-red-500 shrink-0"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <p className="text-xs font-black text-red-600 uppercase tracking-tight leading-tight">
+                    {formError}
+                  </p>
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={isActionLoading}
+                className={`w-full px-4 py-5 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl ${formError ? "bg-red-600 text-white shadow-red-500/20" : "bg-foreground text-background shadow-foreground/10"}`}
+              >
+                {isActionLoading ? "PROCESSING..." : "EXECUTE DEPLOYMENT"}
+              </button>
+            </form>
           </div>
         </div>
+      </section>
 
-        {/* Behavioral Presence Section */}
+      {/* Zone 3 — KAIROS INTELLIGENCE */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div
           className={`lg:col-span-8 bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
@@ -883,12 +870,71 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Main: Analysis & History */}
-      <div className="lg:col-span-8 space-y-10">
-        {/* Empty State Onboarding */}
-        {ledger.deployments.length === 0 && !globalError && (
+        {/* Capital Allocation Section (Contextual Interpretation) */}
+        <div className="lg:col-span-4 space-y-6">
+          {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
+                  Capital Purpose
+                </h2>
+                <div className="h-0.5 w-8 bg-foreground/10"></div>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {Object.entries(ledger.analytics.categoryBreakdown)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([cat, amt]) => {
+                    const percentage =
+                      (amt / ledger.analytics!.totalDeployed) * 100;
+                    return (
+                      <div
+                        key={cat}
+                        className="bg-background border rounded-3xl p-5 shadow-sm hover:border-foreground/20 transition-all group"
+                      >
+                        <div className="flex justify-between items-end mb-3">
+                          <div>
+                            <span className="text-[9px] font-black text-foreground/60 uppercase tracking-widest block mb-1">
+                              {cat}
+                            </span>
+                            <span className="text-base font-black text-foreground tabular-nums">
+                              {formatKSh(amt)}
+                            </span>
+                          </div>
+                          <span className="text-xs font-black text-foreground/40">
+                            {Math.round(percentage)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-1 bg-foreground/5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-foreground transition-all duration-1000 ease-out"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Zone 4 — CHRONOLOGICAL LEDGER STREAM */}
+      <section className="space-y-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">
+              Immutable Ledger History
+            </h2>
+            <div className="h-0.5 w-16 bg-foreground/10"></div>
+          </div>
+          <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
+            Audit Trail :: Verified
+          </span>
+        </div>
+
+        {ledger.deployments.length === 0 && !globalError ? (
           <div className="bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-4xl p-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <div className="max-w-md mx-auto">
               <div className="w-20 h-20 bg-foreground/5 rounded-3xl flex items-center justify-center mx-auto mb-8 text-foreground">
@@ -906,259 +952,166 @@ export default function Dashboard() {
               <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase mb-4">
                 Establish Financial Truth
               </h2>
-              <p className="text-foreground/60 text-sm font-bold uppercase tracking-widest leading-relaxed mb-10">
-                Axiom is observing your capital behavior. Begin by deploying
-                funds into Assets, Skills, or Leverage to initialize the
-                intelligence engine.
+              <p className="text-foreground/60 text-sm font-bold uppercase tracking-widest leading-relaxed">
+                Axiom is observing your capital behavior. Deployments will
+                materialize here as an immutable audit trail.
               </p>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="flex flex-col gap-1 text-center">
-                  <span className="text-xs font-black text-foreground">
-                    LEAD
-                  </span>
-                  <span className="text-[8px] text-foreground/60 uppercase tracking-widest leading-tight">
-                    Assets generate future value
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1 text-center">
-                  <span className="text-xs font-black text-foreground">
-                    GROW
-                  </span>
-                  <span className="text-[8px] text-foreground/60 uppercase tracking-widest leading-tight">
-                    Skills improve earning ability
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1 text-center">
-                  <span className="text-xs font-black text-foreground">
-                    MULTIPLY
-                  </span>
-                  <span className="text-[8px] text-foreground/60 uppercase tracking-widest leading-tight">
-                    Leverage saves operational time
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
-        )}
-
-        {/* Capital Allocation Section */}
-        {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
-          <div className="lg:col-span-12 space-y-6 animate-in fade-in duration-500">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-black text-foreground tracking-tight">
-                Capital Allocation
-              </h2>
-              <div className="h-0.5 w-12 bg-foreground/10"></div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(ledger.analytics.categoryBreakdown)
-                .sort(([, a], [, b]) => b - a)
-                .map(([cat, amt]) => {
-                  const percentage =
-                    (amt / ledger.analytics!.totalDeployed) * 100;
-                  return (
-                    <div
-                      key={cat}
-                      className="bg-background border rounded-4xl p-5 shadow-sm hover:border-foreground/20 transition-all group"
-                    >
-                      <div className="flex justify-between items-end mb-3">
-                        <div>
-                          <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest block mb-1">
-                            {cat}
-                          </span>
-                          <span className="text-lg font-black text-foreground tabular-nums group-hover:text-black dark:group-hover:text-white">
-                            {formatKSh(amt)}
-                          </span>
-                        </div>
-                        <span className="text-sm font-black text-foreground/40">
-                          {Math.round(percentage)}%
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-foreground transition-all duration-1000 ease-out"
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {ledger.deployments.map((deployment) => (
+              <div
+                key={deployment.id}
+                className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
+              >
+                {editingId === deployment.id ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        disabled={updatingId === deployment.id}
+                        value={editForm.title}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            title: e.target.value,
+                          })
+                        }
+                        className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
+                      />
+                      <input
+                        type="number"
+                        disabled={updatingId === deployment.id}
+                        value={editForm.amount}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            amount: e.target.value,
+                          })
+                        }
+                        className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
+                      />
                     </div>
-                  );
-                })}
-            </div>
-          </div>
-        )}
-
-        {/* Deployment History Section */}
-        {ledger.deployments.length > 0 && (
-          <div className="lg:col-span-12 space-y-6 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-black text-foreground tracking-tight">
-                  Recent History
-                </h2>
-                <div className="h-0.5 w-12 bg-foreground/10"></div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
-                  Chronological Stream
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-              {ledger.deployments.map((deployment) => (
-                <div
-                  key={deployment.id}
-                  className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
-                >
-                  {editingId === deployment.id ? (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <input
-                          type="text"
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <CategorySelector
                           disabled={updatingId === deployment.id}
-                          value={editForm.title}
-                          onChange={(e) =>
+                          value={editForm.category}
+                          onChange={(nextCategory) =>
                             setEditForm({
                               ...editForm,
-                              title: e.target.value,
+                              category: nextCategory,
                             })
                           }
-                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
+                          compact
                         />
-                        <input
-                          type="number"
+                      </div>
+                      <div className="flex shrink-0 gap-2 pt-1">
+                        <button
                           disabled={updatingId === deployment.id}
-                          value={editForm.amount}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              amount: e.target.value,
-                            })
-                          }
-                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0 flex-1">
-                          <CategorySelector
-                            disabled={updatingId === deployment.id}
-                            value={editForm.category}
-                            onChange={(nextCategory) =>
-                              setEditForm({
-                                ...editForm,
-                                category: nextCategory,
-                              })
-                            }
-                            compact
-                          />
-                        </div>
-                        <div className="flex shrink-0 gap-2 pt-1">
-                          <button
-                            disabled={updatingId === deployment.id}
-                            onClick={() => setEditingId(null)}
-                            className="text-xs font-black text-foreground/60 uppercase px-3 py-1 disabled:opacity-50"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            disabled={updatingId === deployment.id}
-                            onClick={() => handleUpdate(deployment.id)}
-                            className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
-                          >
-                            {updatingId === deployment.id
-                              ? "SAVING..."
-                              : "Save"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-5">
-                        <div
-                          className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
+                          onClick={() => setEditingId(null)}
+                          className="text-xs font-black text-foreground/60 uppercase px-3 py-1 disabled:opacity-50"
                         >
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                          >
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-black text-xl text-foreground transition-colors leading-none">
-                              {deployment.title}
-                            </h3>
-                            <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
-                              {deployment.category || "Unclassified"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-foreground/60 font-bold uppercase tracking-tighter">
-                            <span>
-                              {isClient
-                                ? new Date(
-                                    deployment.created_at,
-                                  ).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })
-                                : "--- --, ----"}
-                            </span>
-                            <span className="w-1 h-1 bg-foreground/20 rounded-full"></span>
-                            <span>
-                              {isClient
-                                ? new Date(
-                                    deployment.created_at,
-                                  ).toLocaleTimeString(undefined, {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
-                                : "--:--"}
-                            </span>
-                          </div>
-                        </div>
+                          Cancel
+                        </button>
+                        <button
+                          disabled={updatingId === deployment.id}
+                          onClick={() => handleUpdate(deployment.id)}
+                          className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
+                        >
+                          {updatingId === deployment.id ? "SAVING..." : "Save"}
+                        </button>
                       </div>
-                      <div className="text-right flex flex-col items-end">
-                        <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                          {formatKSh(deployment.amount)}
-                        </p>
-                        <div className="mt-1 flex items-center gap-3">
-                          <button
-                            disabled={deletingId !== null}
-                            onClick={() => startEdit(deployment)}
-                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            disabled={deletingId !== null}
-                            onClick={() => handleDelete(deployment.id)}
-                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
-                          >
-                            {deletingId === deployment.id
-                              ? "DELETING..."
-                              : "Delete"}
-                          </button>
-                          <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
-                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                              Verified
-                            </span>
-                          </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-5">
+                      <div
+                        className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-black text-xl text-foreground transition-colors leading-none">
+                            {deployment.title}
+                          </h3>
+                          <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
+                            {deployment.category || "Unclassified"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-foreground/60 font-bold uppercase tracking-tighter">
+                          <span>
+                            {isClient
+                              ? new Date(
+                                  deployment.created_at,
+                                ).toLocaleDateString(undefined, {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : "--- --, ----"}
+                          </span>
+                          <span className="w-1 h-1 bg-foreground/20 rounded-full"></span>
+                          <span>
+                            {isClient
+                              ? new Date(
+                                  deployment.created_at,
+                                ).toLocaleTimeString(undefined, {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "--:--"}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    <div className="text-right flex flex-col items-end">
+                      <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
+                        {formatKSh(deployment.amount)}
+                      </p>
+                      <div className="mt-1 flex items-center gap-3">
+                        <button
+                          disabled={deletingId !== null}
+                          onClick={() => startEdit(deployment)}
+                          className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          disabled={deletingId !== null}
+                          onClick={() => handleDelete(deployment.id)}
+                          className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
+                        >
+                          {deletingId === deployment.id
+                            ? "DELETING..."
+                            : "Delete"}
+                        </button>
+                        <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
+                          <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+                            Verified
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
