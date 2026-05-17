@@ -168,6 +168,9 @@ export default function Dashboard() {
     null,
   );
   const [isKairosAcknowledged, setIsKairosAcknowledged] = useState(false);
+  const [lastAcknowledgedAt, setLastAcknowledgedAt] = useState<string | null>(
+    null,
+  );
 
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -973,7 +976,20 @@ export default function Dashboard() {
             {kairosInsight &&
               (kairosInsight.severity === "critical" ||
                 kairosInsight.severity === "warning") &&
-              !isKairosAcknowledged && (
+              (isKairosAcknowledged ? (
+                <div className="mt-8 flex items-center gap-2 animate-in fade-in duration-1000">
+                  <div className="w-1.5 h-1.5 bg-background/20 rounded-full"></div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-background/40">
+                    Last acknowledged:{" "}
+                    {isClient && lastAcknowledgedAt
+                      ? new Date(lastAcknowledgedAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "--:--"}
+                  </p>
+                </div>
+              ) : (
                 <div className="mt-8 p-5 border border-orange-500/30 bg-orange-500/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-orange-400 mb-1">
@@ -984,13 +1000,16 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setIsKairosAcknowledged(true)}
+                    onClick={() => {
+                      setIsKairosAcknowledged(true);
+                      setLastAcknowledgedAt(new Date().toISOString());
+                    }}
                     className="px-5 py-2.5 bg-background/10 hover:bg-background/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-background transition-colors shrink-0"
                   >
                     Mark acknowledged
                   </button>
                 </div>
-              )}
+              ))}
           </div>
 
           {/* LAYER C — SUPPORTING SIGNALS */}
