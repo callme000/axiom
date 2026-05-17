@@ -5,10 +5,13 @@ import {
   Liability,
   IncomeStream,
   FinancialGoal,
+  StrategicObjective,
+  StrategicAlignment,
 } from "./types";
 import { summarizeMetadataQuality } from "../finance/metadataQuality";
 import { calculateMonthlyInflow } from "../finance/income";
 import { calculateGoalProgressPercentage } from "../finance/goals";
+import { calculateObjectiveFundingRatio } from "../finance/objectives";
 
 /**
  * Pure, deterministic engine for financial intelligence.
@@ -123,6 +126,122 @@ export const getCategoryBreakdown = (
 };
 
 /**
+ * Deterministic Strategic Alignment Logic
+ */
+
+export function calculateStrategicAlignment(
+  objectives: StrategicObjective[],
+  deployments: Deployment[],
+  liquidity: number,
+  incomeTotal: number,
+  burnRate: number,
+  liabilities: Liability[],
+): StrategicAlignment {
+  const fundingRatios: Record<string, number> = {};
+  const velocity: Record<
+    string,
+    "stable" | "accelerating" | "stagnant" | "regressing"
+  > = {};
+  const objectiveStarvationSignals: string[] = [];
+  const strategicAllocationSignals: string[] = [];
+  const now = new Date();
+
+  // 1. Funding Ratios & Starvation
+  objectives.forEach((obj) => {
+    const ratio = calculateObjectiveFundingRatio(obj);
+    fundingRatios[obj.id] = ratio;
+
+    const ageInDays = Math.max(
+      1,
+      (now.getTime() - new Date(obj.created_at).getTime()) /
+        (1000 * 60 * 60 * 24),
+    );
+
+    // Starvation detection
+    if (obj.status === "active" && ratio < 10 && ageInDays > 90) {
+      objectiveStarvationSignals.push(
+        `${obj.objective_name} objective has remained below 10% funded for ${Math.floor(ageInDays)} days.`,
+      );
+    }
+
+    // Velocity (Simplified deterministic approach based on age)
+    const dailyRate = obj.current_amount / ageInDays;
+    if (dailyRate === 0) {
+      velocity[obj.id] = "stagnant";
+    } else if (ratio >= 100) {
+      velocity[obj.id] = "stable"; // Completed
+    } else {
+      velocity[obj.id] = "stable"; // Default for now as we don't have historical delta
+    }
+  });
+
+  // 2. Strategic Allocation Awareness
+  const categories = getCategoryBreakdown(deployments);
+  const leakage = categories["Leakage"] || 0;
+  const assets = categories["Asset"] || 0;
+  const hasActiveAccumulation = objectives.some(
+    (o) =>
+      o.status === "active" &&
+      (o.objective_type === "liquidity" ||
+        o.objective_type === "emergency_reserve"),
+  );
+
+  if (hasActiveAccumulation && leakage > assets) {
+    strategicAllocationSignals.push(
+      "Leakage deployments exceeded Asset deployments during an active liquidity accumulation objective.",
+    );
+  }
+
+  // 3. Liquidity Sufficiency
+  const criticalObjectives = objectives.filter(
+    (o) => o.priority_level === "critical" && o.status === "active",
+  );
+  const totalCriticalTarget = criticalObjectives.reduce(
+    (sum, o) => sum + (o.target_amount - o.current_amount),
+    0,
+  );
+  const isSufficient = liquidity >= totalCriticalTarget;
+  const shortfall = Math.max(0, totalCriticalTarget - liquidity);
+
+  const liquiditySufficiency = {
+    isSufficient,
+    message: isSufficient
+      ? "Current liquidity structure sufficiently supports short-term obligations."
+      : `Emergency reserve target exceeds current liquidity capacity by ${shortfall.toLocaleString()} KSh.`,
+    shortfall,
+  };
+
+  // 4. Alignment Pressure (Weighted Scoring 0-100)
+  let pressureScore = 0;
+
+  // Weight: Leakage vs Assets (up to 25 points)
+  if (leakage > assets) pressureScore += 25;
+  else if (leakage > 0) pressureScore += 10;
+
+  // Weight: Liquidity Sufficiency (up to 30 points)
+  if (!isSufficient) pressureScore += 30;
+
+  // Weight: Starvation (up to 20 points)
+  if (objectiveStarvationSignals.length > 0) pressureScore += 20;
+
+  // Weight: High Liabilities (up to 25 points)
+  const totalLiabilities = liabilities.reduce(
+    (sum, l) => sum + Number(l.outstanding_balance),
+    0,
+  );
+  if (totalLiabilities > liquidity * 2) pressureScore += 25;
+
+  return {
+    fundingRatios,
+    velocity,
+    alignmentPressure: Math.min(100, pressureScore),
+    liquiditySufficiency,
+    objectiveStarvationSignals,
+    strategicAllocationSignals,
+  };
+}
+
+/**
  * Main entry point for generating a full analytics context.
  */
 export const generateSummary = (
@@ -132,6 +251,7 @@ export const generateSummary = (
   liabilities: Liability[] = [],
   incomeStreams: IncomeStream[] = [],
   goals: FinancialGoal[] = [],
+  objectives: StrategicObjective[] = [],
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
   const burnRate = calculateBurnRate(deployments);
@@ -142,6 +262,15 @@ export const generateSummary = (
 
   const income = calculateIncomeMetrics(incomeStreams);
   const goalMetrics = calculateGoalMetrics(goals);
+
+  const strategicAlignment = calculateStrategicAlignment(
+    objectives,
+    deployments,
+    liquidity,
+    income.total,
+    burnRate,
+    liabilities,
+  );
 
   return {
     totalDeployed: total,
@@ -174,5 +303,7 @@ export const generateSummary = (
       0,
       goalMetrics.totalTargets - goalMetrics.totalProgress,
     ),
+    // Strategic Objectives v1
+    strategicAlignment,
   };
 };

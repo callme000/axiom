@@ -32,6 +32,22 @@ export interface Deployment {
   account_id?: string | null;
 }
 
+export interface StrategicAlignment {
+  fundingRatios: Record<string, number>; // objective_id -> ratio (0-100)
+  alignmentPressure: number; // 0-100 deterministic score
+  liquiditySufficiency: {
+    isSufficient: boolean;
+    message: string;
+    shortfall: number;
+  };
+  objectiveStarvationSignals: string[];
+  strategicAllocationSignals: string[];
+  velocity: Record<
+    string,
+    "stable" | "accelerating" | "stagnant" | "regressing"
+  >;
+}
+
 export interface AnalyticsSummary {
   totalDeployed: number;
   averageDeployment: number;
@@ -57,4 +73,6 @@ export interface AnalyticsSummary {
   averageGoalProgress: number;
   criticalGoalCount: number;
   fundingGap: number;
+  // Strategic Objectives v1
+  strategicAlignment: StrategicAlignment;
 }
