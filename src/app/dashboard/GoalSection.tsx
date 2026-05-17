@@ -66,7 +66,9 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
       setIsAdding(false);
       onSnapshot(snapshot);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to record strategic goal");
+      setError(
+        err instanceof Error ? err.message : "Failed to record strategic goal",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -93,18 +95,11 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center text-background hover:scale-105 active:scale-95 transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="4"
-          >
-            <path d={isAdding ? "M18 12H6" : "M12 5v14M5 12h14"} />
-          </svg>
+          <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
+            {isAdding ? "Cancel" : "+ Add objective"}
+          </span>
         </button>
       </div>
 
@@ -235,11 +230,15 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 <div className="flex items-center justify-between relative z-10 mb-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-[8px] font-black text-background px-1.5 py-0.5 rounded uppercase tracking-tighter ${
-                        goal.priority === 'critical' ? 'bg-orange-500' :
-                        goal.priority === 'high' ? 'bg-foreground/60' :
-                        'bg-foreground/30'
-                      }`}>
+                      <span
+                        className={`text-[8px] font-black text-background px-1.5 py-0.5 rounded uppercase tracking-tighter ${
+                          goal.priority === "critical"
+                            ? "bg-orange-500"
+                            : goal.priority === "high"
+                              ? "bg-foreground/60"
+                              : "bg-foreground/30"
+                        }`}
+                      >
                         {goal.priority}
                       </span>
                       <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
@@ -247,7 +246,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                       </h3>
                     </div>
                     <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
-                      {goal.goal_type.replace('_', ' ')} • {goal.status}
+                      {goal.goal_type.replace("_", " ")} • {goal.status}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
@@ -281,13 +280,13 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-1000 ease-out ${
-                      progress >= 100 ? 'bg-green-500' : 'bg-foreground/40'
+                      progress >= 100 ? "bg-green-500" : "bg-foreground/40"
                     }`}
                     style={{ width: `${progress}%` }}
                   />
                 </div>
                 <div className="flex justify-between mt-2">
-                   <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
+                  <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
                     {formatKSh(goal.current_progress)}
                   </p>
                   <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">

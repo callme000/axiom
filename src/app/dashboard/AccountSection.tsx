@@ -79,18 +79,11 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center text-background hover:scale-105 active:scale-95 transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="4"
-          >
-            <path d={isAdding ? "M18 12H6" : "M12 5v14M5 12h14"} />
-          </svg>
+          <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
+            {isAdding ? "Cancel" : "+ Add container"}
+          </span>
         </button>
       </div>
 
