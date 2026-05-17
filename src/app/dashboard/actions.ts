@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   getDeployments,
@@ -243,17 +244,22 @@ export async function createDeploymentAction(
 
   if (!user) return unauthenticatedSnapshot();
 
-  await createDeployment(
-    supabase,
-    input.title,
-    input.amount,
-    user.id,
-    input.category,
-    0,
-    input.advancedContext,
-  );
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await createDeployment(
+      supabase,
+      input.title,
+      input.amount,
+      user.id,
+      input.category,
+      0,
+      input.advancedContext,
+    );
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to create deployment:", error);
+    throw error;
+  }
 }
 
 export async function updateDeploymentAction(
@@ -267,13 +273,18 @@ export async function updateDeploymentAction(
 
   if (!user) return unauthenticatedSnapshot();
 
-  await updateDeployment(supabase, id, {
-    title: input.title,
-    amount: input.amount,
-    category: input.category,
-  });
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await updateDeployment(supabase, id, {
+      title: input.title,
+      amount: input.amount,
+      category: input.category,
+    });
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update deployment:", error);
+    throw error;
+  }
 }
 
 export async function deleteDeploymentAction(id: string) {
@@ -284,9 +295,14 @@ export async function deleteDeploymentAction(id: string) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await deleteDeployment(supabase, id);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await deleteDeployment(supabase, id);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to delete deployment:", error);
+    throw error;
+  }
 }
 
 export async function updateLiquidityAction(amount: number) {
@@ -297,9 +313,14 @@ export async function updateLiquidityAction(amount: number) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await updateLiquidity(supabase, amount);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await updateLiquidity(supabase, amount);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update liquidity:", error);
+    throw error;
+  }
 }
 
 export async function createAccountAction(input: CreateAccountActionInput) {
@@ -310,9 +331,14 @@ export async function createAccountAction(input: CreateAccountActionInput) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await createAccount(supabase, user.id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await createAccount(supabase, user.id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to create account:", error);
+    throw error;
+  }
 }
 
 export async function updateAccountAction(
@@ -326,9 +352,14 @@ export async function updateAccountAction(
 
   if (!user) return unauthenticatedSnapshot();
 
-  await updateAccount(supabase, id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await updateAccount(supabase, id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update account:", error);
+    throw error;
+  }
 }
 
 export async function deleteAccountAction(id: string) {
@@ -339,9 +370,14 @@ export async function deleteAccountAction(id: string) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await deleteAccount(supabase, id);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await deleteAccount(supabase, id);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to delete account:", error);
+    throw error;
+  }
 }
 
 export async function createLiabilityAction(input: CreateLiabilityActionInput) {
@@ -352,9 +388,14 @@ export async function createLiabilityAction(input: CreateLiabilityActionInput) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await createLiability(supabase, user.id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await createLiability(supabase, user.id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to create liability:", error);
+    throw error;
+  }
 }
 
 export async function updateLiabilityAction(
@@ -368,9 +409,14 @@ export async function updateLiabilityAction(
 
   if (!user) return unauthenticatedSnapshot();
 
-  await updateLiability(supabase, id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await updateLiability(supabase, id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update liability:", error);
+    throw error;
+  }
 }
 
 export async function deleteLiabilityAction(id: string) {
@@ -381,9 +427,14 @@ export async function deleteLiabilityAction(id: string) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await deleteLiability(supabase, id);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await deleteLiability(supabase, id);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to delete liability:", error);
+    throw error;
+  }
 }
 
 export async function createIncomeAction(input: CreateIncomeActionInput) {
@@ -394,9 +445,14 @@ export async function createIncomeAction(input: CreateIncomeActionInput) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await createIncomeStream(supabase, user.id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await createIncomeStream(supabase, user.id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to create income stream:", error);
+    throw error;
+  }
 }
 
 export async function updateIncomeAction(
@@ -410,9 +466,14 @@ export async function updateIncomeAction(
 
   if (!user) return unauthenticatedSnapshot();
 
-  await updateIncomeStream(supabase, id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await updateIncomeStream(supabase, id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update income stream:", error);
+    throw error;
+  }
 }
 
 export async function deleteIncomeAction(id: string) {
@@ -423,9 +484,14 @@ export async function deleteIncomeAction(id: string) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await deleteIncomeStream(supabase, id);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await deleteIncomeStream(supabase, id);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to delete income stream:", error);
+    throw error;
+  }
 }
 
 export async function createGoalAction(input: CreateGoalActionInput) {
@@ -436,9 +502,14 @@ export async function createGoalAction(input: CreateGoalActionInput) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await createGoal(supabase, user.id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await createGoal(supabase, user.id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to create goal:", error);
+    throw error;
+  }
 }
 
 export async function updateGoalAction(
@@ -452,9 +523,14 @@ export async function updateGoalAction(
 
   if (!user) return unauthenticatedSnapshot();
 
-  await updateGoal(supabase, id, input);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await updateGoal(supabase, id, input);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update goal:", error);
+    throw error;
+  }
 }
 
 export async function deleteGoalAction(id: string) {
@@ -465,7 +541,12 @@ export async function deleteGoalAction(id: string) {
 
   if (!user) return unauthenticatedSnapshot();
 
-  await deleteGoal(supabase, id);
-
-  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  try {
+    await deleteGoal(supabase, id);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to delete goal:", error);
+    throw error;
+  }
 }
