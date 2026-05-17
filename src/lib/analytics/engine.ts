@@ -4,9 +4,11 @@ import {
   Account,
   Liability,
   IncomeStream,
+  FinancialGoal,
 } from "./types";
 import { summarizeMetadataQuality } from "../finance/metadataQuality";
 import { calculateMonthlyInflow } from "../finance/income";
+import { calculateGoalProgressPercentage } from "../finance/goals";
 
 /**
  * Pure, deterministic engine for financial intelligence.
@@ -44,6 +46,26 @@ export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
       recurring: 0,
       irregular: 0,
       concentration: {} as Record<string, number>,
+    },
+  );
+};
+
+export const calculateGoalMetrics = (goals: FinancialGoal[]) => {
+  return goals.reduce(
+    (acc, goal) => {
+      acc.totalTargets += Number(goal.target_amount);
+      acc.totalProgress += Number(goal.current_progress);
+      if (goal.priority === "critical" && goal.status === "active") {
+        acc.criticalCount += 1;
+      }
+      acc.progressSum += calculateGoalProgressPercentage(goal);
+      return acc;
+    },
+    {
+      totalTargets: 0,
+      totalProgress: 0,
+      criticalCount: 0,
+      progressSum: 0,
     },
   );
 };
@@ -107,6 +129,7 @@ export const generateSummary = (
   accounts: Account[] = [],
   liabilities: Liability[] = [],
   incomeStreams: IncomeStream[] = [],
+  goals: FinancialGoal[] = [],
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
   const burnRate = calculateBurnRate(deployments);
@@ -116,6 +139,7 @@ export const generateSummary = (
   const netWorth = totalAssets - totalLiabilities;
 
   const income = calculateIncomeMetrics(incomeStreams);
+  const goalMetrics = calculateGoalMetrics(goals);
 
   return {
     totalDeployed: total,
@@ -138,5 +162,15 @@ export const generateSummary = (
     irregularIncome: income.irregular,
     incomeConcentration: income.concentration,
     adjustedDailyBurn: Math.max(0, burnRate - income.total / 30),
+    // Goal System v1
+    totalStrategicTargets: goalMetrics.totalTargets,
+    totalCurrentProgress: goalMetrics.totalProgress,
+    averageGoalProgress:
+      goals.length > 0 ? goalMetrics.progressSum / goals.length : 0,
+    criticalGoalCount: goalMetrics.criticalCount,
+    fundingGap: Math.max(
+      0,
+      goalMetrics.totalTargets - goalMetrics.totalProgress,
+    ),
   };
 };

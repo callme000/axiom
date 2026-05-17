@@ -28,23 +28,21 @@ import {
 import { AccountSection } from "./AccountSection";
 import { LiabilitySection } from "./LiabilitySection";
 import { IncomeSection } from "./IncomeSection";
-import type { Account } from "@/lib/finance/accounts";
-import type { Liability } from "@/lib/finance/liabilities";
-import type { IncomeStream } from "@/lib/finance/income";
-
-type Deployment = {
-  id: string;
-  title: string;
-  amount: number;
-  created_at: string;
-  category?: string | null;
-};
+import { GoalSection } from "./GoalSection";
+import type {
+  Account,
+  Liability,
+  IncomeStream,
+  FinancialGoal,
+  Deployment,
+} from "@/lib/analytics/types";
 
 interface LedgerState {
   deployments: Deployment[];
   accounts: Account[];
   liabilities: Liability[];
   incomeStreams: IncomeStream[];
+  goals: FinancialGoal[];
   analytics: AnalyticsSummary | null;
 }
 
@@ -161,6 +159,7 @@ export default function Dashboard() {
     accounts: [],
     liabilities: [],
     incomeStreams: [],
+    goals: [],
     analytics: null,
   });
   const [liquidity, setLiquidity] = useState<number>(0);
@@ -211,6 +210,7 @@ export default function Dashboard() {
       accounts: snapshot.accounts,
       liabilities: snapshot.liabilities,
       incomeStreams: snapshot.incomeStreams,
+      goals: snapshot.goals,
       analytics: snapshot.analytics,
     });
     setKairosInsight(snapshot.kairosInsight);
@@ -374,7 +374,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end">
+        <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end items-stretch">
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
             <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
               Net Worth
@@ -384,6 +384,20 @@ export default function Dashboard() {
             >
               {formatKSh(ledger.analytics?.netWorth || 0)}
             </span>
+          </div>
+
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+              Strategic Fulfillment
+            </span>
+            <span className="text-2xl font-black tabular-nums text-foreground text-center">
+              {Math.round(ledger.analytics?.averageGoalProgress || 0)}%
+            </span>
+            {ledger.analytics && ledger.analytics.criticalGoalCount > 0 && (
+              <p className="text-[7px] font-black text-orange-500 uppercase tracking-tight mt-1 text-center">
+                {ledger.analytics.criticalGoalCount} Critical Objectives
+              </p>
+            )}
           </div>
 
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
@@ -740,6 +754,13 @@ export default function Dashboard() {
           <div className="bg-background border rounded-3xl p-8 shadow-2xl">
             <IncomeSection
               incomeStreams={ledger.incomeStreams}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <GoalSection
+              goals={ledger.goals}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>

@@ -3,10 +3,17 @@ import { DeploymentAdvancedContext } from "../finance/deploymentContext";
 import { Account } from "../finance/accounts";
 import { Liability } from "../finance/liabilities";
 import { IncomeStream } from "../finance/income";
+import { FinancialGoal } from "../finance/goals";
 
 export type { Account, AccountType } from "../finance/accounts";
 export type { Liability, LiabilityType } from "../finance/liabilities";
 export type { IncomeStream, IncomeType } from "../finance/income";
+export type {
+  FinancialGoal,
+  GoalType,
+  GoalPriority,
+  GoalStatus,
+} from "../finance/goals";
 
 export interface Deployment {
   id: string;
@@ -37,4 +44,10 @@ export interface AnalyticsSummary {
   irregularIncome: number;
   incomeConcentration: Record<string, number>;
   adjustedDailyBurn: number;
+  // Goal System v1
+  totalStrategicTargets: number;
+  totalCurrentProgress: number;
+  averageGoalProgress: number;
+  criticalGoalCount: number;
+  fundingGap: number;
 }

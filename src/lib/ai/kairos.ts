@@ -72,7 +72,14 @@ export async function generateKairosAIInsight(
   }));
 
   // 3. Generate Analytics Context (Source of Truth)
-  const analytics = generateSummary(domainDeployments, currentBalance);
+  const analytics = generateSummary(
+    domainDeployments,
+    currentBalance,
+    [],
+    [],
+    [],
+    [],
+  );
 
   // 4. Build Behavioral Context (Compression Layer)
   const context = buildBehavioralContext(

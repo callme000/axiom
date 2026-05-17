@@ -25,6 +25,7 @@ import {
   updateIncomeStream,
   deleteIncomeStream,
 } from "@/lib/db/income";
+import { getGoals, createGoal, updateGoal, deleteGoal } from "@/lib/db/goals";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { getInsights, saveInsight } from "@/lib/db/insights";
 import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
@@ -34,6 +35,7 @@ import type {
   Account,
   Liability,
   IncomeStream,
+  FinancialGoal,
 } from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
 
@@ -43,6 +45,7 @@ export interface DashboardSnapshot {
   accounts: Account[];
   liabilities: Liability[];
   incomeStreams: IncomeStream[];
+  goals: FinancialGoal[];
   analytics: AnalyticsSummary | null;
   liquidity: number;
   kairosInsight: KairosInsight | null;
@@ -91,6 +94,17 @@ export interface CreateIncomeActionInput {
   end_date?: string | null;
 }
 
+export interface CreateGoalActionInput {
+  goal_name: string;
+  goal_type: string;
+  target_amount: number;
+  current_progress?: number;
+  target_date?: string | null;
+  priority: string;
+  status: string;
+  notes?: string;
+}
+
 function unauthenticatedSnapshot(): DashboardSnapshot {
   return {
     authenticated: false,
@@ -98,6 +112,7 @@ function unauthenticatedSnapshot(): DashboardSnapshot {
     accounts: [],
     liabilities: [],
     incomeStreams: [],
+    goals: [],
     analytics: null,
     liquidity: 0,
     kairosInsight: null,
@@ -146,12 +161,14 @@ async function buildDashboardSnapshot(
     accountsData,
     liabilitiesData,
     incomeStreamsData,
+    goalsData,
     settings,
   ] = await Promise.all([
     getDeployments(supabase),
     getAccounts(supabase),
     getLiabilities(supabase),
     getIncomeStreams(supabase),
+    getGoals(supabase),
     getUserSettings(supabase),
   ]);
 
@@ -159,6 +176,7 @@ async function buildDashboardSnapshot(
   const accounts = (accountsData || []) as Account[];
   const liabilities = (liabilitiesData || []) as Liability[];
   const incomeStreams = (incomeStreamsData || []) as IncomeStream[];
+  const goals = (goalsData || []) as FinancialGoal[];
   const liquidity = Number(settings.total_liquidity);
   const analytics = generateSummary(
     deployments,
@@ -166,6 +184,7 @@ async function buildDashboardSnapshot(
     accounts,
     liabilities,
     incomeStreams,
+    goals,
   );
   const savedInsights = await getInsights(supabase, 1);
   const previousInsight =
@@ -180,6 +199,7 @@ async function buildDashboardSnapshot(
       accounts,
       liabilities,
       incomeStreams,
+      goals,
       analytics,
       liquidity,
       kairosInsight: previousInsight,
@@ -202,6 +222,7 @@ async function buildDashboardSnapshot(
     accounts,
     liabilities,
     incomeStreams,
+    goals,
     analytics,
     liquidity,
     kairosInsight,
@@ -403,6 +424,48 @@ export async function deleteIncomeAction(id: string) {
   if (!user) return unauthenticatedSnapshot();
 
   await deleteIncomeStream(supabase, id);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function createGoalAction(input: CreateGoalActionInput) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await createGoal(supabase, user.id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function updateGoalAction(
+  id: string,
+  input: Partial<CreateGoalActionInput>,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await updateGoal(supabase, id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function deleteGoalAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await deleteGoal(supabase, id);
 
   return buildDashboardSnapshot({ forceInsightEvaluation: true });
 }
