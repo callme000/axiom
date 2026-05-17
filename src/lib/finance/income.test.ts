@@ -62,8 +62,8 @@ test("runway logic incorporates income offset correctly", () => {
     },
   ]; // 50/day offset
 
-  // Formula: (Liquidity + Monthly Income) / Daily Burn
-  // (1000 + 1500) / 100 = 25 days
+  // Correct Formula: Liquidity / (Daily Burn - (Monthly Income / 30))
+  // 1000 / (100 - (1500 / 30)) = 1000 / 50 = 20 days
   const summary = generateSummary(
     deployments,
     liquidity,
@@ -74,6 +74,6 @@ test("runway logic incorporates income offset correctly", () => {
 
   assert.strictEqual(summary.dailyBurnRate, 100);
   assert.strictEqual(summary.totalMonthlyIncome, 1500);
-  assert.strictEqual(summary.runwayDays, 25);
+  assert.strictEqual(summary.runwayDays, 20);
   assert.strictEqual(summary.adjustedDailyBurn, 50);
 });

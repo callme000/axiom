@@ -90,18 +90,20 @@ export const calculateBurnRate = (
 
 /**
  * Projects runway based on deterministic liquidity and income offset.
- * Formula: Runway = (Liquid Assets + Monthly Income Offset) / Burn Rate
- * Note: Returns days.
+ * Correct Formula: Runway = balance / (dailyBurnRate - (monthlyIncome / 30))
+ * Note: Returns days. Returns null if adjusted burn is <= 0 (stable state).
  */
 export const projectRunway = (
   balance: number,
   dailyBurnRate: number,
   monthlyIncome: number = 0,
 ): number | null => {
-  if (dailyBurnRate <= 0) return null;
-  // Implementation of: (Liquid Assets + Monthly Income Offset) / Burn Rate
-  // This is effectively (balance + monthlyIncome) / dailyBurnRate.
-  return (balance + monthlyIncome) / dailyBurnRate;
+  const adjustedDailyBurn = dailyBurnRate - monthlyIncome / 30;
+
+  if (adjustedDailyBurn <= 0) return null;
+  if (balance <= 0) return 0;
+
+  return balance / adjustedDailyBurn;
 };
 
 /**

@@ -42,3 +42,10 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# axiom specific
+supabase/
+*_repository_audit.pdf
+generate_audit_pdf.py
+supabase-setup.sql
+testing-scenarios.sql
