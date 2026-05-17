@@ -572,47 +572,47 @@ export default function Dashboard() {
         </div>
 
         {/* Strategic Fulfillment Context (Analytical Summary) */}
-        <div className="bg-foreground border border-foreground/10 rounded-[2.5rem] p-6 md:p-10 text-background shadow-2xl flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative">
+        <div className="bg-foreground border border-foreground/10 rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 text-background shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 md:gap-10 overflow-hidden relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-background/5 blur-[80px] rounded-full -mr-32 -mt-32"></div>
 
-          <div className="space-y-2 relative z-10">
-            <h2 className="text-2xl font-black uppercase tracking-[0.1em]">
+          <div className="space-y-2 relative z-10 text-center md:text-left">
+            <h2 className="text-xl md:text-2xl font-black uppercase tracking-[0.1em]">
               Strategic Fulfillment
             </h2>
-            <p className="text-background/60 text-sm font-bold uppercase tracking-widest max-w-lg leading-relaxed">
+            <p className="text-background/60 text-[11px] md:text-sm font-bold uppercase tracking-widest max-w-lg leading-relaxed">
               Alignment of authoritative capital with defined long-term
               intentions. Calculated mean across all active objectives.
             </p>
           </div>
 
-          <div className="flex items-center gap-12 relative z-10">
-            <div className="text-right">
-              <p className="text-5xl font-black tabular-nums">
+          <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 md:gap-12 relative z-10">
+            <div className="text-center md:text-right">
+              <p className="text-4xl md:text-5xl font-black tabular-nums">
                 {Math.round(ledger.analytics?.averageGoalProgress || 0)}%
               </p>
-              <p className="text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-2">
+              <p className="text-[8px] md:text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-1 md:mt-2">
                 Fulfillment Mean
               </p>
             </div>
 
             {ledger.analytics && ledger.analytics.criticalGoalCount > 0 && (
-              <div className="bg-orange-500 text-background px-6 py-4 rounded-2xl shadow-xl shadow-orange-500/20">
-                <p className="text-sm font-black uppercase tracking-widest leading-none">
+              <div className="bg-orange-500 text-background px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl shadow-xl shadow-orange-500/20">
+                <p className="text-xs md:text-sm font-black uppercase tracking-widest leading-none">
                   {ledger.analytics.criticalGoalCount}
                 </p>
-                <p className="text-[9px] font-black uppercase tracking-tighter mt-1 opacity-80">
+                <p className="text-[7px] md:text-[9px] font-black uppercase tracking-tighter mt-1 opacity-80">
                   Critical
                 </p>
               </div>
             )}
 
-            <div className="bg-background/10 h-16 w-[1px] hidden sm:block"></div>
+            <div className="bg-background/10 h-12 md:h-16 w-[1px] hidden sm:block"></div>
 
-            <div className="text-right">
-              <p className="text-5xl font-black tabular-nums">
+            <div className="text-center md:text-right">
+              <p className="text-4xl md:text-5xl font-black tabular-nums">
                 {ledger.goals.length}
               </p>
-              <p className="text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-2">
+              <p className="text-[8px] md:text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-1 md:mt-2">
                 Active Intentions
               </p>
             </div>
