@@ -368,66 +368,54 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto p-6 pb-20 space-y-24">
       {/* Zone 1 — FINANCIAL TRUTH */}
-      <section id="overview" className="space-y-16">
-        {/* Header: Title and Positioning */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-10">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-1.5 bg-foreground rounded-full"></div>
-              <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground uppercase hover:text-foreground/80 transition-all cursor-default flex items-baseline gap-3">
-                AXIOM
-                <span className="text-xl md:text-2xl text-foreground/20 font-light lowercase tracking-normal italic hidden sm:block">
-                  intelligence layer
-                </span>
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 ml-5">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <p className="text-foreground/40 text-[10px] md:text-xs font-black uppercase tracking-[0.4em] leading-none">
-                Financial Intelligence System v2.4 :: Sync-Confirmed
-              </p>
-            </div>
+      <section id="overview" className="space-y-8">
+        {/* ROW 1: PRIMARY POSITION */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+            <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
+              Net Worth
+            </span>
+            <span
+              className={`text-4xl font-black tabular-nums ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
+            >
+              {formatKSh(ledger.analytics?.netWorth || 0)}
+            </span>
+            <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
+              Consolidated financial value
+            </p>
           </div>
 
-          {/* SUBSECTION A — FINANCIAL POSITION */}
-          <div className="flex gap-4 flex-wrap md:flex-nowrap justify-end items-stretch">
-            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 flex flex-col min-w-44 justify-center">
-              <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-2">
-                Net Worth
-              </span>
-              <span
-                className={`text-2xl font-black tabular-nums ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
-              >
-                {formatKSh(ledger.analytics?.netWorth || 0)}
-              </span>
-            </div>
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+            <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
+              Total Assets
+            </span>
+            <span className="text-4xl font-black tabular-nums text-foreground">
+              {formatKSh(ledger.analytics?.totalAssets || 0)}
+            </span>
+            <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
+              Authoritative capital & value
+            </p>
+          </div>
 
-            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 flex flex-col min-w-44 justify-center">
-              <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-2">
-                Total Assets
-              </span>
-              <span className="text-2xl font-black tabular-nums text-foreground">
-                {formatKSh(ledger.analytics?.totalAssets || 0)}
-              </span>
-            </div>
-
-            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 flex flex-col min-w-44 justify-center">
-              <span className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-2">
-                Total Liabilities
-              </span>
-              <span className="text-2xl font-black tabular-nums text-foreground">
-                {formatKSh(ledger.analytics?.totalLiabilities || 0)}
-              </span>
-            </div>
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
+            <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
+              Total Liabilities
+            </span>
+            <span className="text-4xl font-black tabular-nums text-foreground">
+              {formatKSh(ledger.analytics?.totalLiabilities || 0)}
+            </span>
+            <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
+              Outstanding strategic obligations
+            </p>
           </div>
         </div>
 
-        {/* SUBSECTION B — LIQUIDITY & REPLENISHMENT */}
+        {/* ROW 2: OPERATIONAL SURVIVAL */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div
             className={`bg-foreground/5 border rounded-2xl p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
                 {liquidityError ? "Sync Error" : "Liquidity Pool"}
               </span>
@@ -481,7 +469,7 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
                 Monthly Replenishment
               </span>
@@ -497,7 +485,7 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
                 Deterministic Runway
               </span>
