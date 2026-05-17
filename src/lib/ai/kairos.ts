@@ -70,7 +70,7 @@ export async function generateSystemInsights(
     throw new Error("Authentication required for Kairos hydration.");
   }
 
-  // 1. Retrieve Canonical Context (Only if not provided)
+  // 1. Retrieve Canonical Context (Fallback Fetch Pipeline)
   const needsFetch =
     !telemetry.deployments ||
     telemetry.liquidity === undefined ||
@@ -80,30 +80,28 @@ export async function generateSystemInsights(
     !telemetry.goals ||
     !telemetry.objectives;
 
-  let deployments = telemetry.deployments;
+  let deps = telemetry.deployments;
   let accounts = telemetry.accounts;
   let liabilities = telemetry.liabilities;
-  let incomeStreams = telemetry.incomeStreams;
+  let income = telemetry.incomeStreams;
   let goals = telemetry.goals;
   let objectives = telemetry.objectives;
   let liquidity = telemetry.liquidity;
 
   if (needsFetch) {
     const [
-      deploymentsData,
+      depsData,
       accountsData,
       liabilitiesData,
-      incomeStreamsData,
+      incomeData,
       goalsData,
       objectivesData,
       settings,
     ] = await Promise.all([
-      deployments ? Promise.resolve(deployments) : getDeployments(supabase),
+      deps ? Promise.resolve(deps) : getDeployments(supabase),
       accounts ? Promise.resolve(accounts) : getAccounts(supabase),
       liabilities ? Promise.resolve(liabilities) : getLiabilities(supabase),
-      incomeStreams
-        ? Promise.resolve(incomeStreams)
-        : getIncomeStreams(supabase),
+      income ? Promise.resolve(income) : getIncomeStreams(supabase),
       goals ? Promise.resolve(goals) : getGoals(supabase),
       objectives
         ? Promise.resolve(objectives)
@@ -113,10 +111,10 @@ export async function generateSystemInsights(
         : getUserSettings(supabase),
     ]);
 
-    deployments = (deploymentsData || []) as Deployment[];
+    deps = (depsData || []) as Deployment[];
     accounts = (accountsData || []) as Account[];
     liabilities = (liabilitiesData || []) as Liability[];
-    incomeStreams = (incomeStreamsData || []) as IncomeStream[];
+    income = (incomeData || []) as IncomeStream[];
     goals = (goalsData || []) as FinancialGoal[];
     objectives = (objectivesData || []) as StrategicObjective[];
     liquidity =
@@ -127,13 +125,13 @@ export async function generateSystemInsights(
           );
   }
 
-  // 2. Build Deterministic Analytics
+  // 2. Build Deterministic Analytics (Full Context Pass-Through)
   const analytics = generateSummary(
-    deployments!,
+    deps!,
     liquidity!,
     accounts!,
     liabilities!,
-    incomeStreams!,
+    income!,
     goals!,
     objectives!,
   );
@@ -141,31 +139,38 @@ export async function generateSystemInsights(
   // 3. Build Behavioral Context for Insight Engine
   const context = buildBehavioralContext(
     { currentAnalytics: analytics },
-    deployments!.map((d) => Number(d.amount)),
+    deps!.map((d) => Number(d.amount)),
   );
 
   // 4. Evaluate Insights via Rule Registry (V1.1)
+  console.log("KAIROS TELEMETRY:", {
+    deploymentsCount: deps!.length,
+    runwayDays: analytics.runwayDays,
+    alignmentPressure: analytics.strategicAlignment.alignmentPressure,
+    netWorth: analytics.netWorth,
+  });
+
   const { primaryInsight } = evaluateInsights(context);
+
+  const previousInsight = telemetry.previousInsight;
+  const isMessageChanged = primaryInsight.message !== previousInsight?.message;
+  const isSeverityChanged =
+    primaryInsight.severity !== previousInsight?.severity;
+  const isSilentChanged = primaryInsight.isSilent !== previousInsight?.isSilent;
+
+  const isNewSignal = isMessageChanged || isSeverityChanged || isSilentChanged;
 
   return {
     ...primaryInsight,
-    is_new_signal: true,
+    is_new_signal: isNewSignal,
   };
 }
 
 /**
- * Legacy bridge support for streamed telemetry.
+ * Bridge support for streamed telemetry from Dashboard Actions.
  */
 export async function generateKairosAIInsight(
-  deployments?: Deployment[],
-  liquidity?: number,
-  previousInsight?: KairosInsight | null,
-  objectives?: StrategicObjective[],
+  telemetry: KairosTelemetry,
 ): Promise<KairosInsight> {
-  return generateSystemInsights({
-    deployments,
-    liquidity,
-    previousInsight,
-    objectives,
-  });
+  return generateSystemInsights(telemetry);
 }

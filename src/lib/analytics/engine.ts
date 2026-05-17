@@ -100,8 +100,12 @@ export const projectRunway = (
   balance: number,
   dailyBurnRate: number,
   monthlyIncome: number = 0,
+  netWorth: number = 0,
 ): number | null => {
   const adjustedDailyBurn = dailyBurnRate - monthlyIncome / 30;
+
+  // If net worth is negative, the structural foundation is critical regardless of cash flow
+  if (netWorth < 0) return 0;
 
   if (adjustedDailyBurn <= 0) return null;
   if (balance <= 0) return 0;
@@ -276,9 +280,7 @@ export const generateSummary = (
     totalDeployed: total,
     averageDeployment: calculateAverage(deployments),
     dailyBurnRate: burnRate,
-    runwayDays: liquidity
-      ? projectRunway(liquidity, burnRate, income.total)
-      : null,
+    runwayDays: projectRunway(liquidity, burnRate, income.total, netWorth),
     categoryBreakdown: getCategoryBreakdown(deployments),
     deploymentCount: deployments.length,
     metadataQuality: summarizeMetadataQuality(deployments),

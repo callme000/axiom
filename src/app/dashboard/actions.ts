@@ -183,6 +183,8 @@ async function buildDashboardSnapshot(
 
   if (!user) return unauthenticatedSnapshot();
 
+  console.log("ACTIVE SESSION USER ID:", user.id);
+
   const [
     deploymentsData,
     accountsData,
@@ -223,28 +225,19 @@ async function buildDashboardSnapshot(
       ? normalizeSavedInsight(savedInsights[0] as Record<string, unknown>)
       : null;
 
-  if (!options.forceInsightEvaluation && previousInsight) {
-    return {
-      authenticated: true,
-      deployments,
-      accounts,
-      liabilities,
-      incomeStreams,
-      goals,
-      objectives,
-      analytics,
-      liquidity,
-      kairosInsight: previousInsight,
-    };
-  }
-
-  const kairosInsight = await generateKairosAIInsight(
+  // ALWAYS evaluate fresh to ensure UI sync
+  const kairosInsight = await generateKairosAIInsight({
     deployments,
     liquidity,
     previousInsight,
     objectives,
-  );
+    accounts,
+    liabilities,
+    incomeStreams,
+    goals,
+  });
 
+  // Only save if it's actually a material change (handled inside kairos.ts logic)
   if (kairosInsight.is_new_signal) {
     await saveInsight(supabase, kairosInsight, user.id);
   }
@@ -259,7 +252,7 @@ async function buildDashboardSnapshot(
     objectives,
     analytics,
     liquidity,
-    kairosInsight,
+    kairosInsight, // Authoritative fresh signal
   };
 }
 

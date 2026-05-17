@@ -88,6 +88,11 @@ export const buildBehavioralContext = (
     deploymentCount: currentAnalytics.deploymentCount,
     capitalEfficiencyScore: Math.round(Math.max(efficiency, 0)),
 
+    netWorth: currentAnalytics.netWorth,
+    liquidity: currentAnalytics.liquidity,
+
+    strategicAlignment: currentAnalytics.strategicAlignment,
+
     burnRate: {
       current: currentAnalytics.dailyBurnRate,
       trend: burnTrend,

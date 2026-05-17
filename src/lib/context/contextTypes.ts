@@ -1,3 +1,4 @@
+import { StrategicAlignment } from "../analytics/types";
 import { MetadataQualitySummary } from "../finance/metadataQuality";
 
 export type TrendState = "increasing" | "stable" | "decreasing";
@@ -15,6 +16,11 @@ export interface BehavioralContext {
 
   // High-level aggregate metric (0-100)
   capitalEfficiencyScore: number;
+
+  netWorth: number;
+  liquidity: number;
+
+  strategicAlignment: StrategicAlignment;
 
   burnRate: {
     current: number;
@@ -53,6 +59,9 @@ export interface ContextInput {
     categoryBreakdown: Record<string, number>;
     deploymentCount: number;
     metadataQuality: MetadataQualitySummary;
+    netWorth: number;
+    liquidity: number;
+    strategicAlignment: StrategicAlignment;
   };
   historicalMetrics?: {
     previousBurnRate: number;

@@ -7,7 +7,97 @@ import { InsightRule } from "../types";
  */
 
 export const rules: InsightRule[] = [
-  // 1. RUNWAY DEPLETION (Critical Severity)
+  // 0. SOLVENCY CRISIS (Critical Severity)
+  {
+    id: "solvency_crisis",
+    priority: "high",
+    condition: (ctx) => ctx.netWorth < 0,
+    generate: (ctx) => ({
+      type: "warning",
+      severity: "critical",
+      category: "solvency_pressure",
+      timestamp: new Date().toISOString(),
+      message:
+        "Severe solvency crisis detected. Total liabilities exceed combined capital assets, resulting in a negative net worth state.",
+      supportingSignals: [
+        `Net Worth: KSh ${Math.round(ctx.netWorth).toLocaleString()}`,
+        `Liquidity Baseline: KSh ${Math.round(ctx.liquidity).toLocaleString()}`,
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
+    }),
+  },
+
+  // 1. SOLVENCY PRESSURE (Critical/Warning Severity)
+  {
+    id: "solvency_pressure",
+    priority: "high",
+    condition: (ctx) =>
+      !ctx.strategicAlignment.liquiditySufficiency.isSufficient,
+    generate: (ctx) => {
+      const { shortfall, message } =
+        ctx.strategicAlignment.liquiditySufficiency;
+      return {
+        type: "warning",
+        severity: shortfall > 200000 ? "critical" : "warning",
+        category: "solvency_pressure",
+        timestamp: new Date().toISOString(),
+        message:
+          "Liquidity reserves are insufficient to satisfy all critical strategic obligations.",
+        supportingSignals: [
+          message,
+          `Combined Available Liquidity: KSh ${Math.round(ctx.liquidity).toLocaleString()}`,
+        ],
+        runway: ctx.runway.currentDays,
+        capitalEfficiency: ctx.capitalEfficiencyScore,
+        isSilent: false,
+      };
+    },
+  },
+
+  // 2. OBJECTIVE STARVATION (Advisory Severity)
+  {
+    id: "objective_starvation",
+    priority: "medium",
+    condition: (ctx) =>
+      ctx.strategicAlignment.objectiveStarvationSignals.length > 0,
+    generate: (ctx) => ({
+      type: "info",
+      severity: "advisory",
+      category: "objective_starvation",
+      timestamp: new Date().toISOString(),
+      message: ctx.strategicAlignment.objectiveStarvationSignals[0],
+      supportingSignals:
+        ctx.strategicAlignment.objectiveStarvationSignals.slice(1, 3),
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
+    }),
+  },
+
+  // 3. STRATEGIC CONFLICT (Warning Severity)
+  {
+    id: "strategic_conflict",
+    priority: "medium",
+    condition: (ctx) =>
+      ctx.strategicAlignment.strategicAllocationSignals.length > 0,
+    generate: (ctx) => ({
+      type: "warning",
+      severity: "warning",
+      category: "strategic_alignment",
+      timestamp: new Date().toISOString(),
+      message: ctx.strategicAlignment.strategicAllocationSignals[0],
+      supportingSignals: [
+        `Alignment Pressure: ${ctx.strategicAlignment.alignmentPressure}/100`,
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
+    }),
+  },
+
+  // 4. RUNWAY DEPLETION (Critical Severity)
   {
     id: "runway_critical",
     priority: "high",

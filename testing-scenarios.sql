@@ -1,5 +1,6 @@
--- AXIOM SYSTEM-WIDE TEST SUITE (v4.0 - Solvency & Intent)
+-- AXIOM SYSTEM-WIDE TEST SUITE (v5.0 - Strategic Interpretation Phase 5E)
 -- Testing User ID: 453007ef-8eba-4f6a-8d86-81445fc0af3d
+-- Identity: Restrained Operational Intelligence
 
 ---------------------------------------------------------
 -- SCENARIO 0: CLEAN SLATE / SYSTEM RESET
@@ -8,12 +9,18 @@ DELETE FROM public.deployments WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0
 DELETE FROM public.liabilities WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
 DELETE FROM public.income_streams WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
 DELETE FROM public.financial_goals WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
+DELETE FROM public.strategic_objectives WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
 DELETE FROM public.accounts WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
 DELETE FROM public.kairos_insights WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
 
+-- Initialize default settings
+INSERT INTO public.user_settings (user_id, total_liquidity)
+VALUES ('453007ef-8eba-4f6a-8d86-81445fc0af3d', 100000)
+ON CONFLICT (user_id) DO UPDATE SET total_liquidity = 100000;
+
 
 ---------------------------------------------------------
--- SCENARIO 1: SOLVENCY FOUNDATION (Zone 1 Verification)
+-- SCENARIO 1: SOLVENCY FOUNDATION
 -- Establishes authoritative capital, obligations, and replenishment.
 ---------------------------------------------------------
 INSERT INTO public.accounts (account_name, account_type, current_balance, user_id)
@@ -33,54 +40,57 @@ VALUES
 
 
 ---------------------------------------------------------
--- SCENARIO 2: STRATEGIC INTENTION (Zone 1 + Zone 3 Verification)
--- Verifies goal progress aggregation and strategic fulfillment mean.
+-- SCENARIO 2: STRATEGIC INTENTION (PHASE 5E)
+-- Verifies objective progress aggregation and interpretive signals.
 ---------------------------------------------------------
-INSERT INTO public.financial_goals (goal_name, goal_type, target_amount, current_progress, priority, status, user_id)
+INSERT INTO public.strategic_objectives (objective_name, objective_type, target_amount, current_amount, priority_level, status, user_id)
 VALUES
-('Emergency Fund (6M)', 'emergency_fund', 1200000.00, 300000.00, 'critical', 'active', '453007ef-8eba-4f6a-8d86-81445fc0af3d'),
-('Retirement Seed', 'retirement', 5000000.00, 450000.00, 'high', 'active', '453007ef-8eba-4f6a-8d86-81445fc0af3d');
+('Emergency Reserve Alpha', 'emergency_reserve', 1200000.00, 300000.00, 'critical', 'active', '453007ef-8eba-4f6a-8d86-81445fc0af3d'),
+('Retirement positioning', 'retirement', 5000000.00, 450000.00, 'high', 'active', '453007ef-8eba-4f6a-8d86-81445fc0af3d');
 
 
 ---------------------------------------------------------
--- SCENARIO 3: HIGH DISCIPLINE DEPLOYMENT (Zone 2 & 4 Verification)
--- Triggers: "High operational discipline in Asset accumulation..."
+-- SCENARIO 3: SOLVENCY PRESSURE (PHASE 5E TRIGGER)
+-- Context: Critical objective target exceeds available liquidity.
+-- Expectation: Kairos flags "Liquidity reserves are insufficient..."
 ---------------------------------------------------------
-INSERT INTO public.deployments (title, amount, category, user_id)
+-- Critical Target (1.2M) vs Liquidity (100k + 150k checking) = 250k.
+-- Shortfall detected.
+
+
+---------------------------------------------------------
+-- SCENARIO 4: STRATEGIC CONFLICT (CAPITAL EFFICIENCY)
+-- Context: Active accumulation, but Leakage > Assets.
+---------------------------------------------------------
+INSERT INTO public.deployments (title, amount, category, user_id, created_at)
 VALUES
-('Index Fund Contribution', 50000.00, 'Asset', '453007ef-8eba-4f6a-8d86-81445fc0af3d'),
-('Government Bond Purchase', 50000.00, 'Asset', '453007ef-8eba-4f6a-8d86-81445fc0af3d'),
-('REIT Dividends Reinvestment', 25000.00, 'Asset', '453007ef-8eba-4f6a-8d86-81445fc0af3d');
+('Suboptimal Subscription Batch', 85000.00, 'Leakage', '453007ef-8eba-4f6a-8d86-81445fc0af3d', now() - interval '2 days'),
+('Index Fund Contribution', 15000.00, 'Asset', '453007ef-8eba-4f6a-8d86-81445fc0af3d', now() - interval '5 days');
 
 
 ---------------------------------------------------------
--- SCENARIO 4: LEAKAGE CRISIS
--- Triggers: "Capital efficiency crisis detected. Excessive 'Leakage'..."
+-- SCENARIO 5: OBJECTIVE STARVATION
+-- Context: Active objective with < 10% progress created > 90 days ago.
 ---------------------------------------------------------
-INSERT INTO public.deployments (title, amount, category, user_id)
+INSERT INTO public.strategic_objectives (objective_name, objective_type, target_amount, current_amount, priority_level, status, user_id, created_at)
 VALUES
-('Unplanned Luxury Subscription', 15000.00, 'Leakage', '453007ef-8eba-4f6a-8d86-81445fc0af3d'),
-('Impulse Tech Acquisition', 85000.00, 'Leakage', '453007ef-8eba-4f6a-8d86-81445fc0af3d'),
-('Gambling/Speculative Loss', 40000.00, 'Leakage', '453007ef-8eba-4f6a-8d86-81445fc0af3d');
+('Venture Capital Base', 'investment', 10000000.00, 100000.00, 'moderate', 'active', '453007ef-8eba-4f6a-8d86-81445fc0af3d', now() - interval '100 days');
 
 
 ---------------------------------------------------------
--- SCENARIO 5: RUNWAY STABILITY (Income Offset Test)
--- Target: Verify that runway remains stable despite high burn, due to replenishment.
+-- SCENARIO 6: CRITICAL SEVERITY (SOLVENCY CRISIS)
+-- Context: Negative net worth or catastrophic burn.
 ---------------------------------------------------------
--- If Daily Burn (last 30d) = 5000 (150k total)
--- And Monthly Replenishment = 295k (Scenario 1)
--- Runway formula: (Liquidity + Monthly Offset) / Daily Burn
--- Should remain "Stable" or long-term despite the deployments.
-UPDATE public.user_settings SET total_liquidity = 100000.00 WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
+-- Force high liability to trigger critical severity
+INSERT INTO public.liabilities (liability_name, liability_type, outstanding_balance, user_id)
+VALUES ('Predatory High-Interest Loan', 'personal_loan', 2500000.00, '453007ef-8eba-4f6a-8d86-81445fc0af3d');
 
 
 ---------------------------------------------------------
--- SCENARIO 6: CRITICAL OBLIGATION THREAT
--- High burn rate + Low Liquidity + High Liabilities.
+-- SCENARIO 7: ALIGNMENT STABILITY (SILENCE)
+-- Context: No conflicts, sufficient liquidity, active progress.
 ---------------------------------------------------------
-DELETE FROM public.income_streams WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-UPDATE public.user_settings SET total_liquidity = 5000.00 WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-
-INSERT INTO public.deployments (title, amount, category, user_id)
-VALUES ('Emergency Repair', 150000.00, 'Leakage', '453007ef-8eba-4f6a-8d86-81445fc0af3d');
+-- To test silence, run Scenario 0 (Cleanup) then insert balanced data:
+ INSERT INTO public.accounts (account_name, current_balance, user_id) VALUES ('Vault', 2000000, '453007ef-8eba-4f6a-8d86-81445fc0af3d');
+ INSERT INTO public.strategic_objectives (objective_name, target_amount, current_amount, priority_level, status, user_id)
+ VALUES ('Base Reserve', 500000, 450000, 'low', 'active', '453007ef-8eba-4f6a-8d86-81445fc0af3d');

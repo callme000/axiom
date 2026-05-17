@@ -493,7 +493,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <RunwayCard runwayDays={ledger.analytics?.runwayDays ?? null} />
+          <RunwayCard
+            runwayDays={ledger.analytics?.runwayDays ?? null}
+            netWorth={ledger.analytics?.netWorth ?? 0}
+          />
         </div>
 
         {globalError && (
