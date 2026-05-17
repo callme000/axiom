@@ -368,7 +368,7 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto p-6 pb-20 space-y-24">
       {/* Zone 1 — FINANCIAL TRUTH */}
-      <section className="space-y-16">
+      <section id="overview" className="space-y-16">
         {/* Header: Title and Positioning */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-10">
           <div className="flex flex-col gap-2">
@@ -631,6 +631,7 @@ export default function Dashboard() {
 
       {/* Zone 2 — DEPLOY CAPITAL (REFINED CONSOLE) */}
       <section
+        id="deploy"
         className={`transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
       >
         <div className="bg-background border rounded-3xl p-10 shadow-2xl relative overflow-hidden group">
@@ -874,7 +875,10 @@ export default function Dashboard() {
       </section>
 
       {/* Zone 3 — KAIROS INTELLIGENCE */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <section
+        id="intelligence"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-10"
+      >
         <div
           className={`lg:col-span-8 bg-foreground border rounded-3xl p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
@@ -1090,7 +1094,7 @@ export default function Dashboard() {
       </section>
 
       {/* Zone 4 — CHRONOLOGICAL LEDGER STREAM */}
-      <section className="space-y-8">
+      <section id="ledger" className="space-y-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">
