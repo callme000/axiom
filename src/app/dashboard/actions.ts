@@ -242,6 +242,7 @@ async function buildDashboardSnapshot(
     deployments,
     liquidity,
     previousInsight,
+    objectives,
   );
 
   if (kairosInsight.is_new_signal) {

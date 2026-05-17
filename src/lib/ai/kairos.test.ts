@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { interpretStrategicState } from "./kairos";
+import { generateSystemInsights } from "./kairos";
 import { AnalyticsSummary } from "../analytics/types";
+import { buildBehavioralContext } from "../context/buildBehavioralContext";
+import { evaluateInsights } from "../insights/generateInsights";
 
 const MOCK_METADATA_QUALITY = {
   averageScore: 1,
@@ -47,93 +49,108 @@ const MOCK_ANALYTICS: AnalyticsSummary = {
   },
 };
 
-test("interpretStrategicState: silence behavior when healthy", () => {
-  const result = interpretStrategicState(MOCK_ANALYTICS);
-  assert.equal(result.isSilent, true);
-  assert.equal(result.severity, "observation");
-  assert.match(result.message, /No material structural deterioration/);
+test("Kairos Insights: correctly invokes rule engine and returns primary insight", () => {
+  const context = buildBehavioralContext(
+    { currentAnalytics: MOCK_ANALYTICS },
+    [100, 200, 300],
+  );
+  const { primaryInsight } = evaluateInsights(context);
+
+  assert.ok(primaryInsight.message);
+  assert.ok(primaryInsight.severity);
+  assert.ok(primaryInsight.category);
 });
 
-test("interpretStrategicState: severity calibration - critical (net worth negative)", () => {
-  const analytics = {
-    ...MOCK_ANALYTICS,
-    netWorth: -100,
-  };
-  const result = interpretStrategicState(analytics);
-  assert.equal(result.severity, "critical");
-  assert.equal(result.isSilent, false);
-});
-
-test("interpretStrategicState: severity calibration - critical (low runway)", () => {
+test("Kairos Insights: critical runway trigger", () => {
   const analytics = {
     ...MOCK_ANALYTICS,
     runwayDays: 10,
   };
-  const result = interpretStrategicState(analytics);
-  assert.equal(result.severity, "critical");
-});
-
-test("interpretStrategicState: solvency pressure interpretation", () => {
-  const analytics = {
-    ...MOCK_ANALYTICS,
-    strategicAlignment: {
-      ...MOCK_ANALYTICS.strategicAlignment,
-      liquiditySufficiency: {
-        isSufficient: false,
-        message: "Shortfall detected.",
-        shortfall: 500,
-      },
-    },
-  };
-  const result = interpretStrategicState(analytics);
-  assert.equal(result.severity, "warning");
-  assert.equal(result.category, "solvency_pressure");
-  assert.equal(
-    result.message,
-    "Liquidity reserves are insufficient to satisfy all critical strategic obligations.",
+  const context = buildBehavioralContext(
+    { currentAnalytics: analytics },
+    [100, 200, 300],
   );
-  assert.ok(result.supportingSignals.includes("Shortfall detected."));
+  const { primaryInsight } = evaluateInsights(context);
+
+  assert.equal(primaryInsight.severity, "critical");
+  assert.equal(primaryInsight.category, "solvency_pressure");
+  assert.match(primaryInsight.message, /runway has contracted/);
 });
 
-test("interpretStrategicState: objective starvation interpretation", () => {
+test("Kairos Insights: efficiency crisis trigger", () => {
   const analytics = {
     ...MOCK_ANALYTICS,
-    strategicAlignment: {
-      ...MOCK_ANALYTICS.strategicAlignment,
-      objectiveStarvationSignals: ["Goal X is starved."],
-    },
+    categoryBreakdown: { Leakage: 1000, Asset: 0 },
+    runwayDays: 10, // Force low runway to plummet efficiency score < 40
   };
-  const result = interpretStrategicState(analytics);
-  assert.equal(result.severity, "advisory");
-  assert.equal(result.category, "objective_starvation");
-  assert.equal(result.message, "Goal X is starved.");
+  const context = buildBehavioralContext(
+    { currentAnalytics: analytics },
+    [100, 2000, 50, 3000],
+  );
+
+  // Rule condition: capitalEfficiencyScore < 40
+  // buildBehavioralContext for runway < 90 gives -40 penalty.
+  // Volatility penalty is vol * 60.
+
+  const { primaryInsight } = evaluateInsights(context);
+
+  // Solvency pressure (runway) usually has higher priority than efficiency crisis
+  // if both are triggered, since runway is status: 'critical'.
+  // However, in registry.ts, both have priority: 'high'.
+  // evaluateInsights sorts by priority and then maintains order.
+  // runway_critical is ID 1, efficiency_crisis is ID 2.
+
+  assert.equal(primaryInsight.severity, "critical");
+  assert.match(
+    primaryInsight.message,
+    /(runway has contracted|efficiency crisis)/,
+  );
 });
 
-test("interpretStrategicState: capital efficiency interpretation (leakage vs assets)", () => {
+test("Kairos Insights: unclassified data advisory", () => {
   const analytics = {
     ...MOCK_ANALYTICS,
-    strategicAlignment: {
-      ...MOCK_ANALYTICS.strategicAlignment,
-      strategicAllocationSignals: ["Leakage exceeded Asset deployments."],
-    },
+    categoryBreakdown: { Unknown: 500, Asset: 500 },
   };
-  const result = interpretStrategicState(analytics);
-  assert.equal(result.category, "capital_efficiency");
-  assert.equal(result.message, "Leakage exceeded Asset deployments.");
+  const context = buildBehavioralContext(
+    { currentAnalytics: analytics },
+    [500, 500],
+  );
+  const { allInsights } = evaluateInsights(context);
+
+  const unclassifiedInsight = allInsights.find((i) =>
+    i.message.includes("Unclassified"),
+  );
+  assert.ok(unclassifiedInsight);
+  assert.equal(unclassifiedInsight.severity, "advisory");
 });
 
-test("interpretStrategicState: signal prioritization (limit to 3)", () => {
+test("Kairos Insights: high discipline pattern", () => {
+  // Healthy state with stable spending
+  const context = buildBehavioralContext(
+    { currentAnalytics: MOCK_ANALYTICS },
+    [100, 100, 100],
+  );
+  const { primaryInsight } = evaluateInsights(context);
+
+  assert.equal(primaryInsight.severity, "observation");
+  assert.match(primaryInsight.message, /High operational discipline/);
+  assert.equal(primaryInsight.isSilent, true);
+});
+
+test("Kairos Insights: silence state default pattern", () => {
+  // State that doesn't trigger High Discipline but falls into Default Pattern
   const analytics = {
     ...MOCK_ANALYTICS,
-    runwayDays: 20, // Should add runway signal
-    adjustedDailyBurn: 100, // Should add burn signal
-    strategicAlignment: {
-      ...MOCK_ANALYTICS.strategicAlignment,
-      alignmentPressure: 30, // Should add pressure signal
-      objectiveStarvationSignals: ["Starvation 1"], // This will be the primary assessment
-    },
+    deploymentCount: 1, // High Discipline requires count > 1
   };
-  const result = interpretStrategicState(analytics);
-  assert.equal(result.message, "Starvation 1");
-  assert.ok(result.supportingSignals.length <= 3);
+  const context = buildBehavioralContext(
+    { currentAnalytics: analytics },
+    [100],
+  );
+  const { primaryInsight } = evaluateInsights(context);
+
+  assert.equal(primaryInsight.severity, "observation");
+  assert.match(primaryInsight.message, /No material behavioral shifts/);
+  assert.equal(primaryInsight.isSilent, true);
 });

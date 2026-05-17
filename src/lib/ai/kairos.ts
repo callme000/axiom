@@ -14,9 +14,10 @@ import {
   IncomeStream,
   FinancialGoal,
   StrategicObjective,
-  AnalyticsSummary,
 } from "../analytics/types";
 import { MetadataQualitySummary } from "../finance/metadataQuality";
+import { buildBehavioralContext } from "../context/buildBehavioralContext";
+import { evaluateInsights } from "../insights/generateInsights";
 
 export type InsightSeverity =
   | "observation"
@@ -42,121 +43,24 @@ export interface KairosInsight {
   is_new_signal?: boolean;
 }
 
-/**
- * Deterministic Strategic Interpretation Logic
- * Transform analytics truth into restrained operational intelligence.
- */
-export function interpretStrategicState(
-  analytics: AnalyticsSummary,
-): KairosInsight {
-  const { strategicAlignment, runwayDays, adjustedDailyBurn, netWorth } =
-    analytics;
-  const {
-    alignmentPressure,
-    liquiditySufficiency,
-    objectiveStarvationSignals,
-    strategicAllocationSignals,
-  } = strategicAlignment;
-
-  const supportingSignals: string[] = [];
-  let primaryAssessment = "";
-  let severity: InsightSeverity = "observation";
-  let category: KairosInsight["category"] = "strategic_alignment";
-
-  // 1. Severity Calibration
-  if (
-    alignmentPressure >= 80 ||
-    (runwayDays !== null && runwayDays < 14) ||
-    netWorth < 0
-  ) {
-    severity = "critical";
-  } else if (
-    alignmentPressure >= 50 ||
-    !liquiditySufficiency.isSufficient ||
-    (runwayDays !== null && runwayDays < 30)
-  ) {
-    severity = "warning";
-  } else if (alignmentPressure >= 20 || objectiveStarvationSignals.length > 0) {
-    severity = "advisory";
-  }
-
-  // 2. Primary Assessment & Signal Prioritization
-  if (!liquiditySufficiency.isSufficient) {
-    category = "solvency_pressure";
-    primaryAssessment =
-      "Liquidity reserves are insufficient to satisfy all critical strategic obligations.";
-    supportingSignals.push(liquiditySufficiency.message);
-  } else if (objectiveStarvationSignals.length > 0) {
-    category = "objective_starvation";
-    primaryAssessment = objectiveStarvationSignals[0];
-    if (objectiveStarvationSignals.length > 1) {
-      supportingSignals.push(objectiveStarvationSignals[1]);
-    }
-  } else if (strategicAllocationSignals.length > 0) {
-    category = "capital_efficiency";
-    primaryAssessment = strategicAllocationSignals[0];
-  } else if (alignmentPressure > 0) {
-    primaryAssessment =
-      "Structural alignment pressure detected in current capital deployment patterns.";
-    supportingSignals.push(
-      `Alignment Pressure Score: ${alignmentPressure}/100`,
-    );
-  } else {
-    primaryAssessment =
-      "No material structural deterioration detected since previous evaluation.";
-  }
-
-  // 3. Additional Supporting Signals (Deterministic Telemetry)
-  if (runwayDays !== null && runwayDays < 90) {
-    supportingSignals.push(
-      `Operational runway contraction: ${Math.round(runwayDays)} days remaining at current velocity.`,
-    );
-  }
-
-  if (adjustedDailyBurn > 0) {
-    supportingSignals.push(
-      `Daily burn rate: ${Math.round(adjustedDailyBurn).toLocaleString()} KSh (adjusted for income).`,
-    );
-  }
-
-  // Limit supporting signals to 3
-  const finalSupportingSignals = supportingSignals.slice(0, 3);
-
-  // 4. Silence State Behavior
-  const hasSignals =
-    objectiveStarvationSignals.length > 0 ||
-    strategicAllocationSignals.length > 0 ||
-    !liquiditySufficiency.isSufficient;
-
-  const isSilent =
-    severity === "observation" && alignmentPressure === 0 && !hasSignals;
-
-  if (isSilent) {
-    primaryAssessment =
-      "No material structural deterioration detected since previous evaluation.";
-  }
-
-  return {
-    type:
-      severity === "critical" || severity === "warning" ? "warning" : "info",
-    severity,
-    category,
-    message: primaryAssessment,
-    supportingSignals: finalSupportingSignals,
-    timestamp: new Date().toISOString(),
-    runway: runwayDays,
-    capitalEfficiency: Math.max(0, 100 - alignmentPressure),
-    isSilent,
-    metadataQuality: analytics.metadataQuality,
-    is_new_signal: true,
-  };
+export interface KairosTelemetry {
+  deployments?: Deployment[];
+  liquidity?: number;
+  accounts?: Account[];
+  liabilities?: Liability[];
+  incomeStreams?: IncomeStream[];
+  goals?: FinancialGoal[];
+  objectives?: StrategicObjective[];
+  previousInsight?: KairosInsight | null;
 }
 
 /**
  * SERVER-SIDE ORCHESTRATOR: generateSystemInsights
  * Safely hydrates the Kairos AI layer with analytical context.
  */
-export async function generateSystemInsights(): Promise<KairosInsight> {
+export async function generateSystemInsights(
+  telemetry: KairosTelemetry = {},
+): Promise<KairosInsight> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -166,55 +70,102 @@ export async function generateSystemInsights(): Promise<KairosInsight> {
     throw new Error("Authentication required for Kairos hydration.");
   }
 
-  // 1. Retrieve Canonical Context (Read-Only)
-  const [
-    deploymentsData,
-    accountsData,
-    liabilitiesData,
-    incomeStreamsData,
-    goalsData,
-    objectivesData,
-    settings,
-  ] = await Promise.all([
-    getDeployments(supabase),
-    getAccounts(supabase),
-    getLiabilities(supabase),
-    getIncomeStreams(supabase),
-    getGoals(supabase),
-    getStrategicObjectives(supabase),
-    getUserSettings(supabase),
-  ]);
+  // 1. Retrieve Canonical Context (Only if not provided)
+  const needsFetch =
+    !telemetry.deployments ||
+    telemetry.liquidity === undefined ||
+    !telemetry.accounts ||
+    !telemetry.liabilities ||
+    !telemetry.incomeStreams ||
+    !telemetry.goals ||
+    !telemetry.objectives;
 
-  const deployments = (deploymentsData || []) as Deployment[];
-  const accounts = (accountsData || []) as Account[];
-  const liabilities = (liabilitiesData || []) as Liability[];
-  const incomeStreams = (incomeStreamsData || []) as IncomeStream[];
-  const goals = (goalsData || []) as FinancialGoal[];
-  const objectives = (objectivesData || []) as StrategicObjective[];
-  const liquidity = Number(settings.total_liquidity);
+  let deployments = telemetry.deployments;
+  let accounts = telemetry.accounts;
+  let liabilities = telemetry.liabilities;
+  let incomeStreams = telemetry.incomeStreams;
+  let goals = telemetry.goals;
+  let objectives = telemetry.objectives;
+  let liquidity = telemetry.liquidity;
+
+  if (needsFetch) {
+    const [
+      deploymentsData,
+      accountsData,
+      liabilitiesData,
+      incomeStreamsData,
+      goalsData,
+      objectivesData,
+      settings,
+    ] = await Promise.all([
+      deployments ? Promise.resolve(deployments) : getDeployments(supabase),
+      accounts ? Promise.resolve(accounts) : getAccounts(supabase),
+      liabilities ? Promise.resolve(liabilities) : getLiabilities(supabase),
+      incomeStreams
+        ? Promise.resolve(incomeStreams)
+        : getIncomeStreams(supabase),
+      goals ? Promise.resolve(goals) : getGoals(supabase),
+      objectives
+        ? Promise.resolve(objectives)
+        : getStrategicObjectives(supabase),
+      liquidity !== undefined
+        ? Promise.resolve({ total_liquidity: liquidity })
+        : getUserSettings(supabase),
+    ]);
+
+    deployments = (deploymentsData || []) as Deployment[];
+    accounts = (accountsData || []) as Account[];
+    liabilities = (liabilitiesData || []) as Liability[];
+    incomeStreams = (incomeStreamsData || []) as IncomeStream[];
+    goals = (goalsData || []) as FinancialGoal[];
+    objectives = (objectivesData || []) as StrategicObjective[];
+    liquidity =
+      liquidity !== undefined
+        ? liquidity
+        : Number(
+            (settings as { total_liquidity: number | string }).total_liquidity,
+          );
+  }
 
   // 2. Build Deterministic Analytics
   const analytics = generateSummary(
-    deployments,
-    liquidity,
-    accounts,
-    liabilities,
-    incomeStreams,
-    goals,
-    objectives,
+    deployments!,
+    liquidity!,
+    accounts!,
+    liabilities!,
+    incomeStreams!,
+    goals!,
+    objectives!,
   );
 
-  // 3. Interpret Strategic State (Phase 5E: Deterministic)
-  return interpretStrategicState(analytics);
+  // 3. Build Behavioral Context for Insight Engine
+  const context = buildBehavioralContext(
+    { currentAnalytics: analytics },
+    deployments!.map((d) => Number(d.amount)),
+  );
+
+  // 4. Evaluate Insights via Rule Registry (V1.1)
+  const { primaryInsight } = evaluateInsights(context);
+
+  return {
+    ...primaryInsight,
+    is_new_signal: true,
+  };
 }
 
 /**
- * Legacy support for deterministic logic.
+ * Legacy bridge support for streamed telemetry.
  */
 export async function generateKairosAIInsight(
-  _deployments?: unknown,
-  _balance?: number,
-  _previousInsight?: KairosInsight | null,
+  deployments?: Deployment[],
+  liquidity?: number,
+  previousInsight?: KairosInsight | null,
+  objectives?: StrategicObjective[],
 ): Promise<KairosInsight> {
-  return generateSystemInsights();
+  return generateSystemInsights({
+    deployments,
+    liquidity,
+    previousInsight,
+    objectives,
+  });
 }
