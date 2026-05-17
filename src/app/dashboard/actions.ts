@@ -19,11 +19,22 @@ import {
   updateLiability,
   deleteLiability,
 } from "@/lib/db/liabilities";
+import {
+  getIncomeStreams,
+  createIncomeStream,
+  updateIncomeStream,
+  deleteIncomeStream,
+} from "@/lib/db/income";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { getInsights, saveInsight } from "@/lib/db/insights";
 import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, type AnalyticsSummary } from "@/lib/analytics";
-import type { Deployment, Account, Liability } from "@/lib/analytics/types";
+import type {
+  Deployment,
+  Account,
+  Liability,
+  IncomeStream,
+} from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
 
 export interface DashboardSnapshot {
@@ -31,6 +42,7 @@ export interface DashboardSnapshot {
   deployments: Deployment[];
   accounts: Account[];
   liabilities: Liability[];
+  incomeStreams: IncomeStream[];
   analytics: AnalyticsSummary | null;
   liquidity: number;
   kairosInsight: KairosInsight | null;
@@ -68,12 +80,24 @@ export interface CreateLiabilityActionInput {
   institution?: string;
 }
 
+export interface CreateIncomeActionInput {
+  income_name: string;
+  income_type: string;
+  amount: number;
+  cadence: string;
+  is_recurring?: boolean;
+  source?: string;
+  start_date?: string;
+  end_date?: string | null;
+}
+
 function unauthenticatedSnapshot(): DashboardSnapshot {
   return {
     authenticated: false,
     deployments: [],
     accounts: [],
     liabilities: [],
+    incomeStreams: [],
     analytics: null,
     liquidity: 0,
     kairosInsight: null,
@@ -117,23 +141,31 @@ async function buildDashboardSnapshot(
 
   if (!user) return unauthenticatedSnapshot();
 
-  const [deploymentsData, accountsData, liabilitiesData, settings] =
-    await Promise.all([
-      getDeployments(supabase),
-      getAccounts(supabase),
-      getLiabilities(supabase),
-      getUserSettings(supabase),
-    ]);
+  const [
+    deploymentsData,
+    accountsData,
+    liabilitiesData,
+    incomeStreamsData,
+    settings,
+  ] = await Promise.all([
+    getDeployments(supabase),
+    getAccounts(supabase),
+    getLiabilities(supabase),
+    getIncomeStreams(supabase),
+    getUserSettings(supabase),
+  ]);
 
   const deployments = (deploymentsData || []) as Deployment[];
   const accounts = (accountsData || []) as Account[];
   const liabilities = (liabilitiesData || []) as Liability[];
+  const incomeStreams = (incomeStreamsData || []) as IncomeStream[];
   const liquidity = Number(settings.total_liquidity);
   const analytics = generateSummary(
     deployments,
     liquidity,
     accounts,
     liabilities,
+    incomeStreams,
   );
   const savedInsights = await getInsights(supabase, 1);
   const previousInsight =
@@ -147,6 +179,7 @@ async function buildDashboardSnapshot(
       deployments,
       accounts,
       liabilities,
+      incomeStreams,
       analytics,
       liquidity,
       kairosInsight: previousInsight,
@@ -168,6 +201,7 @@ async function buildDashboardSnapshot(
     deployments,
     accounts,
     liabilities,
+    incomeStreams,
     analytics,
     liquidity,
     kairosInsight,
@@ -327,6 +361,48 @@ export async function deleteLiabilityAction(id: string) {
   if (!user) return unauthenticatedSnapshot();
 
   await deleteLiability(supabase, id);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function createIncomeAction(input: CreateIncomeActionInput) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await createIncomeStream(supabase, user.id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function updateIncomeAction(
+  id: string,
+  input: Partial<CreateIncomeActionInput>,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await updateIncomeStream(supabase, id, input);
+
+  return buildDashboardSnapshot({ forceInsightEvaluation: true });
+}
+
+export async function deleteIncomeAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  await deleteIncomeStream(supabase, id);
 
   return buildDashboardSnapshot({ forceInsightEvaluation: true });
 }

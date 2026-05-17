@@ -2,9 +2,11 @@ import { MetadataQualitySummary } from "../finance/metadataQuality";
 import { DeploymentAdvancedContext } from "../finance/deploymentContext";
 import { Account } from "../finance/accounts";
 import { Liability } from "../finance/liabilities";
+import { IncomeStream } from "../finance/income";
 
 export type { Account, AccountType } from "../finance/accounts";
 export type { Liability, LiabilityType } from "../finance/liabilities";
+export type { IncomeStream, IncomeType } from "../finance/income";
 
 export interface Deployment {
   id: string;
@@ -29,4 +31,10 @@ export interface AnalyticsSummary {
   netWorth: number;
   totalAssets: number;
   liquidity: number;
+  // Income Engine v1
+  totalMonthlyIncome: number;
+  recurringIncome: number;
+  irregularIncome: number;
+  incomeConcentration: Record<string, number>;
+  adjustedDailyBurn: number;
 }

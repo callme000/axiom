@@ -27,8 +27,10 @@ import {
 } from "@/lib/finance/deploymentContext";
 import { AccountSection } from "./AccountSection";
 import { LiabilitySection } from "./LiabilitySection";
+import { IncomeSection } from "./IncomeSection";
 import type { Account } from "@/lib/finance/accounts";
 import type { Liability } from "@/lib/finance/liabilities";
+import type { IncomeStream } from "@/lib/finance/income";
 
 type Deployment = {
   id: string;
@@ -42,6 +44,7 @@ interface LedgerState {
   deployments: Deployment[];
   accounts: Account[];
   liabilities: Liability[];
+  incomeStreams: IncomeStream[];
   analytics: AnalyticsSummary | null;
 }
 
@@ -157,6 +160,7 @@ export default function Dashboard() {
     deployments: [],
     accounts: [],
     liabilities: [],
+    incomeStreams: [],
     analytics: null,
   });
   const [liquidity, setLiquidity] = useState<number>(0);
@@ -206,6 +210,7 @@ export default function Dashboard() {
       deployments: snapshot.deployments as Deployment[],
       accounts: snapshot.accounts,
       liabilities: snapshot.liabilities,
+      incomeStreams: snapshot.incomeStreams,
       analytics: snapshot.analytics,
     });
     setKairosInsight(snapshot.kairosInsight);
@@ -378,6 +383,15 @@ export default function Dashboard() {
               className={`text-2xl font-black tabular-nums text-center ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
             >
               {formatKSh(ledger.analytics?.netWorth || 0)}
+            </span>
+          </div>
+
+          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-4 flex flex-col min-w-40 border-foreground/10 justify-center">
+            <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1 text-center">
+              Monthly Replenishment
+            </span>
+            <span className="text-2xl font-black tabular-nums text-foreground text-center">
+              {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
             </span>
           </div>
 
@@ -719,6 +733,13 @@ export default function Dashboard() {
           <div className="bg-background border rounded-3xl p-8 shadow-2xl">
             <LiabilitySection
               liabilities={ledger.liabilities}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+
+          <div className="bg-background border rounded-3xl p-8 shadow-2xl">
+            <IncomeSection
+              incomeStreams={ledger.incomeStreams}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>
@@ -1067,7 +1088,7 @@ export default function Dashboard() {
                                   })
                                 : "--- --, ----"}
                             </span>
-                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                            <span className="w-1 h-1 bg-foreground/20 rounded-full"></span>
                             <span>
                               {isClient
                                 ? new Date(

@@ -1,5 +1,12 @@
-import { Deployment, AnalyticsSummary, Account, Liability } from "./types";
+import {
+  Deployment,
+  AnalyticsSummary,
+  Account,
+  Liability,
+  IncomeStream,
+} from "./types";
 import { summarizeMetadataQuality } from "../finance/metadataQuality";
+import { calculateMonthlyInflow } from "../finance/income";
 
 /**
  * Pure, deterministic engine for financial intelligence.
@@ -16,6 +23,29 @@ export const calculateAccountTotal = (accounts: Account[]): number => {
 
 export const calculateLiabilityTotal = (liabilities: Liability[]): number => {
   return liabilities.reduce((sum, l) => sum + Number(l.outstanding_balance), 0);
+};
+
+export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
+  return streams.reduce(
+    (acc, stream) => {
+      const monthly = calculateMonthlyInflow(stream);
+      acc.total += monthly;
+      if (stream.is_recurring) {
+        acc.recurring += monthly;
+      } else {
+        acc.irregular += monthly;
+      }
+      acc.concentration[stream.income_type] =
+        (acc.concentration[stream.income_type] || 0) + monthly;
+      return acc;
+    },
+    {
+      total: 0,
+      recurring: 0,
+      irregular: 0,
+      concentration: {} as Record<string, number>,
+    },
+  );
 };
 
 export const calculateAverage = (deployments: Deployment[]): number => {
@@ -37,14 +67,19 @@ export const calculateBurnRate = (
 };
 
 /**
- * Projects runway based on a hypothetical liquidity balance.
+ * Projects runway based on deterministic liquidity and income offset.
+ * Formula: Runway = (Liquid Assets + Monthly Income Offset) / Burn Rate
+ * Note: Returns days.
  */
 export const projectRunway = (
   balance: number,
   dailyBurnRate: number,
+  monthlyIncome: number = 0,
 ): number | null => {
   if (dailyBurnRate <= 0) return null;
-  return balance / dailyBurnRate;
+  // Implementation of: (Liquid Assets + Monthly Income Offset) / Burn Rate
+  // This is effectively (balance + monthlyIncome) / dailyBurnRate.
+  return (balance + monthlyIncome) / dailyBurnRate;
 };
 
 /**
@@ -71,6 +106,7 @@ export const generateSummary = (
   liquidity: number = 0,
   accounts: Account[] = [],
   liabilities: Liability[] = [],
+  incomeStreams: IncomeStream[] = [],
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
   const burnRate = calculateBurnRate(deployments);
@@ -79,11 +115,15 @@ export const generateSummary = (
   const totalLiabilities = calculateLiabilityTotal(liabilities);
   const netWorth = totalAssets - totalLiabilities;
 
+  const income = calculateIncomeMetrics(incomeStreams);
+
   return {
     totalDeployed: total,
     averageDeployment: calculateAverage(deployments),
     dailyBurnRate: burnRate,
-    runwayDays: liquidity ? projectRunway(liquidity, burnRate) : null,
+    runwayDays: liquidity
+      ? projectRunway(liquidity, burnRate, income.total)
+      : null,
     categoryBreakdown: getCategoryBreakdown(deployments),
     deploymentCount: deployments.length,
     metadataQuality: summarizeMetadataQuality(deployments),
@@ -92,5 +132,11 @@ export const generateSummary = (
     totalAssets,
     netWorth,
     liquidity,
+    // Income Engine v1
+    totalMonthlyIncome: income.total,
+    recurringIncome: income.recurring,
+    irregularIncome: income.irregular,
+    incomeConcentration: income.concentration,
+    adjustedDailyBurn: Math.max(0, burnRate - income.total / 30),
   };
 };
