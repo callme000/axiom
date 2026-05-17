@@ -34,6 +34,7 @@ const MOCK_ANALYTICS: AnalyticsSummary = {
   averageGoalProgress: 50,
   criticalGoalCount: 0,
   fundingGap: 500,
+  // Strategic Objectives v1
   strategicAlignment: {
     fundingRatios: {},
     alignmentPressure: 0,
@@ -47,6 +48,9 @@ const MOCK_ANALYTICS: AnalyticsSummary = {
     strategicAllocationSignals: [],
     velocity: {},
   },
+  // Operational Baseline v1
+  totalStructuralMonthlyBurn: 0,
+  totalSystemicMonthlyAllocation: 0,
 };
 
 test("Kairos Insights: correctly invokes rule engine and returns primary insight", () => {

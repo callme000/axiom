@@ -7,7 +7,50 @@ import {
   FinancialGoal,
   StrategicObjective,
   StrategicAlignment,
+  OperationalBaseline,
 } from "./types";
+
+/**
+ * Normalizes cadences into monthly values.
+ */
+export const normalizeToMonthly = (amount: number, cadence: string): number => {
+  switch (cadence) {
+    case "daily":
+      return amount * 30.4375;
+    case "weekly":
+      return amount * 4.345;
+    case "biweekly":
+      return amount * 2.1725;
+    case "monthly":
+      return amount;
+    case "quarterly":
+      return amount / 3;
+    case "yearly":
+      return amount / 12;
+    default:
+      return amount;
+  }
+};
+
+/**
+ * Calculates monthly structural burn and systemic allocation metrics.
+ */
+export const calculateBaselineMetrics = (baseline: OperationalBaseline[]) => {
+  return baseline.reduce(
+    (acc, item) => {
+      if (!item.is_active) return acc;
+      const monthlyAmount = normalizeToMonthly(item.amount, item.cadence);
+
+      if (item.baseline_type === "expense") {
+        acc.monthlyBurn += monthlyAmount;
+      } else {
+        acc.monthlyAllocation += monthlyAmount;
+      }
+      return acc;
+    },
+    { monthlyBurn: 0, monthlyAllocation: 0 },
+  );
+};
 import { summarizeMetadataQuality } from "../finance/metadataQuality";
 import { calculateMonthlyInflow } from "../finance/income";
 import { calculateGoalProgressPercentage } from "../finance/goals";
@@ -153,6 +196,7 @@ export function calculateStrategicAlignment(
   incomeTotal: number,
   burnRate: number,
   liabilities: Liability[],
+  baseline: OperationalBaseline[] = [],
 ): StrategicAlignment {
   const fundingRatios: Record<string, number> = {};
   const velocity: Record<
@@ -269,9 +313,15 @@ export const generateSummary = (
   incomeStreams: IncomeStream[] = [],
   goals: FinancialGoal[] = [],
   objectives: StrategicObjective[] = [],
+  baseline: OperationalBaseline[] = [],
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
-  const burnRate = calculateBurnRate(deployments);
+  const baselineMetrics = calculateBaselineMetrics(baseline);
+
+  // Total daily burn = (Deployment Burn) + (Baseline Burn / 30)
+  const deploymentBurn = calculateBurnRate(deployments);
+  const baselineDailyBurn = baselineMetrics.monthlyBurn / 30;
+  const burnRate = deploymentBurn + baselineDailyBurn;
 
   const totalAssets = calculateAccountTotal(accounts);
   const totalLiabilities = calculateLiabilityTotal(liabilities);
@@ -287,6 +337,7 @@ export const generateSummary = (
     income.total,
     burnRate,
     liabilities,
+    baseline,
   );
 
   const totalIntentionsCount = goals.length + objectives.length;
@@ -324,5 +375,8 @@ export const generateSummary = (
     ),
     // Strategic Objectives v1
     strategicAlignment,
+    // Operational Baseline v1
+    totalStructuralMonthlyBurn: baselineMetrics.monthlyBurn,
+    totalSystemicMonthlyAllocation: baselineMetrics.monthlyAllocation,
   };
 };

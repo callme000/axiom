@@ -30,6 +30,7 @@ import { LiabilitySection } from "./LiabilitySection";
 import { IncomeSection } from "./IncomeSection";
 import { GoalSection } from "./GoalSection";
 import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
+import { BaselineSection } from "./BaselineSection";
 import { RunwayCard } from "./RunwayCard";
 import type {
   Account,
@@ -37,6 +38,7 @@ import type {
   IncomeStream,
   FinancialGoal,
   StrategicObjective,
+  OperationalBaseline,
   Deployment,
 } from "@/lib/analytics/types";
 
@@ -47,6 +49,7 @@ interface LedgerState {
   incomeStreams: IncomeStream[];
   goals: FinancialGoal[];
   objectives: StrategicObjective[];
+  baseline: OperationalBaseline[];
   analytics: AnalyticsSummary | null;
 }
 
@@ -165,6 +168,7 @@ export default function Dashboard() {
     incomeStreams: [],
     goals: [],
     objectives: [],
+    baseline: [],
     analytics: null,
   });
   const [liquidity, setLiquidity] = useState<number>(0);
@@ -237,6 +241,7 @@ export default function Dashboard() {
       incomeStreams: snapshot.incomeStreams,
       goals: snapshot.goals,
       objectives: snapshot.objectives,
+      baseline: snapshot.baseline,
       analytics: snapshot.analytics,
     });
     setKairosInsight(snapshot.kairosInsight);
@@ -576,6 +581,15 @@ export default function Dashboard() {
           >
             <IncomeSection
               incomeStreams={ledger.incomeStreams}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </div>
+          <div
+            id="baseline"
+            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+          >
+            <BaselineSection
+              baseline={ledger.baseline}
               onSnapshot={applyDashboardSnapshot}
             />
           </div>

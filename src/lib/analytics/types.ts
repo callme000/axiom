@@ -22,6 +22,30 @@ export type {
   ObjectiveStatus,
 } from "../finance/objectives";
 
+export type BaselineCadence =
+  | "daily"
+  | "weekly"
+  | "biweekly"
+  | "monthly"
+  | "quarterly"
+  | "yearly";
+
+export type BaselineType = "expense" | "allocation";
+
+export interface OperationalBaseline {
+  id: string;
+  user_id: string;
+  title: string;
+  amount: number;
+  category: string;
+  cadence: BaselineCadence;
+  baseline_type: BaselineType;
+  is_active: boolean;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Deployment {
   id: string;
   amount: number;
@@ -75,4 +99,7 @@ export interface AnalyticsSummary {
   fundingGap: number;
   // Strategic Objectives v1
   strategicAlignment: StrategicAlignment;
+  // Operational Baseline v1
+  totalStructuralMonthlyBurn: number;
+  totalSystemicMonthlyAllocation: number;
 }

@@ -33,6 +33,12 @@ import {
   updateStrategicObjective,
   deleteStrategicObjective,
 } from "@/lib/db/objectives";
+import {
+  getOperationalBaseline,
+  createOperationalBaseline,
+  updateOperationalBaseline,
+  deleteOperationalBaseline,
+} from "@/lib/db/baseline";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { getInsights, saveInsight } from "@/lib/db/insights";
 import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
@@ -44,6 +50,7 @@ import type {
   IncomeStream,
   FinancialGoal,
   StrategicObjective,
+  OperationalBaseline,
 } from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
 
@@ -55,6 +62,7 @@ export interface DashboardSnapshot {
   incomeStreams: IncomeStream[];
   goals: FinancialGoal[];
   objectives: StrategicObjective[];
+  baseline: OperationalBaseline[];
   analytics: AnalyticsSummary | null;
   liquidity: number;
   kairosInsight: KairosInsight | null;
@@ -134,6 +142,7 @@ function unauthenticatedSnapshot(): DashboardSnapshot {
     incomeStreams: [],
     goals: [],
     objectives: [],
+    baseline: [],
     analytics: null,
     liquidity: 0,
     kairosInsight: null,
@@ -192,6 +201,7 @@ async function buildDashboardSnapshot(
     incomeStreamsData,
     goalsData,
     objectivesData,
+    baselineData,
     settings,
   ] = await Promise.all([
     getDeployments(supabase),
@@ -200,6 +210,7 @@ async function buildDashboardSnapshot(
     getIncomeStreams(supabase),
     getGoals(supabase),
     getStrategicObjectives(supabase),
+    getOperationalBaseline(supabase),
     getUserSettings(supabase),
   ]);
 
@@ -209,6 +220,7 @@ async function buildDashboardSnapshot(
   const incomeStreams = (incomeStreamsData || []) as IncomeStream[];
   const goals = (goalsData || []) as FinancialGoal[];
   const objectives = (objectivesData || []) as StrategicObjective[];
+  const baseline = (baselineData || []) as OperationalBaseline[];
   const liquidity = Number(settings.total_liquidity);
   const analytics = generateSummary(
     deployments,
@@ -218,6 +230,7 @@ async function buildDashboardSnapshot(
     incomeStreams,
     goals,
     objectives,
+    baseline,
   );
   const savedInsights = await getInsights(supabase, 1);
   const previousInsight =
@@ -235,6 +248,7 @@ async function buildDashboardSnapshot(
     liabilities,
     incomeStreams,
     goals,
+    baseline,
   });
 
   // Only save if it's actually a material change (handled inside kairos.ts logic)
@@ -250,6 +264,7 @@ async function buildDashboardSnapshot(
     incomeStreams,
     goals,
     objectives,
+    baseline,
     analytics,
     liquidity,
     kairosInsight, // Authoritative fresh signal
@@ -641,3 +656,67 @@ export async function deleteStrategicObjectiveAction(id: string) {
 }
 
 export const deleteObjectiveAction = deleteStrategicObjectiveAction;
+
+export async function createOperationalBaselineAction(
+  data: Omit<
+    OperationalBaseline,
+    "id" | "user_id" | "created_at" | "updated_at"
+  >,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  try {
+    await createOperationalBaseline(supabase, user.id, data);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to create operational baseline:", error);
+    throw error;
+  }
+}
+
+export async function updateOperationalBaselineAction(
+  id: string,
+  updates: Partial<
+    Omit<OperationalBaseline, "id" | "user_id" | "created_at" | "updated_at">
+  >,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  try {
+    await updateOperationalBaseline(supabase, id, updates);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to update operational baseline:", error);
+    throw error;
+  }
+}
+
+export async function deleteOperationalBaselineAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return unauthenticatedSnapshot();
+
+  try {
+    await deleteOperationalBaseline(supabase, id);
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to delete operational baseline:", error);
+    throw error;
+  }
+}

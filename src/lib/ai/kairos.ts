@@ -5,6 +5,7 @@ import { getLiabilities } from "../db/liabilities";
 import { getIncomeStreams } from "../db/income";
 import { getGoals } from "../db/goals";
 import { getStrategicObjectives } from "../db/objectives";
+import { getOperationalBaseline } from "../db/baseline";
 import { getUserSettings } from "../db/settings";
 import { generateSummary } from "../analytics/engine";
 import {
@@ -14,6 +15,7 @@ import {
   IncomeStream,
   FinancialGoal,
   StrategicObjective,
+  OperationalBaseline,
 } from "../analytics/types";
 import { MetadataQualitySummary } from "../finance/metadataQuality";
 import { buildBehavioralContext } from "../context/buildBehavioralContext";
@@ -51,6 +53,7 @@ export interface KairosTelemetry {
   incomeStreams?: IncomeStream[];
   goals?: FinancialGoal[];
   objectives?: StrategicObjective[];
+  baseline?: OperationalBaseline[];
   previousInsight?: KairosInsight | null;
 }
 
@@ -70,81 +73,49 @@ export async function generateSystemInsights(
     throw new Error("Authentication required for Kairos hydration.");
   }
 
-  // 1. Retrieve Canonical Context (Fallback Fetch Pipeline)
-  const needsFetch =
-    !telemetry.deployments ||
-    telemetry.liquidity === undefined ||
-    !telemetry.accounts ||
-    !telemetry.liabilities ||
-    !telemetry.incomeStreams ||
-    !telemetry.goals ||
-    !telemetry.objectives;
+  // 1. Resolve Canonical Context (Hydrate missing pieces only)
+  const deps =
+    (telemetry.deployments ?? (await getDeployments(supabase))) || [];
+  const accounts = (telemetry.accounts ?? (await getAccounts(supabase))) || [];
+  const liabilities =
+    (telemetry.liabilities ?? (await getLiabilities(supabase))) || [];
+  const income =
+    (telemetry.incomeStreams ?? (await getIncomeStreams(supabase))) || [];
+  const goals = (telemetry.goals ?? (await getGoals(supabase))) || [];
+  const objectives =
+    (telemetry.objectives ?? (await getStrategicObjectives(supabase))) || [];
+  const baseline =
+    (telemetry.baseline ?? (await getOperationalBaseline(supabase))) || [];
 
-  let deps = telemetry.deployments;
-  let accounts = telemetry.accounts;
-  let liabilities = telemetry.liabilities;
-  let income = telemetry.incomeStreams;
-  let goals = telemetry.goals;
-  let objectives = telemetry.objectives;
   let liquidity = telemetry.liquidity;
-
-  if (needsFetch) {
-    const [
-      depsData,
-      accountsData,
-      liabilitiesData,
-      incomeData,
-      goalsData,
-      objectivesData,
-      settings,
-    ] = await Promise.all([
-      deps ? Promise.resolve(deps) : getDeployments(supabase),
-      accounts ? Promise.resolve(accounts) : getAccounts(supabase),
-      liabilities ? Promise.resolve(liabilities) : getLiabilities(supabase),
-      income ? Promise.resolve(income) : getIncomeStreams(supabase),
-      goals ? Promise.resolve(goals) : getGoals(supabase),
-      objectives
-        ? Promise.resolve(objectives)
-        : getStrategicObjectives(supabase),
-      liquidity !== undefined
-        ? Promise.resolve({ total_liquidity: liquidity })
-        : getUserSettings(supabase),
-    ]);
-
-    deps = (depsData || []) as Deployment[];
-    accounts = (accountsData || []) as Account[];
-    liabilities = (liabilitiesData || []) as Liability[];
-    income = (incomeData || []) as IncomeStream[];
-    goals = (goalsData || []) as FinancialGoal[];
-    objectives = (objectivesData || []) as StrategicObjective[];
-    liquidity =
-      liquidity !== undefined
-        ? liquidity
-        : Number(
-            (settings as { total_liquidity: number | string }).total_liquidity,
-          );
+  if (liquidity === undefined) {
+    const settings = await getUserSettings(supabase);
+    liquidity = Number(
+      (settings as { total_liquidity: number | string }).total_liquidity,
+    );
   }
 
-  // 2. Build Deterministic Analytics (Full Context Pass-Through)
+  // 2. Build Deterministic Analytics
   const analytics = generateSummary(
-    deps!,
-    liquidity!,
-    accounts!,
-    liabilities!,
-    income!,
-    goals!,
-    objectives!,
+    deps,
+    liquidity,
+    accounts,
+    liabilities,
+    income,
+    goals,
+    objectives,
+    baseline,
   );
 
   // 3. Build Behavioral Context for Insight Engine
   const context = buildBehavioralContext(
     { currentAnalytics: analytics },
-    deps!.map((d) => Number(d.amount)),
+    deps.map((d) => Number(d.amount)),
   );
 
   // 4. Evaluate Insights via Rule Registry (V1.1)
   console.log("KAIROS TELEMETRY:", {
-    deploymentsCount: deps!.length,
+    deploymentsCount: deps.length,
     runwayDays: analytics.runwayDays,
     alignmentPressure: analytics.strategicAlignment.alignmentPressure,
     netWorth: analytics.netWorth,
