@@ -409,7 +409,7 @@ export default function Dashboard() {
               {formatKSh(ledger.analytics?.netWorth || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Consolidated financial value
+              Assets minus liabilities
             </p>
           </div>
 
@@ -421,19 +421,19 @@ export default function Dashboard() {
               {formatKSh(ledger.analytics?.totalAssets || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Authoritative capital & value
+              Monetary value possessions
             </p>
           </div>
 
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
-              Total Liabilities
+              Liabilities
             </span>
             <span className="text-4xl font-black tabular-nums text-foreground">
               {formatKSh(ledger.analytics?.totalLiabilities || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Outstanding strategic obligations
+              Debts you owe
             </p>
           </div>
         </div>
@@ -490,7 +490,7 @@ export default function Dashboard() {
                   {formatKSh(liquidity)}
                 </span>
                 <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                  Total investable liquid capital
+                  Ready to invest money
                 </p>
               </div>
             )}
@@ -499,7 +499,7 @@ export default function Dashboard() {
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                Monthly Replenishment
+                Incomes
               </span>
             </div>
             <div className="flex flex-col">
@@ -507,7 +507,7 @@ export default function Dashboard() {
                 {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
               </span>
               <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                Structural inflow capacity
+                Money coming in
               </p>
             </div>
           </div>
@@ -1157,7 +1157,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Liability pressure
+                  Commitment pressure
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
                   {formatKSh(ledger.analytics?.totalLiabilities || 0)}
@@ -1165,7 +1165,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Structural replenishment
+                  Rolling inflows
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
                   {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
@@ -1173,7 +1173,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Runway stability
+                  Horizon stability
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
                   {kairosInsight?.runway !== null ? "Evaluative" : "Structural"}

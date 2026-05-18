@@ -85,14 +85,14 @@ export function LiabilitySection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Obligations
+          Commitments
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add obligation"}
+            {isAdding ? "Cancel" : "+ Add commitment"}
           </span>
         </button>
       </div>
@@ -103,7 +103,7 @@ export function LiabilitySection({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Obligation Name
+                  Commitment Name
                 </label>
                 <input
                   type="text"
@@ -209,7 +209,7 @@ export function LiabilitySection({
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "ACKNOWLEDGING..." : "ACKNOWLEDGE OBLIGATION"}
+              {isLoading ? "ACKNOWLEDGING..." : "VERIFY COMMITMENT"}
             </button>
           </form>
         </div>
@@ -219,7 +219,7 @@ export function LiabilitySection({
         {liabilities.length === 0 ? (
           <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
             <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No financial obligations recorded.
+              &quot;No commitments recorded.&quot;
             </p>
             <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
               Operational capital is currently un-obligated.

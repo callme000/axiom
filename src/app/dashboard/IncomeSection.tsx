@@ -88,7 +88,7 @@ export function IncomeSection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Replenishment
+          Inflows
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -106,7 +106,7 @@ export function IncomeSection({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Income Name
+                  Inflow Name
                 </label>
                 <input
                   type="text"
@@ -212,7 +212,7 @@ export function IncomeSection({
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "ACKNOWLEDGING..." : "ACKNOWLEDGE REPLENISHMENT"}
+              {isLoading ? "ACKNOWLEDGING..." : "VERIFY INFLOW"}
             </button>
           </form>
         </div>
@@ -262,7 +262,7 @@ export function IncomeSection({
                       {formatKSh(calculateMonthlyInflow(stream))}
                     </p>
                     <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                      Est. Monthly Inflow
+                      Rolling Inflow
                     </p>
                   </div>
                   <button

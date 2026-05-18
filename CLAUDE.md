@@ -6,6 +6,29 @@ Axiom is a financial intelligence system built with Next.js and Supabase.
 
 ---
 
+# 💎 BRAND STRATEGY & VOCABULARY
+
+Axiom uses a premium, minimalist brand identity focused on **"Financial Certainty."**
+When writing UI copy, dashboard components, or user-facing text, you MUST use the market-facing vocabulary:
+
+| Internal/Technical Term | Market-Facing Name |
+| :--- | :--- |
+| Attestation / DB Sync | **The Source** |
+| Deterministic Metrics | **Hard Figures** |
+| Hydration / Data Sync | **The Pulse** |
+| Baseline (`operational_baseline`) | **The Foundation** |
+| Liabilities | **Commitments** |
+| Account List | **The Ledger** |
+| Income & Liabilities | **Inflows & Commitments** |
+| Runway | **The Horizon** |
+| Kairos AI / Advisory | **Kairos Intelligence** |
+| Unverified / Pending / Confirmed | **Staged / Processing / Verified** |
+| Suggestions / Advice | **Insights / Synthesis** |
+
+*Tone:* Low-frequency, high-resolution, authoritative. "The math of wealth." No buzzwords.
+
+---
+
 # 🧠 CORE MISSION
 
 Your job is to build a **correct, consistent, and maintainable financial system**, not to optimize for speed of implementation or clever solutions.
@@ -26,27 +49,27 @@ Axiom architecture:
 ```text id="axm1"
 Next.js (UI + Server Actions)
         ↓
-/lib/analytics (deterministic engine)
+/lib/analytics (Hard Figures engine)
         ↓
 /lib/context (behavioral mapping)
         ↓
-/lib/ai/kairos (rule-based interpretation)
+/lib/ai/kairos (Kairos Intelligence interpretation)
         ↓
-Supabase (PostgreSQL = source of truth)
+Supabase (PostgreSQL = The Source)
 ```
 
 ---
 
 # 🗄️ DATA RULE (NON-NEGOTIABLE)
 
-Supabase is the **only source of truth**.
+Supabase is **The Source** of truth.
 
 Everything financial must originate from:
 
 * deployments (manual events)
-* operational_baseline (structural flows)
+* operational_baseline (The Foundation: structural flows)
 * strategic_objectives (intentions)
-* accounts & liabilities
+* accounts & liabilities (The Ledger & Commitments)
 
 You must NEVER:
 
@@ -79,7 +102,7 @@ Stream authoritative context from Server Actions to the AI layer to prevent "sta
 
 ---
 
-## 3. PREFER DETERMINISTIC LOGIC
+## 3. PREFER HARD FIGURES (DETERMINISTIC LOGIC)
 
 Financial interpretation must be:
 
@@ -115,34 +138,34 @@ Asset, Skill, Leverage, Experience, Maintenance, Leakage.
 
 ---
 
-## 2. Operational Baseline defines structural burn
+## 2. The Foundation defines structural burn
 
-All recurring outflows (Rent, DCA) must live in the baseline.
-Baseline burn is a mandatory input for runway calculations.
+All recurring outflows (Rent, DCA) must live in the baseline (`operational_baseline`).
+Foundation burn is a mandatory input for horizon (runway) calculations.
 
 ---
 
-## 3. Runway is the Resilience Horizon
+## 3. The Horizon (Runway)
 
-Runway must reflect the **Insolvent Stable** state.
-If `Net Worth < 0`, Runway is `0` regardless of current cash flow.
+The Horizon must reflect the **Insolvent Stable** state.
+If `Net Worth < 0`, The Horizon is `0` regardless of current cash flow.
 *   **Visual State**: Use the structural constant `isInfiniteRunway` to track states where inbound replenishment absorbs current burn.
 
 ---
 
-# 🤖 AI INTEGRATION RULES (KAIROS)
+# 🤖 AI INTEGRATION RULES (KAIROS INTELLIGENCE)
 
-## 1. Kairos is an Interpreter, not a Generator
+## 1. Kairos Intelligence is an Interpreter, not a Generator
 
 Kairos analyzes analytics truth against a **Rule Registry**.
-If it cannot be traced to an analytics threshold, Kairos must not say it.
+If it cannot be traced to an analytics threshold, Kairos must not synthesize it.
 
 ---
 
 ## 2. Actionable Signals
 
 Signals in the UI must link to the section where the issue can be fixed.
-Support signals with **Strategic Guidance** popups.
+Support signals with **Insights & Synthesis** popups.
 
 ---
 
@@ -150,7 +173,7 @@ Support signals with **Strategic Guidance** popups.
 
 ## /lib/analytics
 
-* deterministic financial engine
+* deterministic Hard Figures engine
 * goal & objective progress
 
 ## /lib/context
@@ -160,7 +183,7 @@ Support signals with **Strategic Guidance** popups.
 
 ## /lib/ai/kairos
 
-* rule-based strategic interpretation
+* rule-based strategic interpretation (Kairos Intelligence)
 * high-priority triggers
 
 ## /app/dashboard
@@ -173,9 +196,9 @@ Support signals with **Strategic Guidance** popups.
 # 🚨 COMMON MISTAKES TO AVOID
 
 * duplicating analytics in UI
-* "starving" the AI layer of context
+* "starving" the Kairos Intelligence layer of context
 * bypass logic in the telemetry pipeline
-* ignoring structural deficits in runway math
+* ignoring structural deficits in horizon math
 
 ---
 

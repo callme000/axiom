@@ -56,10 +56,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
   }
 
   async function handleDelete(id: string) {
-    if (
-      !confirm("Remove this capital container? This action is structural only.")
-    )
-      return;
+    if (!confirm("Remove this source? This action is structural only.")) return;
     setIsLoading(true);
     try {
       const snapshot = await deleteAccountAction(id);
@@ -75,14 +72,14 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Capital Containers
+          The Ledger
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add container"}
+            {isAdding ? "Cancel" : "+ Add source"}
           </span>
         </button>
       </div>
@@ -93,7 +90,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Container Name
+                  Source Name
                 </label>
                 <input
                   type="text"
@@ -169,7 +166,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "ESTABLISHING..." : "ESTABLISH CONTAINER"}
+              {isLoading ? "ESTABLISHING..." : "ESTABLISH SOURCE"}
             </button>
           </form>
         </div>
@@ -179,10 +176,10 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
         {accounts.length === 0 ? (
           <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
             <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No capital containers defined.
+              The Ledger requires data.
             </p>
             <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Define accounts to track authoritative capital.
+              "Connect your institutions to establish The Source."
             </p>
           </div>
         ) : (

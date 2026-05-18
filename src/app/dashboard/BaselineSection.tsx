@@ -99,7 +99,7 @@ export function BaselineSection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Operational Baseline
+          The Foundation
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -214,7 +214,7 @@ export function BaselineSection({
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "CONFIGURING..." : "ESTABLISH BASELINE FLOW"}
+              {isLoading ? "CONFIGURING..." : "ESTABLISH FOUNDATION"}
             </button>
           </form>
         </div>

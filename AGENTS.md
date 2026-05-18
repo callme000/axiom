@@ -6,6 +6,29 @@ Axiom is a financial intelligence system built on Next.js and Supabase.
 
 ---
 
+# 💎 BRAND STRATEGY & VOCABULARY
+
+Axiom uses a premium, minimalist brand identity focused on **"Financial Certainty."**
+When writing UI components, you MUST use the market-facing vocabulary:
+
+| Internal/Technical Term | Market-Facing Name |
+| :--- | :--- |
+| Attestation / DB Sync | **The Source** |
+| Deterministic Metrics | **Hard Figures** |
+| Hydration / Data Sync | **The Pulse** |
+| Baseline (`operational_baseline`) | **The Foundation** |
+| Liabilities | **Commitments** |
+| Account List | **The Ledger** |
+| Income & Liabilities | **Inflows & Commitments** |
+| Runway | **The Horizon** |
+| Kairos AI / Advisory | **Kairos Intelligence** |
+| Unverified / Pending / Confirmed | **Staged / Processing / Verified** |
+| Suggestions / Advice | **Insights / Synthesis** |
+
+*Tone:* Low-frequency, high-resolution, authoritative.
+
+---
+
 # 🧭 SYSTEM OVERVIEW
 
 Axiom follows **Architecture A**:
@@ -13,13 +36,13 @@ Axiom follows **Architecture A**:
 ```text id="a0x1a"
 Next.js (UI + Server Actions)
         ↓
-Application Logic Layer (/lib/analytics)
+Application Logic Layer (/lib/analytics - Hard Figures)
         ↓
 Behavioral Context Layer (/lib/context)
         ↓
-AI Interpretation Layer (/lib/ai/kairos)
+Kairos Intelligence Layer (/lib/ai/kairos)
         ↓
-Supabase (PostgreSQL + Auth)
+Supabase (PostgreSQL + Auth - The Source)
 ```
 
 ---
@@ -30,9 +53,9 @@ Supabase (PostgreSQL + Auth)
 
 Agents must operate under the assumption that:
 
-* Supabase is the only source of financial truth.
-* Analytics are deterministic and traceable.
-* Kairos is a restrained interpreter, not a conversational agent.
+* Supabase is The Source of financial truth.
+* Analytics are deterministic and traceable (Hard Figures).
+* Kairos Intelligence is a restrained interpreter, not a conversational agent.
 
 ---
 
@@ -43,9 +66,9 @@ Agents must operate under the assumption that:
 Supabase contains all canonical financial data:
 
 * users
-* accounts
+* accounts (The Ledger)
 * deployments (Manual Capital Events)
-* operational_baseline (Recurring Capital Flows)
+* operational_baseline (The Foundation: Recurring Capital Flows)
 * strategic_objectives (Directional Intentions)
 * user_settings
 
@@ -59,7 +82,7 @@ Agents must NEVER:
 
 ## 2. NO DIRECT AI WRITE ACCESS
 
-AI systems (Kairos) MUST NOT:
+Kairos Intelligence MUST NOT:
 
 * insert transactions
 * modify balances
@@ -111,8 +134,8 @@ The frontend must NEVER:
 
 ### Application Logic (/lib/analytics)
 
-* deterministic financial engine
-* runway and burn calculations
+* deterministic Hard Figures engine
+* horizon (runway) and burn calculations
 * alignment pressure scoring
 
 ### Behavioral Context (/lib/context)
@@ -125,7 +148,7 @@ The frontend must NEVER:
 * Supabase queries and CRUD
 * data access abstraction
 
-### AI Interpretation Layer (/lib/ai/kairos)
+### Kairos Intelligence Layer (/lib/ai/kairos)
 
 * rule-based strategic interpretation
 * high-priority trigger evaluation
@@ -144,35 +167,34 @@ Avoid redundant DB roundtrips by streaming context from Server Actions directly 
 # 💰 FINANCIAL ENGINE RULES
 
 ## 1. DEPLOYMENTS ARE IMMUTABLE
-...
-If `Net Worth < 0`, Runway is forced to `0` (Insolvent) to ensure UI honesty.
-*   **Semantic Standard**: Runway states where replenishment absorbs burn are tracked via the `isInfiniteRunway` property.
 
+If `Net Worth < 0`, The Horizon is forced to `0` (Insolvent) to ensure UI honesty.
+*   **Semantic Standard**: Horizon states where replenishment absorbs burn are tracked via the `isInfiniteRunway` property.
 
 * is a manual capital event
 * is always classified by taxonomy (Asset, Skill, Leverage, Experience, Maintenance, Leakage)
 
 ---
 
-## 2. OPERATIONAL BASELINE IS STRUCTURAL
+## 2. THE FOUNDATION IS STRUCTURAL
 
-The baseline:
+The Foundation (`operational_baseline`):
 
 * defines recurring structural outflows (Rent, Subscriptions)
 * defines systemic allocations (Automated Investments)
-* is required for accurate runway/burn truth
+* is required for accurate horizon/burn truth
 
 ---
 
-## 3. RUNWAY (RESILIENCE HORIZON) IS DETERMINISTIC
+## 3. THE HORIZON IS DETERMINISTIC
 
-Runway = `Pool / (Deployment Burn + Structural Burn - Income Replenishment)`
+The Horizon (Runway) = `Pool / (Deployment Burn + Structural Burn - Income Replenishment)`
 
-If `Net Worth < 0`, Runway is forced to `0` (Insolvent) to ensure UI honesty.
+If `Net Worth < 0`, The Horizon is forced to `0` (Insolvent) to ensure UI honesty.
 
 ---
 
-# 🤖 AI INTEGRATION RULES (KAIROS)
+# 🤖 AI INTEGRATION RULES (KAIROS INTELLIGENCE)
 
 ## 1. KAIROS IS DETERMINISTIC
 
@@ -195,7 +217,7 @@ Signals must follow calibrated severity levels:
 * **Observation**: Normal stable state.
 * **Advisory**: Minor behavioral drift (e.g., Starvation).
 * **Warning**: Alignment pressure or moderate shortfall.
-* **Critical**: Solvency crisis, runway depletion, or negative net worth.
+* **Critical**: Solvency crisis, horizon depletion, or negative net worth.
 
 ---
 

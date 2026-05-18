@@ -18,7 +18,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
     ? isInsolvent
       ? "INSOLVENT STABLE"
       : "SYSTEM STABLE"
-    : `${runwayDays!.toFixed(0)} DAYS`;
+    : `${(runwayDays! / 30).toFixed(1)} MONTHS`;
 
   // 3. Conditional Styles
   const containerClasses = `bg-foreground/5 border rounded-2xl p-6 md:p-8 flex flex-col justify-between transition-all duration-500 ${
@@ -53,11 +53,11 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
 
   const description = isInfiniteRunway
     ? isInsolvent
-      ? "Burn is absorbed by income, but total liabilities exceed assets."
-      : "Net inbound capital completely absorbs current burn rates."
+      ? "Burn is absorbed by inflows, but total commitments exceed assets."
+      : "Net inbound capital completely absorbs current structural burn."
     : isCritical
-      ? "High acceleration of capital consumption detected."
-      : "Operational survival window based on burn.";
+      ? "A recalibration of The Foundation is recommended."
+      : "Duration of sustained operation based on current structural burn and liquidity.";
 
   return (
     <div className={containerClasses}>
@@ -67,7 +67,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
             ? isInsolvent
               ? "Insolvent Stability"
               : "Infinite Stability"
-            : "Deterministic Runway"}
+            : "Operating Horizon"}
         </span>
         {isInfiniteRunway && !isInsolvent && (
           <div className="flex items-center gap-1.5">
