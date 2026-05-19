@@ -183,6 +183,7 @@ export default function Dashboard() {
 
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
+  const [deploymentAccountId, setDeploymentAccountId] = useState("");
   const [isAdvancedContextOpen, setIsAdvancedContextOpen] = useState(false);
   const [advancedContext, setAdvancedContext] =
     useState<DeploymentAdvancedContextInput>({ ...EMPTY_ADVANCED_CONTEXT });
@@ -290,9 +291,11 @@ export default function Dashboard() {
         amount: Number(amount),
         category,
         advancedContext,
+        accountId: deploymentAccountId || undefined,
       });
       setTitle("");
       setAmount("");
+      setDeploymentAccountId("");
       setCategory("Unclassified");
       setAdvancedContext({ ...EMPTY_ADVANCED_CONTEXT });
       setIsAdvancedContextOpen(false);
@@ -396,7 +399,13 @@ export default function Dashboard() {
   return (
     <div className="space-y-24">
       {/* Zone 1 — FINANCIAL TRUTH */}
-      <section id="overview" className="space-y-8">
+      <section id="overview" className="space-y-12">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-0.5 w-12 bg-foreground/10"></div>
+          <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase opacity-30">
+            Current Position
+          </h2>
+        </div>
         {/* ROW 1: PRIMARY POSITION */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
@@ -439,83 +448,91 @@ export default function Dashboard() {
         </div>
 
         {/* ROW 2: OPERATIONAL SURVIVAL */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div
-            className={`bg-foreground/5 border rounded-2xl p-6 md:p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                {liquidityError ? "Sync Error" : "Liquidity Pool"}
-              </span>
-              <button
-                onClick={() =>
-                  !isLiquidityLoading && setIsEditingLiquidity(true)
-                }
-                className="p-1.5 rounded-lg hover:bg-foreground/10 transition-colors text-foreground/60 hover:text-foreground"
-                title="Set starting liquid capital"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-              </button>
-            </div>
-            {isEditingLiquidity ? (
-              <div className="flex flex-col gap-2">
-                <input
-                  autoFocus
-                  type="number"
-                  disabled={isLiquidityLoading}
-                  value={liquidityInput}
-                  onChange={(e) => setLiquidityInput(e.target.value)}
-                  className="bg-background border-none rounded p-1 text-center font-black text-xl w-full focus:outline-none disabled:opacity-50"
-                />
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="h-0.5 w-8 bg-foreground/10"></div>
+            <h2 className="text-xl font-black text-foreground tracking-tighter uppercase opacity-30">
+              The Horizon
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div
+              className={`bg-foreground/5 border rounded-2xl p-6 md:p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
+                  {liquidityError ? "Sync Error" : "Liquidity Pool"}
+                </span>
                 <button
-                  disabled={isLiquidityLoading}
-                  onClick={() => handleUpdateLiquidity()}
-                  className="bg-foreground text-background text-[10px] font-black py-2 rounded-lg disabled:opacity-50 uppercase tracking-widest"
+                  onClick={() =>
+                    !isLiquidityLoading && setIsEditingLiquidity(true)
+                  }
+                  className="p-1.5 rounded-lg hover:bg-foreground/10 transition-colors text-foreground/60 hover:text-foreground"
+                  title="Set starting liquid capital"
                 >
-                  {isLiquidityLoading ? "SYNCING..." : "Confirm Liquidity"}
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
                 </button>
               </div>
-            ) : (
+              {isEditingLiquidity ? (
+                <div className="flex flex-col gap-2">
+                  <input
+                    autoFocus
+                    type="number"
+                    disabled={isLiquidityLoading}
+                    value={liquidityInput}
+                    onChange={(e) => setLiquidityInput(e.target.value)}
+                    className="bg-background border-none rounded p-1 text-center font-black text-xl w-full focus:outline-none disabled:opacity-50"
+                  />
+                  <button
+                    disabled={isLiquidityLoading}
+                    onClick={() => handleUpdateLiquidity()}
+                    className="bg-foreground text-background text-[10px] font-black py-2 rounded-lg disabled:opacity-50 uppercase tracking-widest"
+                  >
+                    {isLiquidityLoading ? "SYNCING..." : "Confirm Liquidity"}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  <span className="text-4xl font-black tabular-nums text-foreground">
+                    {formatKSh(liquidity)}
+                  </span>
+                  <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
+                    Ready to invest money
+                  </p>{" "}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
+                  Incomes
+                </span>
+              </div>
               <div className="flex flex-col">
                 <span className="text-4xl font-black tabular-nums text-foreground">
-                  {formatKSh(liquidity)}
+                  {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
                 </span>
                 <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                  Ready to invest money
-                </p>
+                  Money coming in
+                </p>{" "}
               </div>
-            )}
-          </div>
-
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                Incomes
-              </span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-4xl font-black tabular-nums text-foreground">
-                {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
-              </span>
-              <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                Money coming in
-              </p>
-            </div>
-          </div>
 
-          <RunwayCard
-            runwayDays={ledger.analytics?.runwayDays ?? null}
-            netWorth={ledger.analytics?.netWorth ?? 0}
-          />
+            <RunwayCard
+              runwayDays={ledger.analytics?.runwayDays ?? null}
+              netWorth={ledger.analytics?.netWorth ?? 0}
+            />
+          </div>
         </div>
 
         {globalError && (
@@ -556,60 +573,68 @@ export default function Dashboard() {
         )}
 
         {/* SUBSECTION C — FINANCIAL CONTAINERS, OBLIGATIONS & STRATEGY */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div
-            id="accounts"
-            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-          >
-            <AccountSection
-              accounts={ledger.accounts}
-              onSnapshot={applyDashboardSnapshot}
-            />
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="h-0.5 w-8 bg-foreground/10"></div>
+            <h2 className="text-xl font-black text-foreground tracking-tighter uppercase opacity-30">
+              Capital Velocity
+            </h2>
           </div>
-          <div
-            id="liabilities"
-            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-          >
-            <LiabilitySection
-              liabilities={ledger.liabilities}
-              onSnapshot={applyDashboardSnapshot}
-            />
-          </div>
-          <div
-            id="income"
-            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-          >
-            <IncomeSection
-              incomeStreams={ledger.incomeStreams}
-              onSnapshot={applyDashboardSnapshot}
-            />
-          </div>
-          <div
-            id="baseline"
-            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-          >
-            <BaselineSection
-              baseline={ledger.baseline}
-              onSnapshot={applyDashboardSnapshot}
-            />
-          </div>
-          <div
-            id="objectives"
-            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-          >
-            <StrategicObjectiveSection
-              objectives={ledger.objectives}
-              onSnapshot={applyDashboardSnapshot}
-            />
-          </div>
-          <div
-            id="goals"
-            className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-          >
-            <GoalSection
-              goals={ledger.goals}
-              onSnapshot={applyDashboardSnapshot}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div
+              id="accounts"
+              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+            >
+              <AccountSection
+                accounts={ledger.accounts}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </div>
+            <div
+              id="liabilities"
+              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+            >
+              <LiabilitySection
+                liabilities={ledger.liabilities}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </div>
+            <div
+              id="income"
+              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+            >
+              <IncomeSection
+                incomeStreams={ledger.incomeStreams}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </div>
+            <div
+              id="baseline"
+              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+            >
+              <BaselineSection
+                baseline={ledger.baseline}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </div>
+            <div
+              id="objectives"
+              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+            >
+              <StrategicObjectiveSection
+                objectives={ledger.objectives}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </div>
+            <div
+              id="goals"
+              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
+            >
+              <GoalSection
+                goals={ledger.goals}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </div>
           </div>
         </div>
 
@@ -841,22 +866,25 @@ export default function Dashboard() {
                     <div className="space-y-6 pb-4">
                       <div>
                         <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                          Associated Capital Container
+                          Funding Source
                         </label>
-                        <input
-                          type="text"
+                        <select
                           disabled={isActionLoading || !isAdvancedContextOpen}
-                          placeholder="e.g. Primary Operations, Savings Pool"
-                          value={advancedContext.associatedAccount || ""}
+                          value={deploymentAccountId}
                           onChange={(e) => {
-                            setAdvancedContext((current) => ({
-                              ...current,
-                              associatedAccount: e.target.value,
-                            }));
+                            setDeploymentAccountId(e.target.value);
                             if (formError) setFormError(null);
                           }}
-                          className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-foreground/20 font-bold disabled:opacity-50"
-                        />
+                          className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold appearance-none disabled:opacity-50"
+                        >
+                          <option value="">No Deduction (Manual)</option>
+                          {ledger.accounts.map((acc) => (
+                            <option key={acc.id} value={acc.id}>
+                              {acc.account_name} (
+                              {formatKSh(acc.current_balance)})
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
@@ -1237,7 +1265,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">
-              Immutable Ledger History
+              Capital purpose
             </h2>
             <div className="h-0.5 w-16 bg-foreground/10"></div>
           </div>
@@ -1446,6 +1474,14 @@ export default function Dashboard() {
                             <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
                               {deployment.category || "Unclassified"}
                             </span>
+                            {deployment.account_id && (
+                              <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/10 rounded-full uppercase tracking-tighter text-foreground/60">
+                                via{" "}
+                                {ledger.accounts.find(
+                                  (a) => a.id === deployment.account_id,
+                                )?.account_name || "Source"}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-3 text-xs text-foreground/60 font-bold uppercase tracking-tighter">
                             <span>

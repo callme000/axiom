@@ -85,14 +85,14 @@ export function LiabilitySection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Commitments
+          Liabilities
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add commitment"}
+            {isAdding ? "Cancel" : "+ Add liabilities"}
           </span>
         </button>
       </div>
@@ -260,7 +260,7 @@ export function LiabilitySection({
                       {formatKSh(liability.outstanding_balance)}
                     </p>
                     <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                      Remaining Obligation
+                      Left to pay
                     </p>
                   </div>
                   <button

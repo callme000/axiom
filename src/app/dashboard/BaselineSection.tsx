@@ -99,7 +99,7 @@ export function BaselineSection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          The Foundation
+          Personal expenses
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}

@@ -112,7 +112,7 @@ export default function DashboardLayout({
     },
     {
       id: "ledger",
-      label: "Ledger",
+      label: "Expense Log",
       icon: (
         <svg
           width="18"

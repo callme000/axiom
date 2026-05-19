@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { ACCOUNT_TYPES, type Account } from "@/lib/finance/accounts";
+import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
 import {
   createAccountAction,
   deleteAccountAction,
+  createDeploymentAction,
   type DashboardSnapshot,
 } from "./actions";
 
@@ -14,33 +16,43 @@ interface AccountSectionProps {
 }
 
 export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
+  const [activeTab, setActiveTab] = useState<"sources" | "log">("sources");
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
+  // Source Form
+  const [sourceForm, setSourceForm] = useState({
     account_name: "",
     account_type: "checking",
     current_balance: "",
     institution: "",
   });
 
+  // Log Form
+  const [logForm, setLogForm] = useState({
+    title: "",
+    amount: "",
+    category: "Maintenance",
+    accountId: "",
+  });
+
   const formatKSh = (amt: number) => {
     return `KSh ${Math.round(amt).toLocaleString()}`;
   };
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSourceSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     try {
       const snapshot = await createAccountAction({
-        account_name: form.account_name,
-        account_type: form.account_type,
-        current_balance: Number(form.current_balance),
-        institution: form.institution || undefined,
+        account_name: sourceForm.account_name,
+        account_type: sourceForm.account_type,
+        current_balance: Number(sourceForm.current_balance),
+        institution: sourceForm.institution || undefined,
       });
-      setForm({
+      setSourceForm({
         account_name: "",
         account_type: "checking",
         current_balance: "",
@@ -49,20 +61,46 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
       setIsAdding(false);
       onSnapshot(snapshot);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to create account");
+      setError(err instanceof Error ? err.message : "Failed to create source");
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function handleDelete(id: string) {
+  async function handleLogSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    try {
+      const snapshot = await createDeploymentAction({
+        title: logForm.title,
+        amount: Number(logForm.amount),
+        category: logForm.category,
+        accountId: logForm.accountId,
+      });
+      setLogForm({
+        title: "",
+        amount: "",
+        category: "Maintenance",
+        accountId: "",
+      });
+      setIsAdding(false);
+      onSnapshot(snapshot);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to log spending");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleDeleteSource(id: string) {
     if (!confirm("Remove this source? This action is structural only.")) return;
     setIsLoading(true);
     try {
       const snapshot = await deleteAccountAction(id);
       onSnapshot(snapshot);
     } catch (err: unknown) {
-      alert("Failed to delete account");
+      alert("Failed to delete source");
     } finally {
       setIsLoading(false);
     }
@@ -71,22 +109,47 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          The Ledger
-        </h2>
+        <div className="flex gap-4">
+          <button
+            onClick={() => {
+              setActiveTab("sources");
+              setIsAdding(false);
+            }}
+            className={`text-xl font-black tracking-tight uppercase transition-all ${
+              activeTab === "sources" ? "text-foreground" : "text-foreground/20"
+            }`}
+          >
+            Sources
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("log");
+              setIsAdding(false);
+            }}
+            className={`text-xl font-black tracking-tight uppercase transition-all ${
+              activeTab === "log" ? "text-foreground" : "text-foreground/20"
+            }`}
+          >
+            Log Spend
+          </button>
+        </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add source"}
+            {isAdding
+              ? "Cancel"
+              : activeTab === "sources"
+                ? "+ Add source"
+                : "+ New entry"}
           </span>
         </button>
       </div>
 
-      {isAdding && (
+      {isAdding && activeTab === "sources" && (
         <div className="bg-background border-2 border-foreground rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSourceSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
@@ -96,9 +159,12 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                   type="text"
                   required
                   placeholder="e.g. Primary Checking"
-                  value={form.account_name}
+                  value={sourceForm.account_name}
                   onChange={(e) =>
-                    setForm({ ...form, account_name: e.target.value })
+                    setSourceForm({
+                      ...sourceForm,
+                      account_name: e.target.value,
+                    })
                   }
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
                 />
@@ -111,9 +177,12 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                   type="number"
                   required
                   placeholder="0.00"
-                  value={form.current_balance}
+                  value={sourceForm.current_balance}
                   onChange={(e) =>
-                    setForm({ ...form, current_balance: e.target.value })
+                    setSourceForm({
+                      ...sourceForm,
+                      current_balance: e.target.value,
+                    })
                   }
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
                 />
@@ -126,14 +195,17 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                   Type
                 </label>
                 <select
-                  value={form.account_type}
+                  value={sourceForm.account_type}
                   onChange={(e) =>
-                    setForm({ ...form, account_type: e.target.value })
+                    setSourceForm({
+                      ...sourceForm,
+                      account_type: e.target.value,
+                    })
                   }
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
                 >
                   {ACCOUNT_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
+                    <option key={t.value} value={t.label}>
                       {t.label}
                     </option>
                   ))}
@@ -146,9 +218,12 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                 <input
                   type="text"
                   placeholder="e.g. Standard Chartered"
-                  value={form.institution}
+                  value={sourceForm.institution}
                   onChange={(e) =>
-                    setForm({ ...form, institution: e.target.value })
+                    setSourceForm({
+                      ...sourceForm,
+                      institution: e.target.value,
+                    })
                   }
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
                 />
@@ -172,66 +247,202 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
-        {accounts.length === 0 ? (
-          <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
-            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              The Ledger requires data.
-            </p>
-            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              "Connect your institutions to establish The Source."
-            </p>
-          </div>
-        ) : (
-          accounts.map((account) => (
-            <div
-              key={account.id}
-              className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
-            >
-              <div className="flex items-center justify-between relative z-10">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                      {account.account_type}
-                    </span>
-                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
-                      {account.account_name}
-                    </h3>
-                  </div>
-                  {account.institution && (
-                    <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
-                      {account.institution}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-lg font-black tabular-nums text-foreground">
-                      {formatKSh(account.current_balance)}
-                    </p>
-                    <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                      Authoritative Balance
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(account.id)}
-                    className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                    >
-                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                  </button>
-                </div>
+      {isAdding && activeTab === "log" && (
+        <div className="bg-background border-2 border-foreground rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+          <form onSubmit={handleLogSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
+                  What did you spend on?
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Groceries"
+                  value={logForm.title}
+                  onChange={(e) =>
+                    setLogForm({ ...logForm, title: e.target.value })
+                  }
+                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
+                  Amount (KSh)
+                </label>
+                <input
+                  type="number"
+                  required
+                  placeholder="0.00"
+                  value={logForm.amount}
+                  onChange={(e) =>
+                    setLogForm({ ...logForm, amount: e.target.value })
+                  }
+                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                />
               </div>
             </div>
-          ))
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
+                  Category
+                </label>
+                <select
+                  value={logForm.category}
+                  onChange={(e) =>
+                    setLogForm({ ...logForm, category: e.target.value })
+                  }
+                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                >
+                  {TAXONOMY_CATEGORIES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
+                  Source Account
+                </label>
+                <select
+                  required
+                  value={logForm.accountId}
+                  onChange={(e) =>
+                    setLogForm({ ...logForm, accountId: e.target.value })
+                  }
+                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                >
+                  <option value="">Select a source</option>
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.account_name} ({formatKSh(acc.current_balance)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-red-500 text-[10px] font-black uppercase tracking-tight ml-1">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading || !logForm.accountId}
+              className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? "LOGGING..." : "LOG SPENDING"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4">
+        {activeTab === "sources" ? (
+          accounts.length === 0 ? (
+            <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
+              <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
+                No capital containers defined.
+              </p>
+              <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
+                Define accounts to track authoritative capital.
+              </p>
+            </div>
+          ) : (
+            accounts.map((account) => (
+              <div
+                key={account.id}
+                className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                        {account.account_type}
+                      </span>
+                      <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
+                        {account.account_name}
+                      </h3>
+                    </div>
+                    {account.institution && (
+                      <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
+                        {account.institution}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-lg font-black tabular-nums text-foreground">
+                        {formatKSh(account.current_balance)}
+                      </p>
+                      <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
+                        Authoritative Balance
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setActiveTab("log");
+                          setLogForm({ ...logForm, accountId: account.id });
+                          setIsAdding(true);
+                        }}
+                        className="p-2 text-foreground/40 hover:text-foreground transition-colors"
+                        title="Log spending from this source"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                        >
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSource(account.id)}
+                        className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                        >
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )
+        ) : (
+          <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-8 text-center bg-foreground/[0.02]">
+            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
+              Daily Spending Log
+            </p>
+            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60 max-w-[200px] mx-auto leading-relaxed">
+              Every entry recorded here will be deducted from your liquid
+              sources to ensure total financial certainty.
+            </p>
+            {!isAdding && (
+              <button
+                onClick={() => setIsAdding(true)}
+                className="mt-6 bg-foreground text-background px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+              >
+                Start New Entry
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
