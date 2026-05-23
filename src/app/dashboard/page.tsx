@@ -587,6 +587,7 @@ export default function Dashboard() {
             >
               <AccountSection
                 accounts={ledger.accounts}
+                deployments={ledger.deployments}
                 onSnapshot={applyDashboardSnapshot}
               />
             </div>

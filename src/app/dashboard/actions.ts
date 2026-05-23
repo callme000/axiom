@@ -293,27 +293,7 @@ export async function createDeploymentAction(
   if (!user) return unauthenticatedSnapshot();
 
   try {
-    // 1. If an account is provided, deduct the amount from its balance
-    if (input.accountId) {
-      const { data: account, error: accError } = await supabase
-        .from("accounts")
-        .select("current_balance")
-        .eq("id", input.accountId)
-        .single();
-
-      if (accError) throw accError;
-      if (account) {
-        const newBalance = Number(account.current_balance) - input.amount;
-        const { error: updateError } = await supabase
-          .from("accounts")
-          .update({ current_balance: newBalance })
-          .eq("id", input.accountId);
-
-        if (updateError) throw updateError;
-      }
-    }
-
-    // 2. Create the deployment record
+    // 1. Create the deployment record (The database trigger handles account balance deduction)
     await createDeployment(
       supabase,
       input.title,
@@ -322,10 +302,10 @@ export async function createDeploymentAction(
       input.category,
       0,
       input.advancedContext,
+      input.accountId,
     );
 
-    // 3. Update global liquidity setting if this was a liquidity deployment
-    // (Optional: depending on if we want the manual liquidity setting to track account balances)
+    // 2. Update global liquidity setting if this was a liquidity deployment
     if (input.accountId) {
       const settings = await getUserSettings(supabase);
       const newLiquidity = Number(settings.total_liquidity) - input.amount;

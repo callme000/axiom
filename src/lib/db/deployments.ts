@@ -31,6 +31,7 @@ export async function createDeployment(
   category: string,
   impactScore: number = 0,
   advancedContext: DeploymentAdvancedContextInput = {},
+  accountId?: string,
 ) {
   // 1. Pass through Taxonomy Enforcement Gate
   const validated = validateDeployment({
@@ -48,6 +49,7 @@ export async function createDeployment(
     user_id: userId,
     category: validated.category,
     impact_score: validated.impactScore,
+    account_id: accountId || null,
     ...(hasDeploymentAdvancedContext(validated.advancedContext)
       ? { advanced_context: validated.advancedContext }
       : {}),
@@ -85,11 +87,16 @@ export async function updateDeployment(
     category?: string;
     impact_score?: number;
     advancedContext?: DeploymentAdvancedContextInput;
+    accountId?: string;
   },
 ) {
   // 1. Enforcement for provided fields
-  // Note: We use the gate to normalize and validate only what changed
   const dbUpdates: Record<string, unknown> = {};
+  
+  if (updates.accountId !== undefined) {
+    dbUpdates.account_id = updates.accountId || null;
+  }
+
   const shouldValidate =
     updates.title !== undefined ||
     updates.amount !== undefined ||

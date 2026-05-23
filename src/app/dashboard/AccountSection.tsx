@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { ACCOUNT_TYPES, type Account } from "@/lib/finance/accounts";
 import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
 import {
@@ -9,13 +9,27 @@ import {
   createDeploymentAction,
   type DashboardSnapshot,
 } from "./actions";
+import { Deployment } from "@/lib/analytics/types";
 
 interface AccountSectionProps {
   accounts: Account[];
+  deployments: Deployment[];
   onSnapshot: (snapshot: DashboardSnapshot) => void;
 }
 
-export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
+const emptySubscribe = () => () => {};
+
+export function AccountSection({
+  accounts,
+  deployments,
+  onSnapshot,
+}: AccountSectionProps) {
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+
   const [activeTab, setActiveTab] = useState<"sources" | "log">("sources");
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -426,21 +440,79 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
             ))
           )
         ) : (
-          <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-8 text-center bg-foreground/[0.02]">
-            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              Daily Spending Log
-            </p>
-            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60 max-w-[200px] mx-auto leading-relaxed">
-              Every entry recorded here will be deducted from your liquid
-              sources to ensure total financial certainty.
-            </p>
-            {!isAdding && (
-              <button
-                onClick={() => setIsAdding(true)}
-                className="mt-6 bg-foreground text-background px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
-              >
-                Start New Entry
-              </button>
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-8 text-center bg-foreground/[0.02]">
+              <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
+                Daily Spending Log
+              </p>
+              <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60 max-w-[200px] mx-auto leading-relaxed">
+                Every entry recorded here will be deducted from your liquid
+                sources to ensure total financial certainty.
+              </p>
+              {!isAdding && (
+                <button
+                  onClick={() => setIsAdding(true)}
+                  className="mt-6 bg-foreground text-background px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                >
+                  Start New Entry
+                </button>
+              )}
+            </div>
+
+            {/* List of recent logs from sources */}
+            {deployments.filter((d) => d.account_id).length > 0 && (
+              <div className="space-y-3 mt-8">
+                <h4 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] ml-1">
+                  Recent Verified Logs
+                </h4>
+                <div className="grid grid-cols-1 gap-3">
+                  {deployments
+                    .filter((d) => d.account_id)
+                    .slice(0, 5)
+                    .map((d) => (
+                      <div
+                        key={d.id}
+                        className="bg-foreground/[0.03] border border-foreground/5 rounded-xl p-4 flex items-center justify-between group hover:bg-foreground/[0.05] transition-all"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center text-foreground/40 group-hover:bg-foreground group-hover:text-background transition-colors">
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                            >
+                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-black text-foreground uppercase tracking-tight leading-none mb-1">
+                              {d.title}
+                            </h5>
+                            <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest">
+                              {accounts.find((a) => a.id === d.account_id)
+                                ?.account_name || "Source"}{" "}
+                              •{" "}
+                              {isClient
+                                ? new Date(d.created_at).toLocaleDateString()
+                                : "--- --, ----"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-black tabular-nums text-foreground">
+                            {formatKSh(d.amount)}
+                          </p>
+                          <span className="text-[8px] font-black text-green-600 uppercase tracking-tighter bg-green-500/10 px-1.5 py-0.5 rounded">
+                            Verified
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             )}
           </div>
         )}
