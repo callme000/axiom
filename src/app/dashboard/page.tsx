@@ -574,7 +574,10 @@ export default function Dashboard() {
 
         {/* SUBSECTION C — FINANCIAL CONTAINERS, OBLIGATIONS & STRATEGY */}
         <div className="space-y-8">
-          <div className="flex items-center gap-4">
+          <div
+            id="capital-velocity"
+            className="flex items-center gap-4 scroll-mt-20"
+          >
             <div className="h-0.5 w-8 bg-foreground/10"></div>
             <h2 className="text-xl font-black text-foreground tracking-tighter uppercase opacity-30">
               Capital Velocity
@@ -1124,8 +1127,8 @@ export default function Dashboard() {
                   <button
                     onClick={() => {
                       const targetMap: Record<string, string> = {
-                        solvency_pressure: "objectives",
-                        objective_starvation: "objectives",
+                        solvency_pressure: "capital-velocity",
+                        objective_starvation: "capital-velocity",
                         capital_efficiency: "deploy",
                         strategic_alignment: "overview",
                       };
