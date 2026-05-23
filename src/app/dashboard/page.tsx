@@ -1129,7 +1129,7 @@ export default function Dashboard() {
                       const targetMap: Record<string, string> = {
                         solvency_pressure: "capital-velocity",
                         objective_starvation: "capital-velocity",
-                        capital_efficiency: "deploy",
+                        capital_efficiency: "ledger",
                         strategic_alignment: "overview",
                       };
                       const targetId =
@@ -1216,7 +1216,7 @@ export default function Dashboard() {
         </div>
 
         {/* Capital Allocation Section (Contextual Interpretation) */}
-        <div className="lg:col-span-4 space-y-6">
+        <div id="capital-purpose" className="lg:col-span-4 space-y-6">
           {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
             <div className="space-y-6 animate-in fade-in duration-500">
               <div className="flex items-center gap-3">

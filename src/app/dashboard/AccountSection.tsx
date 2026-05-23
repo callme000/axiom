@@ -219,7 +219,7 @@ export function AccountSection({
                   className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
                 >
                   {ACCOUNT_TYPES.map((t) => (
-                    <option key={t.value} value={t.label}>
+                    <option key={t.value} value={t.value}>
                       {t.label}
                     </option>
                   ))}
