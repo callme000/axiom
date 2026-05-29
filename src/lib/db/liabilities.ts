@@ -56,6 +56,7 @@ export async function createLiability(
 export async function updateLiability(
   supabase: SupabaseClient,
   id: string,
+  userId: string,
   updates: {
     liability_name?: string;
     liability_type?: string;
@@ -79,6 +80,7 @@ export async function updateLiability(
     .from("liabilities")
     .update(dbUpdates)
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -86,8 +88,16 @@ export async function updateLiability(
   return data;
 }
 
-export async function deleteLiability(supabase: SupabaseClient, id: string) {
-  const { error } = await supabase.from("liabilities").delete().eq("id", id);
+export async function deleteLiability(
+  supabase: SupabaseClient,
+  id: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("liabilities")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw error;
   return true;

@@ -150,6 +150,16 @@ function unauthenticatedSnapshot(): DashboardSnapshot {
   };
 }
 
+const requireAuth = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (error || !user) throw new Error("Unauthorized mutation attempt.");
+  return { userId: user.id, supabase };
+};
+
 function normalizeSavedInsight(row: Record<string, unknown>): KairosInsight {
   const metadata =
     row.metadata && typeof row.metadata === "object"
@@ -212,7 +222,7 @@ async function buildDashboardSnapshot(
     getGoals(supabase),
     getStrategicObjectives(supabase),
     getOperationalBaseline(supabase),
-    getUserSettings(supabase),
+    getUserSettings(supabase, user.id),
   ]);
 
   const deployments = (deploymentsData || []) as Deployment[];
@@ -286,12 +296,7 @@ export async function getDashboardSnapshotAction() {
 export async function createDeploymentAction(
   input: CreateDeploymentActionInput,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
     // 1. Create the deployment record (The database trigger handles account balance deduction)
@@ -299,7 +304,7 @@ export async function createDeploymentAction(
       supabase,
       input.title,
       input.amount,
-      user.id,
+      userId,
       input.category,
       0,
       input.advancedContext,
@@ -308,9 +313,9 @@ export async function createDeploymentAction(
 
     // 2. Update global liquidity setting if this was a liquidity deployment
     if (input.accountId) {
-      const settings = await getUserSettings(supabase);
+      const settings = await getUserSettings(supabase, userId);
       const newLiquidity = Number(settings.total_liquidity) - input.amount;
-      await updateLiquidity(supabase, newLiquidity);
+      await updateLiquidity(supabase, userId, newLiquidity);
     }
 
     revalidatePath("/dashboard");
@@ -325,15 +330,10 @@ export async function updateDeploymentAction(
   id: string,
   input: UpdateDeploymentActionInput,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateDeployment(supabase, id, {
+    await updateDeployment(supabase, id, userId, {
       title: input.title,
       amount: input.amount,
       category: input.category,
@@ -347,15 +347,10 @@ export async function updateDeploymentAction(
 }
 
 export async function deleteDeploymentAction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await deleteDeployment(supabase, id);
+    await deleteDeployment(supabase, id, userId);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -365,15 +360,10 @@ export async function deleteDeploymentAction(id: string) {
 }
 
 export async function updateLiquidityAction(amount: number) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateLiquidity(supabase, amount);
+    await updateLiquidity(supabase, userId, amount);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -383,15 +373,10 @@ export async function updateLiquidityAction(amount: number) {
 }
 
 export async function createAccountAction(input: CreateAccountActionInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await createAccount(supabase, user.id, input);
+    await createAccount(supabase, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -404,15 +389,10 @@ export async function updateAccountAction(
   id: string,
   input: Partial<CreateAccountActionInput>,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateAccount(supabase, id, input);
+    await updateAccount(supabase, id, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -422,15 +402,10 @@ export async function updateAccountAction(
 }
 
 export async function deleteAccountAction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await deleteAccount(supabase, id);
+    await deleteAccount(supabase, id, userId);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -440,15 +415,10 @@ export async function deleteAccountAction(id: string) {
 }
 
 export async function createLiabilityAction(input: CreateLiabilityActionInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await createLiability(supabase, user.id, input);
+    await createLiability(supabase, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -461,15 +431,10 @@ export async function updateLiabilityAction(
   id: string,
   input: Partial<CreateLiabilityActionInput>,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateLiability(supabase, id, input);
+    await updateLiability(supabase, id, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -479,15 +444,10 @@ export async function updateLiabilityAction(
 }
 
 export async function deleteLiabilityAction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await deleteLiability(supabase, id);
+    await deleteLiability(supabase, id, userId);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -497,15 +457,10 @@ export async function deleteLiabilityAction(id: string) {
 }
 
 export async function createIncomeAction(inputs: CreateIncomeActionInput[]) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await createIncomeStreams(supabase, user.id, inputs);
+    await createIncomeStreams(supabase, userId, inputs);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -518,15 +473,10 @@ export async function updateIncomeAction(
   id: string,
   input: Partial<CreateIncomeActionInput>,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateIncomeStream(supabase, id, input);
+    await updateIncomeStream(supabase, id, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -536,15 +486,10 @@ export async function updateIncomeAction(
 }
 
 export async function deleteIncomeAction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await deleteIncomeStream(supabase, id);
+    await deleteIncomeStream(supabase, id, userId);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -554,15 +499,10 @@ export async function deleteIncomeAction(id: string) {
 }
 
 export async function createGoalAction(input: CreateGoalActionInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await createGoal(supabase, user.id, input);
+    await createGoal(supabase, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -575,15 +515,10 @@ export async function updateGoalAction(
   id: string,
   input: Partial<CreateGoalActionInput>,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateGoal(supabase, id, input);
+    await updateGoal(supabase, id, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -593,15 +528,10 @@ export async function updateGoalAction(
 }
 
 export async function deleteGoalAction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await deleteGoal(supabase, id);
+    await deleteGoal(supabase, id, userId);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -613,15 +543,10 @@ export async function deleteGoalAction(id: string) {
 export async function createStrategicObjectiveAction(
   input: CreateObjectiveActionInput,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await createStrategicObjective(supabase, user.id, input);
+    await createStrategicObjective(supabase, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -636,15 +561,10 @@ export async function updateStrategicObjectiveAction(
   id: string,
   input: Partial<CreateObjectiveActionInput>,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateStrategicObjective(supabase, id, input);
+    await updateStrategicObjective(supabase, id, userId, input);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -656,15 +576,10 @@ export async function updateStrategicObjectiveAction(
 export const updateObjectiveAction = updateStrategicObjectiveAction;
 
 export async function deleteStrategicObjectiveAction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await deleteStrategicObjective(supabase, id);
+    await deleteStrategicObjective(supabase, id, userId);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -681,15 +596,10 @@ export async function createOperationalBaselineAction(
     "id" | "user_id" | "created_at" | "updated_at"
   >,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await createOperationalBaseline(supabase, user.id, data);
+    await createOperationalBaseline(supabase, userId, data);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -704,15 +614,10 @@ export async function updateOperationalBaselineAction(
     Omit<OperationalBaseline, "id" | "user_id" | "created_at" | "updated_at">
   >,
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await updateOperationalBaseline(supabase, id, updates);
+    await updateOperationalBaseline(supabase, id, userId, updates);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
@@ -722,15 +627,10 @@ export async function updateOperationalBaselineAction(
 }
 
 export async function deleteOperationalBaselineAction(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return unauthenticatedSnapshot();
+  const { userId, supabase } = await requireAuth();
 
   try {
-    await deleteOperationalBaseline(supabase, id);
+    await deleteOperationalBaseline(supabase, id, userId);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {

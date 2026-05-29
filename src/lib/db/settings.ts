@@ -1,15 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function getUserSettings(supabase: SupabaseClient) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthenticated");
-
+export async function getUserSettings(
+  supabase: SupabaseClient,
+  userId: string,
+) {
   const { data, error } = await supabase
     .from("user_settings")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) throw error;
@@ -18,7 +16,7 @@ export async function getUserSettings(supabase: SupabaseClient) {
   if (!data) {
     const { data: newData, error: createError } = await supabase
       .from("user_settings")
-      .insert({ user_id: user.id, total_liquidity: 0 })
+      .insert({ user_id: userId, total_liquidity: 0 })
       .select()
       .single();
 
@@ -31,17 +29,13 @@ export async function getUserSettings(supabase: SupabaseClient) {
 
 export async function updateLiquidity(
   supabase: SupabaseClient,
+  userId: string,
   amount: number,
 ) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthenticated");
-
   const { data, error } = await supabase
     .from("user_settings")
     .upsert({
-      user_id: user.id,
+      user_id: userId,
       total_liquidity: amount,
       updated_at: new Date().toISOString(),
     })

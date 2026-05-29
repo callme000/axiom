@@ -81,6 +81,7 @@ export async function createDeployment(
 export async function updateDeployment(
   supabase: SupabaseClient,
   id: string,
+  userId: string,
   updates: {
     title?: string;
     amount?: number;
@@ -92,7 +93,7 @@ export async function updateDeployment(
 ) {
   // 1. Enforcement for provided fields
   const dbUpdates: Record<string, unknown> = {};
-  
+
   if (updates.accountId !== undefined) {
     dbUpdates.account_id = updates.accountId || null;
   }
@@ -128,7 +129,8 @@ export async function updateDeployment(
   const { data, error } = await supabase
     .from("deployments")
     .update(dbUpdates)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) {
     if (
@@ -145,8 +147,16 @@ export async function updateDeployment(
   return data;
 }
 
-export async function deleteDeployment(supabase: SupabaseClient, id: string) {
-  const { error } = await supabase.from("deployments").delete().eq("id", id);
+export async function deleteDeployment(
+  supabase: SupabaseClient,
+  id: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("deployments")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw error;
   return true;

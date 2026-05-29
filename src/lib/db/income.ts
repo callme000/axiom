@@ -105,6 +105,7 @@ export async function createIncomeStreams(
 export async function updateIncomeStream(
   supabase: SupabaseClient,
   id: string,
+  userId: string,
   updates: {
     income_name?: string;
     income_type?: string;
@@ -129,6 +130,7 @@ export async function updateIncomeStream(
     .from("income_streams")
     .update(dbUpdates)
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -136,8 +138,16 @@ export async function updateIncomeStream(
   return data;
 }
 
-export async function deleteIncomeStream(supabase: SupabaseClient, id: string) {
-  const { error } = await supabase.from("income_streams").delete().eq("id", id);
+export async function deleteIncomeStream(
+  supabase: SupabaseClient,
+  id: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("income_streams")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw error;
   return true;

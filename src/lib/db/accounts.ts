@@ -48,6 +48,7 @@ export async function createAccount(
 export async function updateAccount(
   supabase: SupabaseClient,
   id: string,
+  userId: string,
   updates: {
     account_name?: string;
     account_type?: string;
@@ -76,6 +77,7 @@ export async function updateAccount(
     .from("accounts")
     .update(dbUpdates)
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -83,8 +85,16 @@ export async function updateAccount(
   return data;
 }
 
-export async function deleteAccount(supabase: SupabaseClient, id: string) {
-  const { error } = await supabase.from("accounts").delete().eq("id", id);
+export async function deleteAccount(
+  supabase: SupabaseClient,
+  id: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("accounts")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw error;
   return true;

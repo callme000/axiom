@@ -57,6 +57,7 @@ export async function createGoal(
 export async function updateGoal(
   supabase: SupabaseClient,
   id: string,
+  userId: string,
   updates: {
     goal_name?: string;
     goal_type?: string;
@@ -70,7 +71,10 @@ export async function updateGoal(
 ) {
   const dbUpdates: Record<string, unknown> = { ...updates };
 
-  if (updates.goal_name !== undefined && updates.goal_name.trim().length === 0) {
+  if (
+    updates.goal_name !== undefined &&
+    updates.goal_name.trim().length === 0
+  ) {
     throw new Error("Goal name is required.");
   }
 
@@ -78,6 +82,7 @@ export async function updateGoal(
     .from("financial_goals")
     .update(dbUpdates)
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -85,8 +90,16 @@ export async function updateGoal(
   return data;
 }
 
-export async function deleteGoal(supabase: SupabaseClient, id: string) {
-  const { error } = await supabase.from("financial_goals").delete().eq("id", id);
+export async function deleteGoal(
+  supabase: SupabaseClient,
+  id: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("financial_goals")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw error;
   return true;

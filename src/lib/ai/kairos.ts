@@ -89,7 +89,7 @@ export async function generateSystemInsights(
 
   let liquidity = telemetry.liquidity;
   if (liquidity === undefined) {
-    const settings = await getUserSettings(supabase);
+    const settings = await getUserSettings(supabase, user.id);
     liquidity = Number(
       (settings as { total_liquidity: number | string }).total_liquidity,
     );

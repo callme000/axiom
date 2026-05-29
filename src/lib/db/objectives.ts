@@ -58,6 +58,7 @@ export async function createStrategicObjective(
 export async function updateStrategicObjective(
   supabase: SupabaseClient,
   id: string,
+  userId: string,
   updates: {
     objective_name?: string;
     objective_type?: string;
@@ -70,7 +71,10 @@ export async function updateStrategicObjective(
   },
 ) {
   // If objective_name is provided, validate it's not empty
-  if (updates.objective_name !== undefined && updates.objective_name.trim().length === 0) {
+  if (
+    updates.objective_name !== undefined &&
+    updates.objective_name.trim().length === 0
+  ) {
     throw new Error("Objective name is required.");
   }
 
@@ -78,6 +82,7 @@ export async function updateStrategicObjective(
     .from("strategic_objectives")
     .update(updates)
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -85,8 +90,16 @@ export async function updateStrategicObjective(
   return data;
 }
 
-export async function deleteStrategicObjective(supabase: SupabaseClient, id: string) {
-  const { error } = await supabase.from("strategic_objectives").delete().eq("id", id);
+export async function deleteStrategicObjective(
+  supabase: SupabaseClient,
+  id: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("strategic_objectives")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw error;
   return true;

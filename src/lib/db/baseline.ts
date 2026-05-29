@@ -14,7 +14,10 @@ export async function getOperationalBaseline(supabase: SupabaseClient) {
 export async function createOperationalBaseline(
   supabase: SupabaseClient,
   userId: string,
-  data: Omit<OperationalBaseline, "id" | "user_id" | "created_at" | "updated_at">,
+  data: Omit<
+    OperationalBaseline,
+    "id" | "user_id" | "created_at" | "updated_at"
+  >,
 ) {
   const { data: baseline, error } = await supabase
     .from("operational_baseline")
@@ -32,12 +35,16 @@ export async function createOperationalBaseline(
 export async function updateOperationalBaseline(
   supabase: SupabaseClient,
   id: string,
-  updates: Partial<Omit<OperationalBaseline, "id" | "user_id" | "created_at" | "updated_at">>,
+  userId: string,
+  updates: Partial<
+    Omit<OperationalBaseline, "id" | "user_id" | "created_at" | "updated_at">
+  >,
 ) {
   const { data: baseline, error } = await supabase
     .from("operational_baseline")
     .update(updates)
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -48,11 +55,13 @@ export async function updateOperationalBaseline(
 export async function deleteOperationalBaseline(
   supabase: SupabaseClient,
   id: string,
+  userId: string,
 ) {
   const { error } = await supabase
     .from("operational_baseline")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw error;
   return true;
