@@ -54,19 +54,19 @@ const MOCK_ANALYTICS: AnalyticsSummary = {
   totalSystemicMonthlyAllocation: 0,
 };
 
-test("Kairos Insights: correctly invokes rule engine and returns primary insight", () => {
+test("Kairos Insights: correctly invokes rule engine and returns primary insight", async () => {
   const context = buildBehavioralContext(
     { currentAnalytics: MOCK_ANALYTICS },
     [100, 200, 300],
   );
-  const { primaryInsight } = evaluateInsights(context);
+  const { primaryInsight } = await evaluateInsights(context);
 
   assert.ok(primaryInsight.message);
   assert.ok(primaryInsight.severity);
   assert.ok(primaryInsight.category);
 });
 
-test("Kairos Insights: critical runway trigger", () => {
+test("Kairos Insights: critical runway trigger", async () => {
   const analytics = {
     ...MOCK_ANALYTICS,
     runwayDays: 10,
@@ -75,14 +75,14 @@ test("Kairos Insights: critical runway trigger", () => {
     { currentAnalytics: analytics },
     [100, 200, 300],
   );
-  const { primaryInsight } = evaluateInsights(context);
+  const { primaryInsight } = await evaluateInsights(context);
 
   assert.equal(primaryInsight.severity, "critical");
   assert.equal(primaryInsight.category, "solvency_pressure");
   assert.match(primaryInsight.message, /runway has contracted/);
 });
 
-test("Kairos Insights: efficiency crisis trigger", () => {
+test("Kairos Insights: efficiency crisis trigger", async () => {
   const analytics = {
     ...MOCK_ANALYTICS,
     categoryBreakdown: { Leakage: 1000, Asset: 0 },
@@ -97,7 +97,7 @@ test("Kairos Insights: efficiency crisis trigger", () => {
   // buildBehavioralContext for runway < 90 gives -40 penalty.
   // Volatility penalty is vol * 60.
 
-  const { primaryInsight } = evaluateInsights(context);
+  const { primaryInsight } = await evaluateInsights(context);
 
   // Solvency pressure (runway) usually has higher priority than efficiency crisis
   // if both are triggered, since runway is status: 'critical'.
@@ -112,7 +112,7 @@ test("Kairos Insights: efficiency crisis trigger", () => {
   );
 });
 
-test("Kairos Insights: unclassified data advisory", () => {
+test("Kairos Insights: unclassified data advisory", async () => {
   const analytics = {
     ...MOCK_ANALYTICS,
     categoryBreakdown: { Unknown: 500, Asset: 500 },
@@ -121,7 +121,7 @@ test("Kairos Insights: unclassified data advisory", () => {
     { currentAnalytics: analytics },
     [500, 500],
   );
-  const { allInsights } = evaluateInsights(context);
+  const { allInsights } = await evaluateInsights(context);
 
   const unclassifiedInsight = allInsights.find((i) =>
     i.message.includes("Unclassified"),
@@ -130,20 +130,20 @@ test("Kairos Insights: unclassified data advisory", () => {
   assert.equal(unclassifiedInsight.severity, "advisory");
 });
 
-test("Kairos Insights: high discipline pattern", () => {
+test("Kairos Insights: high discipline pattern", async () => {
   // Healthy state with stable spending
   const context = buildBehavioralContext(
     { currentAnalytics: MOCK_ANALYTICS },
     [100, 100, 100],
   );
-  const { primaryInsight } = evaluateInsights(context);
+  const { primaryInsight } = await evaluateInsights(context);
 
   assert.equal(primaryInsight.severity, "observation");
   assert.match(primaryInsight.message, /High operational discipline/);
   assert.equal(primaryInsight.isSilent, true);
 });
 
-test("Kairos Insights: silence state default pattern", () => {
+test("Kairos Insights: silence state default pattern", async () => {
   // State that doesn't trigger High Discipline but falls into Default Pattern
   const analytics = {
     ...MOCK_ANALYTICS,
@@ -153,7 +153,7 @@ test("Kairos Insights: silence state default pattern", () => {
     { currentAnalytics: analytics },
     [100],
   );
-  const { primaryInsight } = evaluateInsights(context);
+  const { primaryInsight } = await evaluateInsights(context);
 
   assert.equal(primaryInsight.severity, "observation");
   assert.match(primaryInsight.message, /No material behavioral shifts/);

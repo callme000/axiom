@@ -10,11 +10,18 @@ export async function logKairosEvaluation(data: {
   durationMs: number;
 }) {
   try {
-    const supabase = await createClient();
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch (e) {
+      // If we're in a test environment or outside a request scope, cookies() will fail.
+      // We silenty exit as telemetry is non-critical for these contexts.
+      return;
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
     if (!user) return;
 
     // Record evaluation event to kairos_insights table.

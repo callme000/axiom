@@ -2,20 +2,55 @@ import { BehavioralContext } from "../context/contextTypes";
 import { InsightEngineResult, InsightPriority } from "./types";
 import { KairosInsight } from "../ai/kairos";
 import { rules } from "./rules/registry";
+import { logKairosEvaluation } from "../db/telemetry";
 
 /**
  * Axiom Insight Engine Orchestrator
  * Evaluates behavioral context against the rule registry to generate
  * prioritized strategic insights.
+ *
+ * V1.2: Added asynchronous telemetry logging for performance audit.
  */
-export const evaluateInsights = (
+export const evaluateInsights = async (
   context: BehavioralContext,
-): InsightEngineResult => {
-  // 1. Filter rules by condition
-  const activeRules = rules.filter((rule) => rule.condition(context));
+): Promise<InsightEngineResult> => {
+  // 1. Process all rules and capture telemetry
+  const evaluationResults = await Promise.all(
+    rules.map(async (rule) => {
+      const start = Date.now();
+      const isMatched = rule.condition(context);
+
+      let insight: KairosInsight | null = null;
+      if (isMatched) {
+        insight = rule.generate(context);
+      }
+
+      const duration = Date.now() - start;
+
+      // Persist forensic telemetry (Non-blocking but awaited for database integrity)
+      await logKairosEvaluation({
+        ruleId: rule.id,
+        severity: insight?.severity || "none",
+        durationMs: duration,
+      });
+
+      if (isMatched && insight) {
+        return {
+          priority: rule.priority,
+          insight,
+        };
+      }
+      return null;
+    }),
+  );
+
+  const generatedInsights = evaluationResults.filter(
+    (result): result is { priority: InsightPriority; insight: KairosInsight } =>
+      result !== null,
+  );
 
   // Axiom Standard: Gracefully handle the "Quiet" state
-  if (activeRules.length === 0) {
+  if (generatedInsights.length === 0) {
     return {
       primaryInsight: {
         type: "info",
@@ -33,21 +68,9 @@ export const evaluateInsights = (
     };
   }
 
-  // 2. Generate insights and apply deterministic metadata confidence weighting.
-  const generatedInsights = activeRules.map((rule) => {
-    const insight = rule.generate(context);
-
-    return {
-      priority: rule.priority,
-      insight: {
-        ...insight,
-      },
-    };
-  });
-
-  // 3. Prioritize
+  // 2. Prioritize
   // Sort by priority (High > Medium > Low) and then by confidence
-  const sortedInsights = generatedInsights.sort((a, b) => {
+  const sortedInsights = [...generatedInsights].sort((a, b) => {
     const priorityScore: Record<InsightPriority, number> = {
       critical: 4,
       high: 3,

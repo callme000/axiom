@@ -121,7 +121,7 @@ export async function generateSystemInsights(
     netWorth: analytics.netWorth,
   });
 
-  const { primaryInsight } = evaluateInsights(context);
+  const { primaryInsight } = await evaluateInsights(context);
 
   const previousInsight = telemetry.previousInsight;
   const isMessageChanged = primaryInsight.message !== previousInsight?.message;
