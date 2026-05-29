@@ -644,3 +644,78 @@ export async function fetchHistoricalAuditAction() {
   const { userId, supabase } = await requireAuth();
   return getDeletedLedgerRecords(supabase, userId);
 }
+
+export interface AuditLog {
+  id: string;
+  rule_id: string;
+  severity: string;
+  evaluation_time_ms: number;
+  created_at: string;
+}
+
+export interface TelemetrySummary {
+  logs: AuditLog[];
+  averageLatency: number;
+  matchRate: number;
+  totalCycles: number;
+  ruleHits: Record<string, number>;
+}
+
+export async function fetchTelemetryLogsAction(): Promise<TelemetrySummary> {
+  const { userId, supabase } = await requireAuth();
+
+  const { data, error } = await supabase
+    .from("kairos_insights")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("[Telemetry] Fetch failed:", error.message);
+    return {
+      logs: [],
+      averageLatency: 0,
+      matchRate: 0,
+      totalCycles: 0,
+      ruleHits: {},
+    };
+  }
+
+  const logs = (data || []) as AuditLog[];
+  const totalLogs = logs.length;
+
+  if (totalLogs === 0) {
+    return {
+      logs: [],
+      averageLatency: 0,
+      matchRate: 0,
+      totalCycles: 0,
+      ruleHits: {},
+    };
+  }
+
+  const totalLatency = logs.reduce(
+    (sum, log) => sum + (log.evaluation_time_ms || 0),
+    0,
+  );
+  const averageLatency = totalLatency / totalLogs;
+
+  const matches = logs.filter((log) => log.severity !== "none").length;
+  const matchRate = (matches / totalLogs) * 100;
+
+  const ruleHits: Record<string, number> = {};
+  logs.forEach((log) => {
+    if (log.severity && log.severity !== "none") {
+      ruleHits[log.rule_id] = (ruleHits[log.rule_id] || 0) + 1;
+    }
+  });
+
+  return {
+    logs,
+    averageLatency: Math.round(averageLatency * 100) / 100,
+    matchRate: Math.round(matchRate * 10) / 10,
+    totalCycles: totalLogs,
+    ruleHits,
+  };
+}

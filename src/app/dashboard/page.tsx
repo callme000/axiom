@@ -33,6 +33,7 @@ import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
 import { BaselineSection } from "./BaselineSection";
 import { RunwayCard } from "./RunwayCard";
 import { HistoricalAudit } from "./HistoricalAudit";
+import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
 import type {
   Account,
   Liability,
@@ -1553,9 +1554,22 @@ export default function Dashboard() {
       </section>
 
       {/* Zone 5 — FORENSIC AUDIT */}
-      <section id="audit" className="pb-24">
+      <section id="audit" className="pb-12">
         <div className="bg-background border border-foreground/5 rounded-[3rem] p-8 md:p-12 shadow-sm">
           <HistoricalAudit />
+        </div>
+      </section>
+
+      {/* Zone 6 — SYSTEM OBSERVABILITY */}
+      <section id="observability" className="pb-24 space-y-12">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-0.5 w-12 bg-foreground/10"></div>
+          <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase opacity-30">
+            System Observability
+          </h2>
+        </div>
+        <div className="bg-background border border-foreground/5 rounded-[3rem] p-8 md:p-12 shadow-sm">
+          <TelemetryDashboard />
         </div>
       </section>
     </div>
