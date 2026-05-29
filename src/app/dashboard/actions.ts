@@ -42,6 +42,7 @@ import {
 } from "@/lib/db/baseline";
 import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
 import { getInsights, saveInsight } from "@/lib/db/insights";
+import { getDeletedLedgerRecords } from "@/lib/db/audit";
 import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
 import { generateSummary, type AnalyticsSummary } from "@/lib/analytics";
 import type {
@@ -637,4 +638,9 @@ export async function deleteOperationalBaselineAction(id: string) {
     console.error("Failed to delete operational baseline:", error);
     throw error;
   }
+}
+
+export async function fetchHistoricalAuditAction() {
+  const { userId, supabase } = await requireAuth();
+  return getDeletedLedgerRecords(supabase, userId);
 }
