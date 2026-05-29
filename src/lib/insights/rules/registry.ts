@@ -10,7 +10,7 @@ export const rules: InsightRule[] = [
   // 0. SOLVENCY CRISIS (Critical Severity)
   {
     id: "solvency_crisis",
-    priority: "high",
+    priority: "critical",
     condition: (ctx) => ctx.netWorth < 0,
     generate: (ctx) => ({
       type: "warning",
@@ -131,7 +131,7 @@ export const rules: InsightRule[] = [
   // 4. RUNWAY DEPLETION (Critical Severity)
   {
     id: "runway_critical",
-    priority: "high",
+    priority: "critical",
     condition: (ctx) => ctx.runway.status === "critical",
     generate: (ctx) => ({
       type: "warning",

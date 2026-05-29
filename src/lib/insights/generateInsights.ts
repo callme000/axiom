@@ -1,5 +1,5 @@
 import { BehavioralContext } from "../context/contextTypes";
-import { InsightEngineResult } from "./types";
+import { InsightEngineResult, InsightPriority } from "./types";
 import { rules } from "./rules/registry";
 
 /**
@@ -28,7 +28,12 @@ export const evaluateInsights = (
   // 3. Prioritize
   // Sort by priority (High > Medium > Low) and then by confidence
   const sortedInsights = generatedInsights.sort((a, b) => {
-    const priorityScore = { high: 3, medium: 2, low: 1 };
+    const priorityScore: Record<InsightPriority, number> = {
+      critical: 4,
+      high: 3,
+      medium: 2,
+      low: 1,
+    };
 
     if (priorityScore[a.priority] !== priorityScore[b.priority]) {
       return priorityScore[b.priority] - priorityScore[a.priority];

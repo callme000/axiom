@@ -1,7 +1,7 @@
 import { BehavioralContext } from "../context/contextTypes";
 import { KairosInsight } from "../ai/kairos";
 
-export type InsightPriority = "high" | "medium" | "low";
+export type InsightPriority = "critical" | "high" | "medium" | "low";
 
 export interface InsightRule {
   id: string;
