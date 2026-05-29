@@ -80,7 +80,7 @@ export function BaselineSection({
   async function handleDelete(id: string) {
     if (
       !confirm(
-        "Remove this recurring flow? This will shift your baseline burn rate.",
+        "Archive this baseline entry? It will no longer influence active liquidity projections but will remain in historical telemetry.",
       )
     )
       return;
@@ -89,7 +89,7 @@ export function BaselineSection({
       const snapshot = await deleteOperationalBaselineAction(id);
       onSnapshot(snapshot);
     } catch (err: unknown) {
-      alert("Failed to delete entry");
+      alert("Failed to archive entry");
     } finally {
       setIsLoading(false);
     }

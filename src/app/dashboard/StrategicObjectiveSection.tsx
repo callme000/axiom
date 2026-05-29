@@ -114,13 +114,18 @@ export function StrategicObjectiveSection({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("De-prioritize this strategic objective?")) return;
+    if (
+      !confirm(
+        "Archive this strategic objective? It will be removed from the active mission board but retained for alignment history.",
+      )
+    )
+      return;
     setIsLoading(true);
     try {
       const snapshot = await deleteStrategicObjectiveAction(id);
       onSnapshot(snapshot);
-    } catch (err: unknown) {
-      alert("Failed to delete objective");
+    } catch {
+      alert("Failed to archive objective");
     } finally {
       setIsLoading(false);
     }

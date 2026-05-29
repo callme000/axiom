@@ -332,7 +332,12 @@ export default function Dashboard() {
 
   async function handleDelete(id: string) {
     if (isExecuting.current) return;
-    if (!confirm("Permanent deletion cannot be undone. Proceed?")) return;
+    if (
+      !confirm(
+        "Archive this deployment? It will be removed from your active ledger but retained for historical analytics.",
+      )
+    )
+      return;
     setDeletingId(id);
     isExecuting.current = true;
     setIsIntelligenceSyncing(true);
@@ -1528,8 +1533,8 @@ export default function Dashboard() {
                             className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
                           >
                             {deletingId === deployment.id
-                              ? "DELETING..."
-                              : "Delete"}
+                              ? "ARCHIVING..."
+                              : "Archive"}
                           </button>
                           <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
                             <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">

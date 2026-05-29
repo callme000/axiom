@@ -69,13 +69,18 @@ export function LiabilitySection({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Acknowledge resolution of this obligation?")) return;
+    if (
+      !confirm(
+        "Archive this obligation? If it has been settled, this will preserve the resolution record.",
+      )
+    )
+      return;
     setIsLoading(true);
     try {
       const snapshot = await deleteLiabilityAction(id);
       onSnapshot(snapshot);
-    } catch (err: unknown) {
-      alert("Failed to delete obligation");
+    } catch {
+      alert("Failed to archive obligation");
     } finally {
       setIsLoading(false);
     }

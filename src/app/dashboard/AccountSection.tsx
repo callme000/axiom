@@ -108,13 +108,14 @@ export function AccountSection({
   }
 
   async function handleDeleteSource(id: string) {
-    if (!confirm("Remove this source? This action is structural only.")) return;
+    if (!confirm("Archive this source? Historical records will be preserved."))
+      return;
     setIsLoading(true);
     try {
       const snapshot = await deleteAccountAction(id);
       onSnapshot(snapshot);
     } catch (err: unknown) {
-      alert("Failed to delete source");
+      alert("Failed to archive source");
     } finally {
       setIsLoading(false);
     }

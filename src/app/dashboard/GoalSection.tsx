@@ -75,13 +75,18 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this financial goal?")) return;
+    if (
+      !confirm(
+        "Archive this financial goal? It will be removed from active tracking but retained in historical data.",
+      )
+    )
+      return;
     setIsLoading(true);
     try {
       const snapshot = await deleteGoalAction(id);
       onSnapshot(snapshot);
-    } catch (err: unknown) {
-      alert("Failed to delete goal");
+    } catch {
+      alert("Failed to archive goal");
     } finally {
       setIsLoading(false);
     }

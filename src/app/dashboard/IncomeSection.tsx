@@ -116,13 +116,18 @@ export function IncomeSection({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this replenishment source?")) return;
+    if (
+      !confirm(
+        "Archive this replenishment source? Historical inflow data will be preserved.",
+      )
+    )
+      return;
     setIsLoading(true);
     try {
       const snapshot = await deleteIncomeAction(id);
       onSnapshot(snapshot);
-    } catch (err: unknown) {
-      alert("Failed to delete income stream");
+    } catch {
+      alert("Failed to archive income stream");
     } finally {
       setIsLoading(false);
     }
