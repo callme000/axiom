@@ -69,9 +69,13 @@ export const rules: InsightRule[] = [
     generate: (ctx) => {
       const { shortfall, message } =
         ctx.strategicAlignment.liquiditySufficiency;
+
+      const isCritical =
+        ctx.liquidity === 0 ? shortfall > 0 : shortfall / ctx.liquidity > 0.5;
+
       return {
         type: "warning",
-        severity: shortfall > 200000 ? "critical" : "warning",
+        severity: isCritical ? "critical" : "warning",
         category: "solvency_pressure",
         timestamp: new Date().toISOString(),
         message:
