@@ -640,6 +640,51 @@ export async function deleteOperationalBaselineAction(id: string) {
   }
 }
 
+export async function submitDayZeroBaselineAction(payload: {
+  mpesaBalance: number;
+  fulizaDebt: number;
+  survivalTarget: number;
+}) {
+  const { userId, supabase } = await requireAuth();
+
+  try {
+    // 1. Insert Primary Account (M-Pesa / Bank)
+    await createAccount(supabase, userId, {
+      account_name: "Primary M-Pesa / Bank",
+      account_type: "checking",
+      current_balance: payload.mpesaBalance,
+    });
+
+    // 2. Insert Immediate Liability (Fuliza / Digital Credit) - Only if debt exists
+    if (payload.fulizaDebt > 0) {
+      await createLiability(supabase, userId, {
+        liability_name: "Fuliza / Digital Credit",
+        liability_type: "personal_loan",
+        outstanding_balance: payload.fulizaDebt,
+      });
+    }
+
+    // 3. Insert Operational Baseline (Monthly Survival Target)
+    await createOperationalBaseline(supabase, userId, {
+      title: "Monthly Survival Target (Rent/Food)",
+      amount: payload.survivalTarget,
+      category: "Maintenance", // Maps to "Basic Survival" in taxonomy
+      cadence: "monthly",
+      baseline_type: "expense",
+      is_active: true,
+    });
+
+    // 4. Update initial liquidity pool to match current balance
+    await updateLiquidity(supabase, userId, payload.mpesaBalance);
+
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Day Zero Onboarding failed:", error);
+    throw error;
+  }
+}
+
 export async function fetchHistoricalAuditAction() {
   const { userId, supabase } = await requireAuth();
   return getDeletedLedgerRecords(supabase, userId);

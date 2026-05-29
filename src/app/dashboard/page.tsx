@@ -34,6 +34,7 @@ import { BaselineSection } from "./BaselineSection";
 import { RunwayCard } from "./RunwayCard";
 import { HistoricalAudit } from "./HistoricalAudit";
 import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
+import DayZeroOnboarding from "@/components/dashboard/DayZeroOnboarding";
 import type {
   Account,
   Liability,
@@ -399,6 +400,11 @@ export default function Dashboard() {
         <div className="h-96 bg-foreground/5 rounded-4xl"></div>
       </div>
     );
+  }
+
+  // Day Zero Onboarding Gate: If no financial truth exists, force established baseline.
+  if (ledger.accounts.length === 0 && ledger.baseline.length === 0) {
+    return <DayZeroOnboarding onComplete={applyDashboardSnapshot} />;
   }
 
   return (
