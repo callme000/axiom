@@ -994,23 +994,16 @@ export default function Dashboard() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-10"
       >
         <div
-          className={`lg:col-span-8 bg-foreground border rounded-3xl p-6 md:p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-2 ring-orange-500/30" : "ring-1 ring-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
+          className={`lg:col-span-8 bg-foreground border rounded-3xl p-6 md:p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "border-orange-500/50 ring-4 ring-orange-500/10" : "border-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
           <div>
             {/* LAYER A — STRATEGIC STATUS BAR (Refined v5E) */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-background/10 pb-4 mb-6">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  >
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                  </svg>
+                  <div
+                    className={`w-2 h-2 rounded-full ${kairosInsight?.severity === "critical" ? "bg-orange-500 animate-pulse" : "bg-background/20"}`}
+                  ></div>
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-background">
                     {kairosInsight?.category?.replace("_", " ") ||
                       "STRATEGIC EVALUATION"}
@@ -1034,7 +1027,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-6">
                 {kairosInsight && (
                   <span
-                    className={`text-[10px] font-black uppercase tracking-widest ${kairosInsight.severity === "critical" ? "text-orange-400" : kairosInsight.severity === "warning" ? "text-yellow-500/80" : "text-background/60"}`}
+                    className={`text-[10px] font-black uppercase tracking-widest ${kairosInsight.severity === "critical" ? "text-orange-500" : kairosInsight.severity === "warning" ? "text-yellow-500/80" : "text-background/60"}`}
                   >
                     {kairosInsight.severity.toUpperCase()}
                   </span>
@@ -1060,8 +1053,6 @@ export default function Dashboard() {
                     <p className="text-base font-bold leading-tight text-background/60 italic">
                       No material structural deterioration detected since
                       previous evaluation.
-                      <br />
-                      Silence is intentional.
                     </p>
                   </div>
                 ) : (
@@ -1109,10 +1100,16 @@ export default function Dashboard() {
               (kairosInsight.severity === "critical" ||
                 kairosInsight.severity === "warning") &&
               !kairosInsight.isSilent && (
-                <div className="mt-8 p-5 border border-orange-500/30 bg-orange-500/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in duration-700">
+                <div
+                  className={`mt-8 p-5 border rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in duration-700 ${kairosInsight.severity === "critical" ? "border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.1)]" : "border-orange-500/30 bg-orange-500/5"}`}
+                >
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-orange-400 mb-1">
-                      Active Operational Signal
+                    <p
+                      className={`text-[9px] font-black uppercase tracking-widest mb-1 ${kairosInsight.severity === "critical" ? "text-orange-500" : "text-orange-400"}`}
+                    >
+                      {kairosInsight.severity === "critical"
+                        ? "Critical Operational Breach"
+                        : "Active Operational Signal"}
                     </p>
                     <p className="text-xs font-bold text-background/80">
                       {kairosInsight.category === "solvency_pressure"
@@ -1150,7 +1147,7 @@ export default function Dashboard() {
                         });
                       }
                     }}
-                    className="px-5 py-2.5 bg-background/10 hover:bg-background/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-background transition-colors shrink-0 flex items-center gap-2"
+                    className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors shrink-0 flex items-center gap-2 ${kairosInsight.severity === "critical" ? "bg-orange-500 text-background hover:bg-orange-600 shadow-lg shadow-orange-500/20" : "bg-background/10 hover:bg-background/20 text-background"}`}
                   >
                     <span>
                       {kairosInsight.category === "solvency_pressure"
