@@ -5,6 +5,7 @@ export async function getAccounts(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("accounts")
     .select("*")
+    .is("deleted_at", null)
     .order("account_name", { ascending: true });
 
   if (error) throw error;
@@ -20,6 +21,7 @@ export async function createAccount(
     current_balance: number;
     institution?: string;
     currency?: string;
+    deleted_at?: string | null;
   },
 ) {
   const validated = validateAccount({
@@ -54,6 +56,7 @@ export async function updateAccount(
     account_type?: string;
     current_balance?: number;
     institution?: string;
+    deleted_at?: string | null;
   },
 ) {
   const dbUpdates: Record<string, unknown> = { ...updates };
@@ -92,7 +95,7 @@ export async function deleteAccount(
 ) {
   const { error } = await supabase
     .from("accounts")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
 

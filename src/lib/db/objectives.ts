@@ -5,6 +5,7 @@ export async function getStrategicObjectives(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("strategic_objectives")
     .select("*")
+    .is("deleted_at", null)
     .order("priority_level", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -24,6 +25,7 @@ export async function createStrategicObjective(
     priority_level: string;
     status: string;
     notes?: string;
+    deleted_at?: string | null;
   },
 ) {
   const validated = validateObjective({
@@ -68,6 +70,7 @@ export async function updateStrategicObjective(
     priority_level?: string;
     status?: string;
     notes?: string | null;
+    deleted_at?: string | null;
   },
 ) {
   // If objective_name is provided, validate it's not empty
@@ -97,7 +100,7 @@ export async function deleteStrategicObjective(
 ) {
   const { error } = await supabase
     .from("strategic_objectives")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
 

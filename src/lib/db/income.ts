@@ -5,6 +5,7 @@ export async function getIncomeStreams(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("income_streams")
     .select("*")
+    .is("deleted_at", null)
     .order("income_name", { ascending: true });
 
   if (error) throw error;
@@ -24,6 +25,7 @@ export async function createIncomeStream(
     currency?: string;
     start_date?: string;
     end_date?: string | null;
+    deleted_at?: string | null;
   },
 ) {
   const validated = validateIncomeStream({
@@ -68,6 +70,7 @@ export async function createIncomeStreams(
     currency?: string;
     start_date?: string;
     end_date?: string | null;
+    deleted_at?: string | null;
   }[],
 ) {
   const validatedInputs = inputs.map((data) => {
@@ -115,6 +118,7 @@ export async function updateIncomeStream(
     source?: string;
     start_date?: string;
     end_date?: string | null;
+    deleted_at?: string | null;
   },
 ) {
   const dbUpdates: Record<string, unknown> = { ...updates };
@@ -145,7 +149,7 @@ export async function deleteIncomeStream(
 ) {
   const { error } = await supabase
     .from("income_streams")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
 

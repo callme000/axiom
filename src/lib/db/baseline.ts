@@ -5,6 +5,7 @@ export async function getOperationalBaseline(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("operational_baseline")
     .select("*")
+    .is("deleted_at", null)
     .order("created_at", { ascending: true });
 
   if (error) throw error;
@@ -16,7 +17,7 @@ export async function createOperationalBaseline(
   userId: string,
   data: Omit<
     OperationalBaseline,
-    "id" | "user_id" | "created_at" | "updated_at"
+    "id" | "user_id" | "created_at" | "updated_at" | "deleted_at"
   >,
 ) {
   const { data: baseline, error } = await supabase
@@ -37,7 +38,10 @@ export async function updateOperationalBaseline(
   id: string,
   userId: string,
   updates: Partial<
-    Omit<OperationalBaseline, "id" | "user_id" | "created_at" | "updated_at">
+    Omit<
+      OperationalBaseline,
+      "id" | "user_id" | "created_at" | "updated_at" | "deleted_at"
+    >
   >,
 ) {
   const { data: baseline, error } = await supabase
@@ -59,7 +63,7 @@ export async function deleteOperationalBaseline(
 ) {
   const { error } = await supabase
     .from("operational_baseline")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
 

@@ -42,6 +42,7 @@ export interface StrategicObjective {
   notes?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export function isValidObjectiveType(type: string): type is ObjectiveType {

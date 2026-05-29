@@ -44,6 +44,7 @@ export interface OperationalBaseline {
   notes?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export interface Deployment {
@@ -54,6 +55,7 @@ export interface Deployment {
   title: string;
   advanced_context?: DeploymentAdvancedContext | null;
   account_id?: string | null;
+  deleted_at?: string | null;
 }
 
 export interface StrategicAlignment {

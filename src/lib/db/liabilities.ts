@@ -5,6 +5,7 @@ export async function getLiabilities(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("liabilities")
     .select("*")
+    .is("deleted_at", null)
     .order("liability_name", { ascending: true });
 
   if (error) throw error;
@@ -23,6 +24,7 @@ export async function createLiability(
     due_date?: string | null;
     institution?: string;
     currency?: string;
+    deleted_at?: string | null;
   },
 ) {
   const validated = validateLiability({
@@ -65,6 +67,7 @@ export async function updateLiability(
     minimum_payment?: number;
     due_date?: string | null;
     institution?: string;
+    deleted_at?: string | null;
   },
 ) {
   const dbUpdates: Record<string, unknown> = { ...updates };
@@ -95,7 +98,7 @@ export async function deleteLiability(
 ) {
   const { error } = await supabase
     .from("liabilities")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
 

@@ -35,6 +35,7 @@ export interface IncomeStream {
   end_date?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export function isValidIncomeType(type: string): type is IncomeType {
@@ -80,7 +81,9 @@ export function validateIncomeStream(data: {
 /**
  * Normalizes an income stream amount to a monthly value.
  */
-export function calculateMonthlyInflow(stream: Pick<IncomeStream, 'amount' | 'cadence'>): number {
+export function calculateMonthlyInflow(
+  stream: Pick<IncomeStream, "amount" | "cadence">,
+): number {
   const cadenceConfig = CADENCES.find((c) => c.value === stream.cadence);
   if (!cadenceConfig) return 0;
   return stream.amount * cadenceConfig.factor;

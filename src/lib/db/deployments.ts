@@ -13,6 +13,7 @@ export async function getDeployments(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("deployments")
     .select("*")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -154,7 +155,7 @@ export async function deleteDeployment(
 ) {
   const { error } = await supabase
     .from("deployments")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
 

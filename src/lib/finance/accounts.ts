@@ -19,6 +19,7 @@ export interface Account {
   institution?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export function isValidAccountType(type: string): type is AccountType {

@@ -23,6 +23,7 @@ export interface Liability {
   institution?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export function isValidLiabilityType(type: string): type is LiabilityType {

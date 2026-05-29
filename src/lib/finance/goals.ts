@@ -44,6 +44,7 @@ export interface FinancialGoal {
   notes?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export function isValidGoalType(type: string): type is GoalType {
@@ -103,7 +104,12 @@ export function validateGoal(data: {
 /**
  * Calculates deterministic goal progress.
  */
-export function calculateGoalProgressPercentage(goal: Pick<FinancialGoal, 'current_progress' | 'target_amount'>): number {
+export function calculateGoalProgressPercentage(
+  goal: Pick<FinancialGoal, "current_progress" | "target_amount">,
+): number {
   if (goal.target_amount <= 0) return 0;
-  return Math.min(100, Math.max(0, (goal.current_progress / goal.target_amount) * 100));
+  return Math.min(
+    100,
+    Math.max(0, (goal.current_progress / goal.target_amount) * 100),
+  );
 }

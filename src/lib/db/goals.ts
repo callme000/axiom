@@ -5,6 +5,7 @@ export async function getGoals(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("financial_goals")
     .select("*")
+    .is("deleted_at", null)
     .order("priority", { ascending: false });
 
   if (error) throw error;
@@ -23,6 +24,7 @@ export async function createGoal(
     priority: string;
     status: string;
     notes?: string;
+    deleted_at?: string | null;
   },
 ) {
   const validated = validateGoal({
@@ -67,6 +69,7 @@ export async function updateGoal(
     priority?: string;
     status?: string;
     notes?: string | null;
+    deleted_at?: string | null;
   },
 ) {
   const dbUpdates: Record<string, unknown> = { ...updates };
@@ -97,7 +100,7 @@ export async function deleteGoal(
 ) {
   const { error } = await supabase
     .from("financial_goals")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId);
 
