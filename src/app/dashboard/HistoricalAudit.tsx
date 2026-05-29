@@ -3,12 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchHistoricalAuditAction } from "./actions";
 import { AuditRecord } from "@/lib/db/audit";
-
-const formatKSh = (amt: number) => {
-  const isNegative = amt < 0;
-  const absAmt = Math.abs(amt);
-  return `${isNegative ? "-" : ""}KSh ${Math.round(absAmt).toLocaleString()}`;
-};
+import { formatCurrency } from "@/lib/utils/formatters";
 
 export function HistoricalAudit() {
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
@@ -118,7 +113,7 @@ export function HistoricalAudit() {
             </div>
             <div className="text-right">
               <p className="font-black text-sm tabular-nums text-foreground/30 line-through decoration-foreground/10">
-                {formatKSh(record.amount)}
+                {formatCurrency(record.amount)}
               </p>
               <p className="text-[8px] font-black text-foreground/20 uppercase tracking-widest mt-0.5">
                 Archived

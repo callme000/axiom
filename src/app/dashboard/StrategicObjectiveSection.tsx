@@ -15,6 +15,7 @@ import {
   deleteStrategicObjectiveAction,
   type DashboardSnapshot,
 } from "./actions";
+import { formatCurrency, formatDate } from "@/lib/utils/formatters";
 
 interface StrategicObjectiveSectionProps {
   objectives: StrategicObjective[];
@@ -40,10 +41,6 @@ export function StrategicObjectiveSection({
     target_date: "",
     notes: "",
   });
-
-  const formatKSh = (amt: number) => {
-    return `KSh ${Math.round(amt).toLocaleString()}`;
-  };
 
   function startEdit(obj: StrategicObjective) {
     setEditingId(obj.id);
@@ -365,8 +362,10 @@ export function StrategicObjectiveSection({
                       </h3>
                     </div>
                     <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-[0.2em]">
-                      {obj.objective_type.replace("_", " ")} :: {obj.status}
-                      {obj.target_date && ` • Target: ${obj.target_date}`}
+                      {obj.objective_type.replace("_", " ").toUpperCase()} ::{" "}
+                      {obj.status}
+                      {obj.target_date &&
+                        ` • Target: ${formatDate(obj.target_date)}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-6">
@@ -428,7 +427,7 @@ export function StrategicObjectiveSection({
                         Current Position
                       </p>
                       <p className="text-xs font-black text-foreground tabular-nums">
-                        {formatKSh(obj.current_amount)}
+                        {formatCurrency(obj.current_amount)}
                       </p>
                     </div>
                     <div className="text-right">
@@ -436,7 +435,7 @@ export function StrategicObjectiveSection({
                         Strategic Target
                       </p>
                       <p className="text-xs font-black text-foreground/60 tabular-nums">
-                        {formatKSh(obj.target_amount)}
+                        {formatCurrency(obj.target_amount)}
                       </p>
                     </div>
                   </div>

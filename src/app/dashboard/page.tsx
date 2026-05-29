@@ -43,6 +43,8 @@ import type {
   OperationalBaseline,
   Deployment,
 } from "@/lib/analytics/types";
+import { formatCurrency } from "@/lib/utils/formatters";
+import { DeploymentMap } from "@/lib/utils/taxonomy";
 
 interface LedgerState {
   deployments: Deployment[];
@@ -56,12 +58,6 @@ interface LedgerState {
 }
 
 type KairosInsight = DashboardSnapshot["kairosInsight"];
-
-const formatKSh = (amt: number) => {
-  const isNegative = amt < 0;
-  const absAmt = Math.abs(amt);
-  return `${isNegative ? "-" : ""}KSh ${Math.round(absAmt).toLocaleString()}`;
-};
 
 const EMPTY_ADVANCED_CONTEXT: DeploymentAdvancedContextInput = {
   associatedAccount: "",
@@ -120,7 +116,9 @@ function CategorySelector({
                 <span
                   className={`block font-black uppercase tracking-widest ${compact ? "text-[9px]" : "text-[10px]"}`}
                 >
-                  {category.label}
+                  {DeploymentMap[
+                    category.value as keyof typeof DeploymentMap
+                  ] || category.label}
                 </span>
                 {isSelected && (
                   <span className="w-1.5 h-1.5 bg-background rounded-full animate-pulse"></span>
@@ -422,7 +420,7 @@ export default function Dashboard() {
             <span
               className={`text-4xl font-black tabular-nums ${ledger.analytics && ledger.analytics.netWorth < 0 ? "text-red-500" : "text-foreground"}`}
             >
-              {formatKSh(ledger.analytics?.netWorth || 0)}
+              {formatCurrency(ledger.analytics?.netWorth || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
               Assets minus liabilities
@@ -434,7 +432,7 @@ export default function Dashboard() {
               Total Assets
             </span>
             <span className="text-4xl font-black tabular-nums text-foreground">
-              {formatKSh(ledger.analytics?.totalAssets || 0)}
+              {formatCurrency(ledger.analytics?.totalAssets || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
               Monetary value possessions
@@ -446,7 +444,7 @@ export default function Dashboard() {
               Liabilities
             </span>
             <span className="text-4xl font-black tabular-nums text-foreground">
-              {formatKSh(ledger.analytics?.totalLiabilities || 0)}
+              {formatCurrency(ledger.analytics?.totalLiabilities || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
               Debts you owe
@@ -510,7 +508,7 @@ export default function Dashboard() {
               ) : (
                 <div className="flex flex-col">
                   <span className="text-4xl font-black tabular-nums text-foreground">
-                    {formatKSh(liquidity)}
+                    {formatCurrency(liquidity)}
                   </span>
                   <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
                     Ready to invest money
@@ -527,7 +525,7 @@ export default function Dashboard() {
               </div>
               <div className="flex flex-col">
                 <span className="text-4xl font-black tabular-nums text-foreground">
-                  {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
+                  {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}
                 </span>
                 <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
                   Money coming in
@@ -892,7 +890,7 @@ export default function Dashboard() {
                           {ledger.accounts.map((acc) => (
                             <option key={acc.id} value={acc.id}>
                               {acc.account_name} (
-                              {formatKSh(acc.current_balance)})
+                              {formatCurrency(acc.current_balance)})
                             </option>
                           ))}
                         </select>
@@ -1188,7 +1186,7 @@ export default function Dashboard() {
                   Liquidity baseline
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
-                  {formatKSh(liquidity)}
+                  {formatCurrency(liquidity)}
                 </p>
               </div>
               <div>
@@ -1196,7 +1194,7 @@ export default function Dashboard() {
                   Commitment pressure
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
-                  {formatKSh(ledger.analytics?.totalLiabilities || 0)}
+                  {formatCurrency(ledger.analytics?.totalLiabilities || 0)}
                 </p>
               </div>
               <div>
@@ -1204,7 +1202,7 @@ export default function Dashboard() {
                   Rolling inflows
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
-                  {formatKSh(ledger.analytics?.totalMonthlyIncome || 0)}
+                  {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}
                 </p>
               </div>
               <div>
@@ -1243,10 +1241,12 @@ export default function Dashboard() {
                         <div className="flex justify-between items-end mb-3">
                           <div>
                             <span className="text-[9px] font-black text-foreground/60 uppercase tracking-widest block mb-1">
-                              {cat}
+                              {DeploymentMap[
+                                cat as keyof typeof DeploymentMap
+                              ] || cat}
                             </span>
                             <span className="text-base font-black text-foreground tabular-nums">
-                              {formatKSh(amt)}
+                              {formatCurrency(amt)}
                             </span>
                           </div>
                           <span className="text-xs font-black text-foreground/40">
@@ -1333,7 +1333,9 @@ export default function Dashboard() {
                             : "text-foreground/60 hover:bg-foreground/5"
                         }`}
                       >
-                        {cat.label}
+                        {DeploymentMap[
+                          cat.value as keyof typeof DeploymentMap
+                        ] || cat.label}
                       </button>
                     ))}
                     <button
@@ -1480,7 +1482,11 @@ export default function Dashboard() {
                               {deployment.title}
                             </h3>
                             <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
-                              {deployment.category || "Unclassified"}
+                              {DeploymentMap[
+                                deployment.category as keyof typeof DeploymentMap
+                              ] ||
+                                deployment.category ||
+                                "Unclassified"}
                             </span>
                             {deployment.account_id && (
                               <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/10 rounded-full uppercase tracking-tighter text-foreground/60">
@@ -1519,7 +1525,7 @@ export default function Dashboard() {
                       </div>
                       <div className="text-right flex flex-col items-end">
                         <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                          {formatKSh(deployment.amount)}
+                          {formatCurrency(deployment.amount)}
                         </p>
                         <div className="mt-1 flex items-center gap-3">
                           <button

@@ -13,6 +13,7 @@ import {
   deleteGoalAction,
   type DashboardSnapshot,
 } from "./actions";
+import { formatCurrency } from "@/lib/utils/formatters";
 
 interface GoalSectionProps {
   goals: FinancialGoal[];
@@ -33,10 +34,6 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
     status: "active",
     notes: "",
   });
-
-  const formatKSh = (amt: number) => {
-    return `KSh ${Math.round(amt).toLocaleString()}`;
-  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -251,7 +248,8 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                       </h3>
                     </div>
                     <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
-                      {goal.goal_type.replace("_", " ")} • {goal.status}
+                      {goal.goal_type.replace("_", " ").toUpperCase()} •{" "}
+                      {goal.status}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
@@ -292,10 +290,10 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 </div>
                 <div className="flex justify-between mt-2">
                   <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
-                    {formatKSh(goal.current_progress)}
+                    {formatCurrency(goal.current_progress)}
                   </p>
                   <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
-                    Target: {formatKSh(goal.target_amount)}
+                    Target: {formatCurrency(goal.target_amount)}
                   </p>
                 </div>
               </div>

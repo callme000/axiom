@@ -10,6 +10,8 @@ import {
   type DashboardSnapshot,
 } from "./actions";
 import { Deployment } from "@/lib/analytics/types";
+import { formatCurrency } from "@/lib/utils/formatters";
+import { AccountMap } from "@/lib/utils/taxonomy";
 
 interface AccountSectionProps {
   accounts: Account[];
@@ -50,10 +52,6 @@ export function AccountSection({
     category: "Maintenance",
     accountId: "",
   });
-
-  const formatKSh = (amt: number) => {
-    return `KSh ${Math.round(amt).toLocaleString()}`;
-  };
 
   async function handleSourceSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -332,7 +330,7 @@ export function AccountSection({
                   <option value="">Select a source</option>
                   {accounts.map((acc) => (
                     <option key={acc.id} value={acc.id}>
-                      {acc.account_name} ({formatKSh(acc.current_balance)})
+                      {acc.account_name} ({formatCurrency(acc.current_balance)})
                     </option>
                   ))}
                 </select>
@@ -377,7 +375,8 @@ export function AccountSection({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                        {account.account_type}
+                        {AccountMap[account.account_type] ||
+                          account.account_type}
                       </span>
                       <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
                         {account.account_name}
@@ -392,7 +391,7 @@ export function AccountSection({
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-lg font-black tabular-nums text-foreground">
-                        {formatKSh(account.current_balance)}
+                        {formatCurrency(account.current_balance)}
                       </p>
                       <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
                         Authoritative Balance
@@ -504,7 +503,7 @@ export function AccountSection({
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-black tabular-nums text-foreground">
-                            {formatKSh(d.amount)}
+                            {formatCurrency(d.amount)}
                           </p>
                           <span className="text-[8px] font-black text-green-600 uppercase tracking-tighter bg-green-500/10 px-1.5 py-0.5 rounded">
                             Verified

@@ -15,6 +15,8 @@ import {
   type DashboardSnapshot,
   type CreateIncomeActionInput,
 } from "./actions";
+import { formatCurrency } from "@/lib/utils/formatters";
+import { IncomeMap } from "@/lib/utils/taxonomy";
 
 interface IncomeSectionProps {
   incomeStreams: IncomeStream[];
@@ -76,10 +78,6 @@ export function IncomeSection({
     const newEntries = [...entries];
     newEntries[index][field] = value;
     setEntries(newEntries);
-  };
-
-  const formatKSh = (amt: number) => {
-    return `KSh ${Math.round(amt).toLocaleString()}`;
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -327,7 +325,7 @@ export function IncomeSection({
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                      {stream.income_type}
+                      {IncomeMap[stream.income_type] || stream.income_type}
                     </span>
                     <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
                       {stream.income_name}
@@ -348,7 +346,7 @@ export function IncomeSection({
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-lg font-black tabular-nums text-foreground">
-                      {formatKSh(calculateMonthlyInflow(stream))}
+                      {formatCurrency(calculateMonthlyInflow(stream))}
                     </p>
                     <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
                       Rolling Inflow

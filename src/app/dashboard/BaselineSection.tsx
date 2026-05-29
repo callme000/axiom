@@ -8,6 +8,8 @@ import {
   type DashboardSnapshot,
 } from "./actions";
 import { OperationalBaseline, BaselineCadence } from "@/lib/analytics/types";
+import { formatCurrency } from "@/lib/utils/formatters";
+import { DeploymentMap } from "@/lib/utils/taxonomy";
 
 interface BaselineSectionProps {
   baseline: OperationalBaseline[];
@@ -39,10 +41,6 @@ export function BaselineSection({
     baseline_type: "expense" as "expense" | "allocation",
     notes: "",
   });
-
-  const formatKSh = (amt: number) => {
-    return `KSh ${Math.round(amt).toLocaleString()}`;
-  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -256,13 +254,15 @@ export function BaselineSection({
                     </h3>
                   </div>
                   <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
-                    {item.category}
+                    {DeploymentMap[
+                      item.category as keyof typeof DeploymentMap
+                    ] || item.category}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-lg font-black tabular-nums text-foreground">
-                      {formatKSh(item.amount)}
+                      {formatCurrency(item.amount)}
                     </p>
                     <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
                       Amount per {item.cadence.replace("ly", "")}
