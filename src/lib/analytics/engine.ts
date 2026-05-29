@@ -62,44 +62,52 @@ import { calculateObjectiveFundingRatio } from "../finance/objectives";
  */
 
 export const calculateTotal = (deployments: Deployment[]): number => {
-  return deployments.reduce((sum, d) => sum + Number(d.amount), 0);
+  return deployments
+    .filter((d) => !d.deleted_at)
+    .reduce((sum, d) => sum + Number(d.amount), 0);
 };
 
 export const calculateAccountTotal = (accounts: Account[]): number => {
-  return accounts.reduce((sum, a) => sum + Number(a.current_balance), 0);
+  return accounts
+    .filter((a) => !a.deleted_at)
+    .reduce((sum, a) => sum + Number(a.current_balance), 0);
 };
 
 export const calculateLiabilityTotal = (liabilities: Liability[]): number => {
-  return liabilities.reduce((sum, l) => sum + Number(l.outstanding_balance), 0);
+  return liabilities
+    .filter((l) => !l.deleted_at)
+    .reduce((sum, l) => sum + Number(l.outstanding_balance), 0);
 };
 
 export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
-  const result = streams.reduce(
-    (acc, stream) => {
-      const monthly = calculateMonthlyInflow(stream);
-      acc.total += monthly;
-      if (stream.is_recurring) {
-        acc.recurring += monthly;
-      } else {
-        acc.irregular += monthly;
-      }
-      acc.concentration[stream.income_type] =
-        (acc.concentration[stream.income_type] || 0) + monthly;
+  const result = streams
+    .filter((s) => !s.deleted_at)
+    .reduce(
+      (acc, stream) => {
+        const monthly = calculateMonthlyInflow(stream);
+        acc.total += monthly;
+        if (stream.is_recurring) {
+          acc.recurring += monthly;
+        } else {
+          acc.irregular += monthly;
+        }
+        acc.concentration[stream.income_type] =
+          (acc.concentration[stream.income_type] || 0) + monthly;
 
-      // Group by origin source (income_name) for concentration risk analysis
-      acc.sourceTotals[stream.income_name] =
-        (acc.sourceTotals[stream.income_name] || 0) + monthly;
+        // Group by origin source (income_name) for concentration risk analysis
+        acc.sourceTotals[stream.income_name] =
+          (acc.sourceTotals[stream.income_name] || 0) + monthly;
 
-      return acc;
-    },
-    {
-      total: 0,
-      recurring: 0,
-      irregular: 0,
-      concentration: {} as Record<string, number>,
-      sourceTotals: {} as Record<string, number>,
-    },
-  );
+        return acc;
+      },
+      {
+        total: 0,
+        recurring: 0,
+        irregular: 0,
+        concentration: {} as Record<string, number>,
+        sourceTotals: {} as Record<string, number>,
+      },
+    );
 
   const highestSourceSum = Math.max(0, ...Object.values(result.sourceTotals));
   const maxRatio = result.total > 0 ? highestSourceSum / result.total : 0;
@@ -117,38 +125,43 @@ export const calculateGoalMetrics = (
   goals: FinancialGoal[],
   objectives: StrategicObjective[] = [],
 ) => {
-  const goalStats = goals.reduce(
-    (acc, goal) => {
-      acc.totalTargets += Number(goal.target_amount);
-      acc.totalProgress += Number(goal.current_progress);
-      if (goal.priority === "critical" && goal.status === "active") {
+  const goalStats = goals
+    .filter((g) => !g.deleted_at)
+    .reduce(
+      (acc, goal) => {
+        acc.totalTargets += Number(goal.target_amount);
+        acc.totalProgress += Number(goal.current_progress);
+        if (goal.priority === "critical" && goal.status === "active") {
+          acc.criticalCount += 1;
+        }
+        acc.progressSum += calculateGoalProgressPercentage(goal);
+        return acc;
+      },
+      {
+        totalTargets: 0,
+        totalProgress: 0,
+        criticalCount: 0,
+        progressSum: 0,
+      },
+    );
+
+  return objectives
+    .filter((o) => !o.deleted_at)
+    .reduce((acc, obj) => {
+      acc.totalTargets += Number(obj.target_amount);
+      acc.totalProgress += Number(obj.current_amount);
+      if (obj.priority_level === "critical" && obj.status === "active") {
         acc.criticalCount += 1;
       }
-      acc.progressSum += calculateGoalProgressPercentage(goal);
+      acc.progressSum += calculateObjectiveFundingRatio(obj);
       return acc;
-    },
-    {
-      totalTargets: 0,
-      totalProgress: 0,
-      criticalCount: 0,
-      progressSum: 0,
-    },
-  );
-
-  return objectives.reduce((acc, obj) => {
-    acc.totalTargets += Number(obj.target_amount);
-    acc.totalProgress += Number(obj.current_amount);
-    if (obj.priority_level === "critical" && obj.status === "active") {
-      acc.criticalCount += 1;
-    }
-    acc.progressSum += calculateObjectiveFundingRatio(obj);
-    return acc;
-  }, goalStats);
+    }, goalStats);
 };
 
 export const calculateAverage = (deployments: Deployment[]): number => {
-  if (deployments.length === 0) return 0;
-  return calculateTotal(deployments) / deployments.length;
+  const activeDeployments = deployments.filter((d) => !d.deleted_at);
+  if (activeDeployments.length === 0) return 0;
+  return calculateTotal(activeDeployments) / activeDeployments.length;
 };
 
 /**
@@ -160,7 +173,8 @@ export const calculateBurnRate = (
   windowDays: number = 30,
 ): number => {
   if (windowDays <= 0) return 0;
-  const total = calculateTotal(deployments);
+  const activeDeployments = deployments.filter((d) => !d.deleted_at);
+  const total = calculateTotal(activeDeployments);
   return total / windowDays;
 };
 
