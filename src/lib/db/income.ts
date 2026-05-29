@@ -45,7 +45,7 @@ export async function createIncomeStream(
       is_recurring: validated.is_recurring,
       source: data.source,
       currency: data.currency || "KSh",
-      start_date: data.start_date || new Date().toISOString().split('T')[0],
+      start_date: data.start_date || new Date().toISOString().split("T")[0],
       end_date: data.end_date,
     })
     .select()
@@ -53,6 +53,53 @@ export async function createIncomeStream(
 
   if (error) throw error;
   return stream;
+}
+
+export async function createIncomeStreams(
+  supabase: SupabaseClient,
+  userId: string,
+  inputs: {
+    income_name: string;
+    income_type: string;
+    amount: number;
+    cadence: string;
+    is_recurring?: boolean;
+    source?: string;
+    currency?: string;
+    start_date?: string;
+    end_date?: string | null;
+  }[],
+) {
+  const validatedInputs = inputs.map((data) => {
+    const validated = validateIncomeStream({
+      income_name: data.income_name,
+      income_type: data.income_type,
+      amount: data.amount,
+      cadence: data.cadence,
+      is_recurring: data.is_recurring,
+    });
+
+    return {
+      user_id: userId,
+      income_name: validated.income_name,
+      income_type: validated.income_type,
+      amount: validated.amount,
+      cadence: validated.cadence,
+      is_recurring: validated.is_recurring,
+      source: data.source,
+      currency: data.currency || "KSh",
+      start_date: data.start_date || new Date().toISOString().split("T")[0],
+      end_date: data.end_date,
+    };
+  });
+
+  const { data: streams, error } = await supabase
+    .from("income_streams")
+    .insert(validatedInputs)
+    .select();
+
+  if (error) throw error;
+  return streams;
 }
 
 export async function updateIncomeStream(

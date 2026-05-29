@@ -23,6 +23,7 @@ import {
 import {
   getIncomeStreams,
   createIncomeStream,
+  createIncomeStreams,
   updateIncomeStream,
   deleteIncomeStream,
 } from "@/lib/db/income";
@@ -495,7 +496,7 @@ export async function deleteLiabilityAction(id: string) {
   }
 }
 
-export async function createIncomeAction(input: CreateIncomeActionInput) {
+export async function createIncomeAction(inputs: CreateIncomeActionInput[]) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -504,11 +505,11 @@ export async function createIncomeAction(input: CreateIncomeActionInput) {
   if (!user) return unauthenticatedSnapshot();
 
   try {
-    await createIncomeStream(supabase, user.id, input);
+    await createIncomeStreams(supabase, user.id, inputs);
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
-    console.error("Failed to create income stream:", error);
+    console.error("Failed to create income streams:", error);
     throw error;
   }
 }
