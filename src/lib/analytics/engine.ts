@@ -74,7 +74,7 @@ export const calculateLiabilityTotal = (liabilities: Liability[]): number => {
 };
 
 export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
-  return streams.reduce(
+  const result = streams.reduce(
     (acc, stream) => {
       const monthly = calculateMonthlyInflow(stream);
       acc.total += monthly;
@@ -85,6 +85,11 @@ export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
       }
       acc.concentration[stream.income_type] =
         (acc.concentration[stream.income_type] || 0) + monthly;
+
+      // Group by origin source (income_name) for concentration risk analysis
+      acc.sourceTotals[stream.income_name] =
+        (acc.sourceTotals[stream.income_name] || 0) + monthly;
+
       return acc;
     },
     {
@@ -92,8 +97,20 @@ export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
       recurring: 0,
       irregular: 0,
       concentration: {} as Record<string, number>,
+      sourceTotals: {} as Record<string, number>,
     },
   );
+
+  const highestSourceSum = Math.max(0, ...Object.values(result.sourceTotals));
+  const maxRatio = result.total > 0 ? highestSourceSum / result.total : 0;
+
+  return {
+    total: result.total,
+    recurring: result.recurring,
+    irregular: result.irregular,
+    concentration: result.concentration,
+    maxRatio,
+  };
 };
 
 export const calculateGoalMetrics = (
@@ -360,7 +377,7 @@ export const generateSummary = (
     recurringIncome: income.recurring,
     irregularIncome: income.irregular,
     incomeConcentration: income.concentration,
-    maxIncomeConcentrationRatio: 0, // Phase 2: Implement actual calculation
+    maxIncomeConcentrationRatio: income.maxRatio,
     adjustedDailyBurn: Math.max(0, burnRate - income.total / 30),
     // Goal System v1
     totalStrategicTargets: goalMetrics.totalTargets,

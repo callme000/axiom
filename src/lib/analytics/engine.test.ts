@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { projectRunway, calculateBurnRate } from "./engine";
-import type { Deployment } from "./types";
+import {
+  projectRunway,
+  calculateBurnRate,
+  calculateIncomeMetrics,
+} from "./engine";
+import type { Deployment, IncomeStream } from "./types";
 
 test("projectRunway handles dimensional math correctly", () => {
   // Scenario: 1000 balance, 10 daily burn, 0 income
@@ -54,4 +58,66 @@ test("calculateBurnRate remains deterministic", () => {
 
   // 450 total / 30 days = 15/day
   assert.equal(calculateBurnRate(deployments, 30), 15);
+});
+
+test("calculateMaxIncomeConcentration: 90% dependency", () => {
+  const streams: Partial<IncomeStream>[] = [
+    {
+      income_name: "Source A",
+      amount: 900,
+      cadence: "monthly",
+      income_type: "salary",
+      is_recurring: true,
+    },
+    {
+      income_name: "Source B",
+      amount: 100,
+      cadence: "monthly",
+      income_type: "freelance",
+      is_recurring: true,
+    },
+  ];
+
+  // total = 1000
+  // max = 900
+  // ratio = 0.9
+  const metrics = calculateIncomeMetrics(streams as IncomeStream[]);
+  assert.equal(metrics.maxRatio, 0.9);
+});
+
+test("calculateMaxIncomeConcentration: balanced split", () => {
+  const streams: Partial<IncomeStream>[] = [
+    {
+      income_name: "Source A",
+      amount: 100,
+      cadence: "monthly",
+      income_type: "salary",
+      is_recurring: true,
+    },
+    {
+      income_name: "Source B",
+      amount: 100,
+      cadence: "monthly",
+      income_type: "salary",
+      is_recurring: true,
+    },
+    {
+      income_name: "Source C",
+      amount: 100,
+      cadence: "monthly",
+      income_type: "salary",
+      is_recurring: true,
+    },
+  ];
+
+  // total = 300
+  // max = 100
+  // ratio = 0.333...
+  const metrics = calculateIncomeMetrics(streams as IncomeStream[]);
+  assert.ok(Math.abs(metrics.maxRatio - 0.3333333333333333) < 0.0001);
+});
+
+test("calculateMaxIncomeConcentration: zero income", () => {
+  const metrics = calculateIncomeMetrics([]);
+  assert.equal(metrics.maxRatio, 0);
 });
