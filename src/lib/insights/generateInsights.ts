@@ -14,6 +14,25 @@ export const evaluateInsights = (
   // 1. Filter rules by condition
   const activeRules = rules.filter((rule) => rule.condition(context));
 
+  // Axiom Standard: Gracefully handle the "Quiet" state
+  if (activeRules.length === 0) {
+    return {
+      primaryInsight: {
+        type: "info",
+        severity: "observation",
+        category: "strategic_alignment",
+        message:
+          "No material structural deterioration detected since previous evaluation.",
+        supportingSignals: [],
+        timestamp: new Date().toISOString(),
+        runway: null,
+        capitalEfficiency: context.capitalEfficiencyScore ?? 0,
+        isSilent: true, // This is the "Quiet System" output
+      },
+      allInsights: [],
+    };
+  }
+
   // 2. Generate insights and apply deterministic metadata confidence weighting.
   const generatedInsights = activeRules.map((rule) => {
     const insight = rule.generate(context);
@@ -43,30 +62,8 @@ export const evaluateInsights = (
     return 0; // Maintain order within same priority
   });
 
-  // Fallback for "Quiet System" philosophy - handle empty ruleset explicitly
-  const primaryInsight =
-    sortedInsights.length > 0
-      ? sortedInsights[0].insight
-      : createSilentInsight(context);
-
   return {
-    primaryInsight,
+    primaryInsight: sortedInsights[0].insight,
     allInsights: generatedInsights.map((result) => result.insight),
   };
 };
-
-/**
- * Generates a default silent insight when no behavioral rules are triggered.
- * Adheres to the Axiom "Quiet System" philosophy.
- */
-const createSilentInsight = (ctx: BehavioralContext): KairosInsight => ({
-  type: "info",
-  severity: "observation",
-  category: "strategic_alignment",
-  timestamp: new Date().toISOString(),
-  message: "No material behavioral shifts detected. Silence is intentional.",
-  supportingSignals: ["System stability within expected variance parameters."],
-  runway: ctx.runway.currentDays,
-  capitalEfficiency: ctx.capitalEfficiencyScore,
-  isSilent: true,
-});
