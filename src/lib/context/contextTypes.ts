@@ -20,6 +20,7 @@ export interface BehavioralContext {
   netWorth: number;
   liquidity: number;
   totalMonthlyIncome: number;
+  maxIncomeConcentrationRatio: number;
 
   strategicAlignment: StrategicAlignment;
 
@@ -63,6 +64,7 @@ export interface ContextInput {
     netWorth: number;
     liquidity: number;
     totalMonthlyIncome: number;
+    maxIncomeConcentrationRatio: number;
     strategicAlignment: StrategicAlignment;
   };
   historicalMetrics?: {

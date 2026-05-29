@@ -90,6 +90,7 @@ export interface AnalyticsSummary {
   recurringIncome: number;
   irregularIncome: number;
   incomeConcentration: Record<string, number>;
+  maxIncomeConcentrationRatio: number;
   adjustedDailyBurn: number;
   // Goal System v1
   totalStrategicTargets: number;

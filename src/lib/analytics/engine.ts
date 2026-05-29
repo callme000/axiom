@@ -360,6 +360,7 @@ export const generateSummary = (
     recurringIncome: income.recurring,
     irregularIncome: income.irregular,
     incomeConcentration: income.concentration,
+    maxIncomeConcentrationRatio: 0, // Phase 2: Implement actual calculation
     adjustedDailyBurn: Math.max(0, burnRate - income.total / 30),
     // Goal System v1
     totalStrategicTargets: goalMetrics.totalTargets,

@@ -285,4 +285,25 @@ export const rules: InsightRule[] = [
       isSilent: true,
     }),
   },
+
+  // 13. INCOME CONCENTRATION RISK (Warning Severity)
+  {
+    id: "income_concentration_risk",
+    priority: "medium",
+    condition: (ctx) => ctx.maxIncomeConcentrationRatio > 0.8,
+    generate: (ctx) => ({
+      type: "warning",
+      severity: "warning",
+      category: "capital_efficiency",
+      timestamp: new Date().toISOString(),
+      message:
+        "High income dependency detected. A single revenue source accounts for over 80% of total inbound yield.",
+      supportingSignals: [
+        `Concentration Ratio: ${(ctx.maxIncomeConcentrationRatio * 100).toFixed(1)}% from primary source.`,
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
+    }),
+  },
 ];

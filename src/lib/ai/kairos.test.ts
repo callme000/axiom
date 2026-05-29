@@ -28,6 +28,7 @@ const MOCK_ANALYTICS: AnalyticsSummary = {
   recurringIncome: 300,
   irregularIncome: 0,
   incomeConcentration: {},
+  maxIncomeConcentrationRatio: 0,
   adjustedDailyBurn: 0,
   totalStrategicTargets: 1000,
   totalCurrentProgress: 500,

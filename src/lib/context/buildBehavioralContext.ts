@@ -91,6 +91,7 @@ export const buildBehavioralContext = (
     netWorth: currentAnalytics.netWorth,
     liquidity: currentAnalytics.liquidity,
     totalMonthlyIncome: currentAnalytics.totalMonthlyIncome,
+    maxIncomeConcentrationRatio: currentAnalytics.maxIncomeConcentrationRatio,
 
     strategicAlignment: currentAnalytics.strategicAlignment,
 
