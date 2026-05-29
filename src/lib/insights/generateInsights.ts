@@ -1,5 +1,6 @@
 import { BehavioralContext } from "../context/contextTypes";
 import { InsightEngineResult, InsightPriority } from "./types";
+import { KairosInsight } from "../ai/kairos";
 import { rules } from "./rules/registry";
 
 /**
@@ -42,8 +43,30 @@ export const evaluateInsights = (
     return 0; // Maintain order within same priority
   });
 
+  // Fallback for "Quiet System" philosophy - handle empty ruleset explicitly
+  const primaryInsight =
+    sortedInsights.length > 0
+      ? sortedInsights[0].insight
+      : createSilentInsight(context);
+
   return {
-    primaryInsight: sortedInsights[0].insight,
+    primaryInsight,
     allInsights: generatedInsights.map((result) => result.insight),
   };
 };
+
+/**
+ * Generates a default silent insight when no behavioral rules are triggered.
+ * Adheres to the Axiom "Quiet System" philosophy.
+ */
+const createSilentInsight = (ctx: BehavioralContext): KairosInsight => ({
+  type: "info",
+  severity: "observation",
+  category: "strategic_alignment",
+  timestamp: new Date().toISOString(),
+  message: "No material behavioral shifts detected. Silence is intentional.",
+  supportingSignals: ["System stability within expected variance parameters."],
+  runway: ctx.runway.currentDays,
+  capitalEfficiency: ctx.capitalEfficiencyScore,
+  isSilent: true,
+});
