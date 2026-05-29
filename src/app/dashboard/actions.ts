@@ -53,6 +53,7 @@ import type {
   FinancialGoal,
   StrategicObjective,
   OperationalBaseline,
+  BaselineCadence,
 } from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
 
@@ -641,41 +642,67 @@ export async function deleteOperationalBaselineAction(id: string) {
 }
 
 export async function submitDayZeroBaselineAction(payload: {
-  mpesaBalance: number;
-  fulizaDebt: number;
-  survivalTarget: number;
+  accounts: {
+    account_name: string;
+    account_type: string;
+    current_balance: number;
+  }[];
+  incomes: {
+    income_name: string;
+    income_type: string;
+    amount: number;
+    cadence: string;
+  }[];
+  liabilities: {
+    liability_name: string;
+    liability_type: string;
+    outstanding_balance: number;
+  }[];
+  baseline: { amount: number; cadence: string };
 }) {
   const { userId, supabase } = await requireAuth();
 
   try {
-    // 1. Insert Primary Account (M-Pesa / Bank)
-    await createAccount(supabase, userId, {
-      account_name: "Primary M-Pesa / Bank",
-      account_type: "checking",
-      current_balance: payload.mpesaBalance,
-    });
-
-    // 2. Insert Immediate Liability (Fuliza / Digital Credit) - Only if debt exists
-    if (payload.fulizaDebt > 0) {
-      await createLiability(supabase, userId, {
-        liability_name: "Fuliza / Digital Credit",
-        liability_type: "personal_loan",
-        outstanding_balance: payload.fulizaDebt,
-      });
+    // 1. Insert Accounts
+    for (const acc of payload.accounts) {
+      await createAccount(supabase, userId, acc);
     }
 
-    // 3. Insert Operational Baseline (Monthly Survival Target)
+    // 2. Insert Incomes (if any)
+    if (payload.incomes.length > 0) {
+      await createIncomeStreams(
+        supabase,
+        userId,
+        payload.incomes.map((inc) => ({
+          ...inc,
+          is_recurring: true,
+        })),
+      );
+    }
+
+    // 3. Insert Liabilities (if any)
+    for (const liab of payload.liabilities) {
+      if (liab.outstanding_balance > 0) {
+        await createLiability(supabase, userId, liab);
+      }
+    }
+
+    // 4. Insert Operational Baseline
     await createOperationalBaseline(supabase, userId, {
-      title: "Monthly Survival Target (Rent/Food)",
-      amount: payload.survivalTarget,
-      category: "Maintenance", // Maps to "Basic Survival" in taxonomy
-      cadence: "monthly",
+      title: "Core Survival Baseline",
+      amount: payload.baseline.amount,
+      category: "Maintenance",
+      cadence: payload.baseline.cadence as BaselineCadence,
       baseline_type: "expense",
       is_active: true,
     });
 
-    // 4. Update initial liquidity pool to match current balance
-    await updateLiquidity(supabase, userId, payload.mpesaBalance);
+    // 5. Update initial liquidity pool to match sum of all accounts
+    const totalLiquidity = payload.accounts.reduce(
+      (sum, acc) => sum + acc.current_balance,
+      0,
+    );
+    await updateLiquidity(supabase, userId, totalLiquidity);
 
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
