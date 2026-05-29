@@ -32,6 +32,7 @@ import { GoalSection } from "./GoalSection";
 import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
 import { BaselineSection } from "./BaselineSection";
 import { RunwayCard } from "./RunwayCard";
+import { HistoricalAudit } from "./HistoricalAudit";
 import type {
   Account,
   Liability,
@@ -1549,6 +1550,13 @@ export default function Dashboard() {
               ))}
           </div>
         )}
+      </section>
+
+      {/* Zone 5 — FORENSIC AUDIT */}
+      <section id="audit" className="pb-24">
+        <div className="bg-background border border-foreground/5 rounded-[3rem] p-8 md:p-12 shadow-sm">
+          <HistoricalAudit />
+        </div>
       </section>
     </div>
   );
