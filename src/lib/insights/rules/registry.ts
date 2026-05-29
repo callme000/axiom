@@ -7,7 +7,7 @@ import { InsightRule } from "../types";
  */
 
 export const rules: InsightRule[] = [
-  // 0. SOLVENCY CRISIS (Critical Severity)
+  // 1. SOLVENCY CRISIS (Critical Severity)
   {
     id: "solvency_crisis",
     priority: "critical",
@@ -29,7 +29,7 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 1. STRUCTURAL DEFICIT (Critical Severity)
+  // 2. STRUCTURAL DEFICIT (Critical Severity)
   {
     id: "structural_deficit",
     priority: "high",
@@ -48,7 +48,7 @@ export const rules: InsightRule[] = [
         category: "solvency_pressure",
         timestamp: new Date().toISOString(),
         message:
-          "Unsustainable structural deficit detected. Monthly structural outflows exceed combined replenishment capacity.",
+          "Structural deficit detected. Baseline monthly outflow currently outpaces aggregate inbound yield.",
         supportingSignals: [
           `Monthly Deficit: KSh ${Math.round(deficit).toLocaleString()}`,
           `Replenishment Coverage: ${Math.round((ctx.totalMonthlyIncome / ctx.burnRate.monthlyProjection) * 100)}% of monthly burn.`,
@@ -60,7 +60,7 @@ export const rules: InsightRule[] = [
       };
     },
   },
-  // 2. SOLVENCY PRESSURE (Critical/Warning Severity)
+  // 3. SOLVENCY PRESSURE (Critical/Warning Severity)
   {
     id: "solvency_pressure",
     priority: "high",
@@ -91,7 +91,7 @@ export const rules: InsightRule[] = [
     },
   },
 
-  // 2. OBJECTIVE STARVATION (Advisory Severity)
+  // 4. OBJECTIVE STARVATION (Advisory Severity)
   {
     id: "objective_starvation",
     priority: "medium",
@@ -102,7 +102,7 @@ export const rules: InsightRule[] = [
       severity: "advisory",
       category: "objective_starvation",
       timestamp: new Date().toISOString(),
-      message: ctx.strategicAlignment.objectiveStarvationSignals[0],
+      message: `Strategic starvation detected: ${ctx.strategicAlignment.objectiveStarvationSignals[0]}`,
       supportingSignals:
         ctx.strategicAlignment.objectiveStarvationSignals.slice(1, 3),
       runway: ctx.runway.currentDays,
@@ -111,7 +111,7 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 3. STRATEGIC CONFLICT (Warning Severity)
+  // 5. STRATEGIC CONFLICT (Warning Severity)
   {
     id: "strategic_conflict",
     priority: "medium",
@@ -132,7 +132,7 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 4. RUNWAY DEPLETION (Critical Severity)
+  // 6. RUNWAY DEPLETION (Critical Severity)
   {
     id: "runway_critical",
     priority: "critical",
@@ -152,7 +152,7 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 2. LEAKAGE CRISIS (Critical Severity)
+  // 7. LEAKAGE CRISIS (Critical Severity)
   {
     id: "efficiency_crisis",
     priority: "high",
@@ -177,7 +177,7 @@ export const rules: InsightRule[] = [
     },
   },
 
-  // 3. UNCLASSIFIED DATA (Advisory Severity)
+  // 8. UNCLASSIFIED DATA (Advisory Severity)
   {
     id: "unclassified_data",
     priority: "medium",
@@ -189,7 +189,7 @@ export const rules: InsightRule[] = [
       category: "strategic_alignment",
       timestamp: new Date().toISOString(),
       message:
-        "Unclassified ledger entries detected. Strategize capital intent for accurate efficiency analysis.",
+        "Unclassified capital detected. Reclassify recent deployments to restore the accuracy of the efficiency index.",
       supportingSignals: [
         `Metadata Integrity: ${Math.round((ctx.allocation.categoryDistribution["Unclassified"] || 0) * 100)}% of deployments lack strategic classification.`,
       ],
@@ -199,7 +199,7 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 4. ERRATIC VOLATILITY (Warning Severity)
+  // 9. ERRATIC VOLATILITY (Warning Severity)
   {
     id: "erratic_volatility",
     priority: "medium",
@@ -210,7 +210,7 @@ export const rules: InsightRule[] = [
       category: "capital_efficiency",
       timestamp: new Date().toISOString(),
       message:
-        "Erratic deployment patterns detected. Inconsistent capital outlays indicate a lack of operational planning.",
+        "High volatility in capital deployment detected. Irregular outbound flows may disrupt runway projections.",
       supportingSignals: [
         `Irregularity Index: HIGH — Volatility score of ${(ctx.volatilityScore * 100).toFixed(1)}% exceeds variance threshold.`,
       ],
@@ -220,7 +220,7 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 5. HIGH DISCIPLINE (Observation Severity)
+  // 10. HIGH DISCIPLINE (Observation Severity)
   {
     id: "high_discipline",
     priority: "medium",
@@ -245,7 +245,7 @@ export const rules: InsightRule[] = [
     },
   },
 
-  // 6. HEAVY CONCENTRATION (Advisory Severity)
+  // 11. HEAVY CONCENTRATION (Advisory Severity)
   {
     id: "heavy_concentration",
     priority: "low",
@@ -265,7 +265,7 @@ export const rules: InsightRule[] = [
     }),
   },
 
-  // 7. DEFAULT PATTERN (Legible Silence - Observation)
+  // 12. DEFAULT PATTERN (Legible Silence - Observation)
   {
     id: "default_pattern",
     priority: "low",
