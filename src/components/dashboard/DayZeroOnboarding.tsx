@@ -49,32 +49,36 @@ export default function DayZeroOnboarding({
 
   const [accounts, setAccounts] = useState([
     {
-      account_name: "Primary M-Pesa",
+      account_name: "",
       account_type: "mobile_money",
       current_balance: "",
     },
   ]);
-  const [incomes, setIncomes] = useState([
+  const [incomes, setIncomes] = useState<
     {
-      income_name: "Primary Inflow",
-      income_type: "salary",
-      amount: "",
-      cadence: "monthly",
-    },
-  ]);
-  const [liabilities, setLiabilities] = useState([
+      income_name: string;
+      income_type: string;
+      amount: string;
+      cadence: string;
+    }[]
+  >([]);
+  const [liabilities, setLiabilities] = useState<
     {
-      liability_name: "Fuliza / Digital Loan",
-      liability_type: "personal_loan",
-      outstanding_balance: "",
-    },
-  ]);
+      liability_name: string;
+      liability_type: string;
+      outstanding_balance: string;
+    }[]
+  >([]);
   const [baseline, setBaseline] = useState({ amount: "", cadence: "monthly" });
 
   const addAccount = () =>
     setAccounts([
       ...accounts,
-      { account_name: "", account_type: "checking", current_balance: "" },
+      {
+        account_name: "New Account",
+        account_type: "checking",
+        current_balance: "",
+      },
     ]);
   const removeAccount = (index: number) =>
     setAccounts(accounts.filter((_, i) => i !== index));
@@ -112,13 +116,16 @@ export default function DayZeroOnboarding({
       );
     if (step === 2)
       return (
-        incomes.length > 0 &&
+        incomes.length === 0 ||
         incomes.every((i) => i.income_name && i.amount !== "")
       );
     if (step === 3) return baseline.amount !== "";
     if (step === 4)
-      return liabilities.every(
-        (l) => l.liability_name && l.outstanding_balance !== "",
+      return (
+        liabilities.length === 0 ||
+        liabilities.every(
+          (l) => l.liability_name && l.outstanding_balance !== "",
+        )
       );
     return false;
   };
@@ -302,68 +309,89 @@ export default function DayZeroOnboarding({
                 </div>
 
                 <div className="space-y-4">
-                  {incomes.map((inc, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col md:flex-row gap-4 p-4 bg-foreground/5 rounded-2xl"
-                    >
-                      <div className="flex-1 space-y-3">
-                        <input
-                          type="text"
-                          placeholder="Source (e.g. Salary, Shop Profits)"
-                          value={inc.income_name}
-                          onChange={(e) => {
-                            const newIncs = [...incomes];
-                            newIncs[idx].income_name = e.target.value;
-                            setIncomes(newIncs);
-                          }}
-                          className="w-full bg-transparent border-b border-foreground/10 py-2 font-bold text-sm focus:outline-none focus:border-foreground"
-                        />
-                        <div className="flex flex-wrap gap-4">
-                          <select
-                            value={inc.income_type}
-                            onChange={(e) => {
-                              const newIncs = [...incomes];
-                              newIncs[idx].income_type = e.target.value;
-                              setIncomes(newIncs);
-                            }}
-                            className="bg-transparent border-b border-foreground/10 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none"
-                          >
-                            {INCOME_TYPES.map((t) => (
-                              <option key={t.value} value={t.value}>
-                                {t.label}
-                              </option>
-                            ))}
-                          </select>
-                          <select
-                            value={inc.cadence}
-                            onChange={(e) => {
-                              const newIncs = [...incomes];
-                              newIncs[idx].cadence = e.target.value;
-                              setIncomes(newIncs);
-                            }}
-                            className="bg-transparent border-b border-foreground/10 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none"
-                          >
-                            {CADENCES.map((c) => (
-                              <option key={c.value} value={c.value}>
-                                {c.label}
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            type="number"
-                            placeholder="Amount"
-                            value={inc.amount}
-                            onChange={(e) => {
-                              const newIncs = [...incomes];
-                              newIncs[idx].amount = e.target.value;
-                              setIncomes(newIncs);
-                            }}
-                            className="flex-1 min-w-[100px] bg-transparent border-b border-foreground/10 py-2 font-black tabular-nums focus:outline-none focus:border-foreground"
-                          />
+                  {incomes.length === 0 ? (
+                    <div className="p-8 border-2 border-dashed border-foreground/10 rounded-3xl text-center">
+                      <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">
+                        No regular inflow streams reported.
+                      </p>
+                    </div>
+                  ) : (
+                    incomes.map((inc, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col md:flex-row gap-4 p-4 bg-foreground/5 rounded-2xl"
+                      >
+                        <div className="flex-1 space-y-3">
+                          <div className="relative group">
+                            <input
+                              type="text"
+                              placeholder="Source (e.g. Salary, Shop Profits)"
+                              value={inc.income_name}
+                              onChange={(e) => {
+                                const newIncs = [...incomes];
+                                newIncs[idx].income_name = e.target.value;
+                                setIncomes(newIncs);
+                              }}
+                              className="w-full bg-transparent border-b border-foreground/10 py-2 font-bold text-sm focus:outline-none focus:border-foreground pr-8"
+                            />
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                              >
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-4">
+                            <select
+                              value={inc.income_type}
+                              onChange={(e) => {
+                                const newIncs = [...incomes];
+                                newIncs[idx].income_type = e.target.value;
+                                setIncomes(newIncs);
+                              }}
+                              className="bg-transparent border-b border-foreground/10 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none"
+                            >
+                              {INCOME_TYPES.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                  {t.label}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              value={inc.cadence}
+                              onChange={(e) => {
+                                const newIncs = [...incomes];
+                                newIncs[idx].cadence = e.target.value;
+                                setIncomes(newIncs);
+                              }}
+                              className="bg-transparent border-b border-foreground/10 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none"
+                            >
+                              {CADENCES.map((c) => (
+                                <option key={c.value} value={c.value}>
+                                  {c.label}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="number"
+                              placeholder="Amount"
+                              value={inc.amount}
+                              onChange={(e) => {
+                                const newIncs = [...incomes];
+                                newIncs[idx].amount = e.target.value;
+                                setIncomes(newIncs);
+                              }}
+                              className="flex-1 min-w-[100px] bg-transparent border-b border-foreground/10 py-2 font-black tabular-nums focus:outline-none focus:border-foreground"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      {incomes.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeIncome(idx)}
@@ -380,16 +408,16 @@ export default function DayZeroOnboarding({
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                           </svg>
                         </button>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    ))
+                  )}
                 </div>
                 <button
                   type="button"
                   onClick={addIncome}
                   className="w-full py-4 border-2 border-dashed border-foreground/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:border-foreground/20 hover:text-foreground transition-all"
                 >
-                  + Add Another Inflow
+                  + Add Inflow Source
                 </button>
               </div>
             )}
@@ -421,11 +449,11 @@ export default function DayZeroOnboarding({
                       className="w-full bg-transparent border-b-4 border-foreground/10 py-4 pl-16 text-5xl font-black tabular-nums focus:outline-none focus:border-foreground transition-colors placeholder:text-foreground/5"
                     />
                   </div>
-                  <div className="flex items-center gap-6">
+                  <div className="flex flex-wrap items-center gap-6">
                     <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
                       Measured on a
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {BASELINE_CADENCES.map((c) => (
                         <button
                           key={c.value}
@@ -467,36 +495,58 @@ export default function DayZeroOnboarding({
                 </div>
 
                 <div className="space-y-4">
-                  {liabilities.map((liab, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col md:flex-row gap-4 p-4 bg-foreground/5 rounded-2xl"
-                    >
-                      <div className="flex-1 space-y-3">
-                        <input
-                          type="text"
-                          placeholder="Obligation (e.g. Fuliza, Loan)"
-                          value={liab.liability_name}
-                          onChange={(e) => {
-                            const newLiabs = [...liabilities];
-                            newLiabs[idx].liability_name = e.target.value;
-                            setLiabilities(newLiabs);
-                          }}
-                          className="w-full bg-transparent border-b border-foreground/10 py-2 font-bold text-sm focus:outline-none focus:border-foreground"
-                        />
-                        <input
-                          type="number"
-                          placeholder="Outstanding Balance"
-                          value={liab.outstanding_balance}
-                          onChange={(e) => {
-                            const newLiabs = [...liabilities];
-                            newLiabs[idx].outstanding_balance = e.target.value;
-                            setLiabilities(newLiabs);
-                          }}
-                          className="w-full bg-transparent border-b border-foreground/10 py-2 font-black tabular-nums focus:outline-none focus:border-foreground"
-                        />
-                      </div>
-                      {liabilities.length > 1 && (
+                  {liabilities.length === 0 ? (
+                    <div className="p-8 border-2 border-dashed border-foreground/10 rounded-3xl text-center">
+                      <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">
+                        No outstanding obligations reported.
+                      </p>
+                    </div>
+                  ) : (
+                    liabilities.map((liab, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col md:flex-row gap-4 p-4 bg-foreground/5 rounded-2xl"
+                      >
+                        <div className="flex-1 space-y-3">
+                          <div className="relative group">
+                            <input
+                              type="text"
+                              placeholder="Obligation (e.g. Fuliza, Loan)"
+                              value={liab.liability_name}
+                              onChange={(e) => {
+                                const newLiabs = [...liabilities];
+                                newLiabs[idx].liability_name = e.target.value;
+                                setLiabilities(newLiabs);
+                              }}
+                              className="w-full bg-transparent border-b border-foreground/10 py-2 font-bold text-sm focus:outline-none focus:border-foreground pr-8"
+                            />
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                              >
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </div>
+                          </div>
+                          <input
+                            type="number"
+                            placeholder="Outstanding Balance"
+                            value={liab.outstanding_balance}
+                            onChange={(e) => {
+                              const newLiabs = [...liabilities];
+                              newLiabs[idx].outstanding_balance =
+                                e.target.value;
+                              setLiabilities(newLiabs);
+                            }}
+                            className="w-full bg-transparent border-b border-foreground/10 py-2 font-black tabular-nums focus:outline-none focus:border-foreground"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeLiability(idx)}
@@ -513,16 +563,16 @@ export default function DayZeroOnboarding({
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                           </svg>
                         </button>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    ))
+                  )}
                 </div>
                 <button
                   type="button"
                   onClick={addLiability}
                   className="w-full py-4 border-2 border-dashed border-foreground/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:border-foreground/20 hover:text-foreground transition-all"
                 >
-                  + Add Another Obligation
+                  + Add Obligation
                 </button>
               </div>
             )}
