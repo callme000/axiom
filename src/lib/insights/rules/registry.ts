@@ -18,10 +18,10 @@ export const rules: InsightRule[] = [
       category: "solvency_pressure",
       timestamp: new Date().toISOString(),
       message:
-        "Severe solvency crisis detected. Total liabilities exceed combined capital assets, resulting in a negative net worth state.",
+        "Severe solvency crisis detected. Total credit facilities (e.g., Fuliza, M-Shwari, SACCO Loans) exceed combined capital assets, resulting in a negative net worth state.",
       supportingSignals: [
         `Net Worth: KSh ${Math.round(ctx.netWorth).toLocaleString()}`,
-        `Liquidity Baseline: KSh ${Math.round(ctx.liquidity).toLocaleString()}`,
+        `Liquid Reserves (MMF/SACCO): KSh ${Math.round(ctx.liquidity).toLocaleString()}`,
       ],
       runway: ctx.runway.currentDays,
       capitalEfficiency: ctx.capitalEfficiencyScore,
@@ -48,10 +48,10 @@ export const rules: InsightRule[] = [
         category: "solvency_pressure",
         timestamp: new Date().toISOString(),
         message:
-          "Structural deficit detected. Baseline monthly outflow currently outpaces aggregate inbound yield.",
+          "Structural deficit detected. Baseline monthly outflow (including M-Pesa leakage) currently outpaces aggregate inbound yield (M-Pesa flows / Hustle & Salary).",
         supportingSignals: [
           `Monthly Deficit: KSh ${Math.round(deficit).toLocaleString()}`,
-          `Replenishment Coverage: ${Math.round((ctx.totalMonthlyIncome / ctx.burnRate.monthlyProjection) * 100)}% of monthly burn.`,
+          `Inbound Yield Coverage: ${Math.round((ctx.totalMonthlyIncome / ctx.burnRate.monthlyProjection) * 100)}% of monthly burn.`,
           `Survival Window: ${ctx.runway.currentDays ? Math.round(ctx.runway.currentDays) : "Unknown"} days remaining.`,
         ],
         runway: ctx.runway.currentDays,
@@ -79,10 +79,10 @@ export const rules: InsightRule[] = [
         category: "solvency_pressure",
         timestamp: new Date().toISOString(),
         message:
-          "Liquidity reserves are insufficient to satisfy all critical strategic obligations.",
+          "Liquid reserves (MMF, SACCO Deposits) are insufficient to satisfy all critical strategic obligations.",
         supportingSignals: [
           message,
-          `Combined Available Liquidity: KSh ${Math.round(ctx.liquidity).toLocaleString()}`,
+          `Combined Available Liquid Reserves: KSh ${Math.round(ctx.liquidity).toLocaleString()}`,
         ],
         runway: ctx.runway.currentDays,
         capitalEfficiency: ctx.capitalEfficiencyScore,
@@ -142,7 +142,7 @@ export const rules: InsightRule[] = [
       severity: "critical",
       category: "solvency_pressure",
       timestamp: new Date().toISOString(),
-      message: `Operational runway has contracted to ${Math.round(ctx.runway.currentDays || 0)} days. Immediate capital preservation required.`,
+      message: `Operational runway has contracted to ${Math.round(ctx.runway.currentDays || 0)} days. Immediate capital preservation (minimizing M-Pesa leakage) required.`,
       supportingSignals: [
         `Runway Delta: ${ctx.runway.deltaDays >= 0 ? "+" : ""}${Math.round(ctx.runway.deltaDays)} days since last evaluation.`,
       ],
@@ -165,8 +165,8 @@ export const rules: InsightRule[] = [
         category: "capital_efficiency",
         timestamp: new Date().toISOString(),
         message: isLeakage
-          ? "Capital efficiency crisis detected. Excessive 'Leakage' is compromising long-term sustainability."
-          : "Capital efficiency has reached a critical threshold. Current deployment patterns are suboptimal.",
+          ? "Capital efficiency crisis detected. Excessive 'Mobile Money (M-Pesa) Leakage' is compromising long-term sustainability."
+          : "Capital efficiency has reached a critical threshold. Current deployment patterns (Chama, MMF, Shamba) are suboptimal.",
         supportingSignals: [
           `Efficiency Index: ${ctx.capitalEfficiencyScore}/100 — Dominant: ${ctx.allocation.dominantCategory} (${(ctx.allocation.categoryDistribution[ctx.allocation.dominantCategory] * 100).toFixed(1)}%).`,
         ],
@@ -189,9 +189,9 @@ export const rules: InsightRule[] = [
       category: "strategic_alignment",
       timestamp: new Date().toISOString(),
       message:
-        "Unclassified capital detected. Reclassify recent deployments to restore the accuracy of the efficiency index.",
+        "Unclassified outflows detected. Reclassify recent M-Pesa flows to restore the accuracy of the efficiency index.",
       supportingSignals: [
-        `Metadata Integrity: ${Math.round((ctx.allocation.categoryDistribution["Unclassified"] || 0) * 100)}% of deployments lack strategic classification.`,
+        `Metadata Integrity: ${Math.round((ctx.allocation.categoryDistribution["Unclassified"] || 0) * 100)}% of flows lack strategic classification.`,
       ],
       runway: ctx.runway.currentDays,
       capitalEfficiency: ctx.capitalEfficiencyScore,
@@ -210,7 +210,7 @@ export const rules: InsightRule[] = [
       category: "capital_efficiency",
       timestamp: new Date().toISOString(),
       message:
-        "High volatility in capital deployment detected. Irregular outbound flows may disrupt runway projections.",
+        "High volatility in capital deployment detected. Irregular outbound M-Pesa flows may disrupt runway projections.",
       supportingSignals: [
         `Irregularity Index: HIGH — Volatility score of ${(ctx.volatilityScore * 100).toFixed(1)}% exceeds variance threshold.`,
       ],
@@ -233,8 +233,8 @@ export const rules: InsightRule[] = [
         category: "capital_efficiency",
         timestamp: new Date().toISOString(),
         message: isAsset
-          ? "High operational discipline in Asset accumulation detected. Consistent deployment provides a stable foundation for scaling."
-          : "High operational discipline detected. Consistent spending patterns provide a stable foundation for capital scaling.",
+          ? "High operational discipline in Capital Deployment (Chama, MMF, Shamba) detected. Consistent deployment provides a stable foundation for scaling."
+          : "High operational discipline detected. Consistent outflow patterns provide a stable foundation for capital scaling.",
         supportingSignals: [
           `Stability Metric: ${(100 - ctx.volatilityScore * 100).toFixed(1)}% consistency across ${ctx.deploymentCount} deployments.`,
         ],
@@ -255,7 +255,7 @@ export const rules: InsightRule[] = [
       severity: "advisory",
       category: "strategic_alignment",
       timestamp: new Date().toISOString(),
-      message: `Significant capital concentration detected in ${ctx.allocation.dominantCategory}. Ensure this allocation aligns with strategic intent.`,
+      message: `Significant capital concentration detected in ${ctx.allocation.dominantCategory}. Ensure this deployment (Chama, MMF, Shamba) aligns with strategic intent.`,
       supportingSignals: [
         `Concentration Score: ${ctx.allocation.concentrationScore.toFixed(2)} — ${ctx.allocation.dominantCategory} represents ${(ctx.allocation.categoryDistribution[ctx.allocation.dominantCategory] * 100).toFixed(1)}% of total deployment.`,
       ],
@@ -276,7 +276,7 @@ export const rules: InsightRule[] = [
       category: "strategic_alignment",
       timestamp: new Date().toISOString(),
       message:
-        "No material behavioral shifts detected. Silence is intentional.",
+        "No material behavioral shifts detected in M-Pesa flows or capital deployment. Silence is intentional.",
       supportingSignals: [
         "Observing capital behavior: State remains within normal variance parameters.",
       ],
@@ -297,7 +297,7 @@ export const rules: InsightRule[] = [
       category: "capital_efficiency",
       timestamp: new Date().toISOString(),
       message:
-        "High income dependency detected. A single revenue source accounts for over 80% of total inbound yield.",
+        "High inbound concentration risk detected. Over 80% of total yield relies on a single primary flow, creating severe structural fragility.",
       supportingSignals: [
         `Concentration Ratio: ${(ctx.maxIncomeConcentrationRatio * 100).toFixed(1)}% from primary source.`,
       ],
