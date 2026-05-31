@@ -114,6 +114,11 @@ export function HistoricalAudit() {
             <div className="text-right">
               <p className="font-black text-sm tabular-nums text-foreground/30 line-through decoration-foreground/10">
                 {formatCurrency(record.amount)}
+                {record.cadence && (
+                  <span className="text-[9px] ml-1 uppercase">
+                    / {record.cadence}
+                  </span>
+                )}
               </p>
               <p className="text-[8px] font-black text-foreground/20 uppercase tracking-widest mt-0.5">
                 Archived

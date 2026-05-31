@@ -7,6 +7,7 @@ export interface AuditRecord {
   type: AuditRecordType;
   name: string;
   amount: number;
+  cadence?: string;
   deleted_at: string;
   original_created_at: string;
 }
@@ -27,7 +28,7 @@ export async function getDeletedLedgerRecords(
       .not("deleted_at", "is", null),
     supabase
       .from("income_streams")
-      .select("id, income_name, amount, deleted_at, created_at")
+      .select("id, income_name, amount, cadence, deleted_at, created_at")
       .eq("user_id", userId)
       .not("deleted_at", "is", null),
     supabase
@@ -58,6 +59,7 @@ export async function getDeletedLedgerRecords(
       type: "income",
       name: i.income_name,
       amount: i.amount,
+      cadence: i.cadence,
       deleted_at: i.deleted_at!,
       original_created_at: i.created_at,
     }),

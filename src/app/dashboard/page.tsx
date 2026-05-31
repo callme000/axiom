@@ -526,7 +526,7 @@ export default function Dashboard() {
             <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                  Incomes
+                  Monthly Inflow
                 </span>
               </div>
               <div className="flex flex-col">
@@ -534,7 +534,7 @@ export default function Dashboard() {
                   {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}
                 </span>
                 <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                  Money coming in
+                  Aggregate Yield
                 </p>{" "}
               </div>
             </div>
@@ -1205,7 +1205,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Rolling inflows
+                  Monthly Inflow
                 </p>
                 <p className="text-[11px] font-black tabular-nums text-background/80">
                   {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}

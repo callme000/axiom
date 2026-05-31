@@ -346,11 +346,19 @@ export function IncomeSection({
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-lg font-black tabular-nums text-foreground">
-                      {formatCurrency(calculateMonthlyInflow(stream))}
+                      {formatCurrency(stream.amount)}
+                      <span className="text-[10px] ml-1 text-foreground/60 uppercase">
+                        /{" "}
+                        {CADENCES.find((c) => c.value === stream.cadence)
+                          ?.label || stream.cadence}
+                      </span>
                     </p>
-                    <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                      Rolling Inflow
-                    </p>
+                    {stream.cadence !== "monthly" && (
+                      <p className="text-[8px] font-black text-foreground/40 uppercase tracking-widest mt-0.5">
+                        ≈ {formatCurrency(calculateMonthlyInflow(stream))}{" "}
+                        Monthly
+                      </p>
+                    )}
                   </div>
                   <button
                     onClick={() => handleDelete(stream.id)}
