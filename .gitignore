@@ -49,3 +49,8 @@ supabase/
 generate_audit_pdf.py
 supabase-setup.sql
 testing-scenarios.sql
+
+# Marketing Automation Outputs
+scripts/marketing/instagram/output/*
+!scripts/marketing/instagram/output/.gitkeep
+scripts/marketing/instagram/.env

@@ -106,7 +106,8 @@ export default function SignUp() {
         <div className="mt-12 flex flex-col items-center gap-4 text-center">
           <div className="h-[1px] w-12 bg-foreground/10"></div>
           <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest leading-relaxed max-w-xs opacity-60">
-            Initialization grants read-write access to the Axiom deterministic ledger. Secure your access key immediately after authorization.
+            Initialization grants read-write access to the Axiom deterministic
+            ledger. Secure your access key immediately after authorization.
           </p>
         </div>
       </div>

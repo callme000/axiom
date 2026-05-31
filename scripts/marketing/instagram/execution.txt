@@ -1,0 +1,19 @@
+Execute the Axiom Marketing Pipeline.
+
+Here is the data for today's carousel:
+
+BACKGROUND THEME: [e.g., dark luxury car / minimal brutalist architecture / dark server room / rain on glass]
+
+SLIDES:
+1: [Slide 1 Text]
+2: [Slide 2 Text]
+3: [Slide 3 Text]
+4: [Slide 4 Text]
+5: [Slide 5 Text - usually the Call to Action]
+
+AI IMPLEMENTATION INSTRUCTIONS:
+1. Open `scripts/marketing/instagram/generate_carousel_api.py`.
+2. Locate the `fetch_unsplash_background` function and update the `query` string to match the BACKGROUND THEME provided above.
+3. Locate the `main()` function and update the `slides` array with the exact SLIDES text provided above. Use `\n` to force manual line breaks if a sentence is too long.
+4. Run the script: `python scripts/marketing/instagram/generate_carousel_api.py`
+5. Verify successful execution and confirm the exact file path where the new images are located.
