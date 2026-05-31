@@ -108,6 +108,7 @@ export interface CreateIncomeActionInput {
   income_type: string;
   amount: number;
   cadence: string;
+  execution_day?: number | null;
   is_recurring?: boolean;
   source?: string;
   start_date?: string;

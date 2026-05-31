@@ -28,6 +28,7 @@ export interface IncomeStream {
   income_type: IncomeType;
   amount: number;
   cadence: Cadence;
+  execution_day?: number | null;
   is_recurring: boolean;
   currency: string;
   source?: string | null;
@@ -51,6 +52,7 @@ export function validateIncomeStream(data: {
   income_type: string;
   amount: number;
   cadence: string;
+  execution_day?: number | null;
   is_recurring?: boolean;
 }) {
   if (!data.income_name || data.income_name.trim().length === 0) {
@@ -74,6 +76,7 @@ export function validateIncomeStream(data: {
     income_type: data.income_type as IncomeType,
     amount: data.amount,
     cadence: data.cadence as Cadence,
+    execution_day: data.execution_day,
     is_recurring: data.is_recurring ?? true,
   };
 }

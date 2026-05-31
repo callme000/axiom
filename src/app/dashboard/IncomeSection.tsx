@@ -28,6 +28,7 @@ interface FormEntry {
   income_type: IncomeType;
   amount: string;
   cadence: Cadence;
+  execution_day: number;
   is_recurring: boolean;
   source: string;
 }
@@ -46,6 +47,7 @@ export function IncomeSection({
       income_type: "salary",
       amount: "",
       cadence: "monthly",
+      execution_day: 1,
       is_recurring: true,
       source: "",
     },
@@ -59,6 +61,7 @@ export function IncomeSection({
         income_type: "salary",
         amount: "",
         cadence: "monthly",
+        execution_day: 1,
         is_recurring: true,
         source: "",
       },
@@ -89,6 +92,12 @@ export function IncomeSection({
         entries.map((entry) => ({
           ...entry,
           amount: Number(entry.amount),
+          execution_day:
+            entry.cadence === "monthly" ||
+            entry.cadence === "weekly" ||
+            entry.cadence === "biweekly"
+              ? Number(entry.execution_day)
+              : null,
           source: entry.source || undefined,
         })),
       );
@@ -98,6 +107,7 @@ export function IncomeSection({
           income_type: "salary",
           amount: "",
           cadence: "monthly",
+          execution_day: 1,
           is_recurring: true,
           source: "",
         },
@@ -230,19 +240,59 @@ export function IncomeSection({
                     <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
                       Cadence
                     </label>
-                    <select
-                      value={entry.cadence}
-                      onChange={(e) =>
-                        updateEntry(index, "cadence", e.target.value as Cadence)
-                      }
-                      className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                    >
-                      {CADENCES.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        value={entry.cadence}
+                        onChange={(e) =>
+                          updateEntry(
+                            index,
+                            "cadence",
+                            e.target.value as Cadence,
+                          )
+                        }
+                        className="flex-1 border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                      >
+                        {CADENCES.map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      {(entry.cadence === "weekly" ||
+                        entry.cadence === "monthly" ||
+                        entry.cadence === "biweekly") && (
+                        <select
+                          value={entry.execution_day}
+                          onChange={(e) =>
+                            updateEntry(
+                              index,
+                              "execution_day",
+                              Number(e.target.value),
+                            )
+                          }
+                          className="w-20 border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                        >
+                          {entry.cadence === "weekly" ? (
+                            <>
+                              <option value={1}>Mon</option>
+                              <option value={2}>Tue</option>
+                              <option value={3}>Wed</option>
+                              <option value={4}>Thu</option>
+                              <option value={5}>Fri</option>
+                              <option value={6}>Sat</option>
+                              <option value={7}>Sun</option>
+                            </>
+                          ) : (
+                            Array.from({ length: 31 }, (_, i) => (
+                              <option key={i + 1} value={i + 1}>
+                                {i + 1}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-col justify-center pl-2">
                     <label className="flex items-center gap-2 cursor-pointer group">

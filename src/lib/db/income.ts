@@ -20,6 +20,7 @@ export async function createIncomeStream(
     income_type: string;
     amount: number;
     cadence: string;
+    execution_day?: number | null;
     is_recurring?: boolean;
     source?: string;
     currency?: string;
@@ -33,6 +34,7 @@ export async function createIncomeStream(
     income_type: data.income_type,
     amount: data.amount,
     cadence: data.cadence,
+    execution_day: data.execution_day,
     is_recurring: data.is_recurring,
   });
 
@@ -44,6 +46,7 @@ export async function createIncomeStream(
       income_type: validated.income_type,
       amount: validated.amount,
       cadence: validated.cadence,
+      execution_day: validated.execution_day,
       is_recurring: validated.is_recurring,
       source: data.source,
       currency: data.currency || "KSh",
@@ -65,6 +68,7 @@ export async function createIncomeStreams(
     income_type: string;
     amount: number;
     cadence: string;
+    execution_day?: number | null;
     is_recurring?: boolean;
     source?: string;
     currency?: string;
@@ -79,6 +83,7 @@ export async function createIncomeStreams(
       income_type: data.income_type,
       amount: data.amount,
       cadence: data.cadence,
+      execution_day: data.execution_day,
       is_recurring: data.is_recurring,
     });
 
@@ -88,6 +93,7 @@ export async function createIncomeStreams(
       income_type: validated.income_type,
       amount: validated.amount,
       cadence: validated.cadence,
+      execution_day: validated.execution_day,
       is_recurring: validated.is_recurring,
       source: data.source,
       currency: data.currency || "KSh",
@@ -114,6 +120,7 @@ export async function updateIncomeStream(
     income_type?: string;
     amount?: number;
     cadence?: string;
+    execution_day?: number | null;
     is_recurring?: boolean;
     source?: string;
     start_date?: string;
