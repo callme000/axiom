@@ -501,6 +501,48 @@ export async function deleteIncomeAction(id: string) {
   }
 }
 
+export async function resolvePendingInflowAction(payload: {
+  incomeId: string;
+  accountId: string;
+  amount: number;
+}) {
+  const { userId, supabase } = await requireAuth();
+
+  try {
+    // 1. Get current account balance
+    const { data: account, error: accError } = await supabase
+      .from("accounts")
+      .select("current_balance")
+      .eq("id", payload.accountId)
+      .eq("user_id", userId)
+      .single();
+
+    if (accError || !account) throw new Error("Target account not found.");
+
+    // 2. Update the target account balance
+    const newBalance = Number(account.current_balance) + payload.amount;
+    await updateAccount(supabase, payload.accountId, userId, {
+      current_balance: newBalance,
+    });
+
+    // 3. Update the income stream last_executed_at
+    await updateIncomeStream(supabase, payload.incomeId, userId, {
+      last_executed_at: new Date().toISOString(),
+    });
+
+    // 4. Update global liquidity if this account is part of it
+    const settings = await getUserSettings(supabase, userId);
+    const newLiquidity = Number(settings.total_liquidity) + payload.amount;
+    await updateLiquidity(supabase, userId, newLiquidity);
+
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to resolve pending inflow:", error);
+    throw error;
+  }
+}
+
 export async function createGoalAction(input: CreateGoalActionInput) {
   const { userId, supabase } = await requireAuth();
 

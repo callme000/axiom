@@ -121,6 +121,7 @@ export async function updateIncomeStream(
     amount?: number;
     cadence?: string;
     execution_day?: number | null;
+    last_executed_at?: string | null;
     is_recurring?: boolean;
     source?: string;
     start_date?: string;

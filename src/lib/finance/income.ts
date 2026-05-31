@@ -29,6 +29,7 @@ export interface IncomeStream {
   amount: number;
   cadence: Cadence;
   execution_day?: number | null;
+  last_executed_at?: string | null;
   is_recurring: boolean;
   currency: string;
   source?: string | null;

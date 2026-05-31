@@ -32,6 +32,7 @@ import { GoalSection } from "./GoalSection";
 import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
 import { BaselineSection } from "./BaselineSection";
 import { RunwayCard } from "./RunwayCard";
+import { PendingInflows } from "./PendingInflows";
 import { HistoricalAudit } from "./HistoricalAudit";
 import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
 import DayZeroOnboarding from "@/components/dashboard/DayZeroOnboarding";
@@ -417,6 +418,14 @@ export default function Dashboard() {
             Current Position
           </h2>
         </div>
+
+        {/* PENDING ACTIONS LAYER */}
+        <PendingInflows
+          incomeStreams={ledger.incomeStreams}
+          accounts={ledger.accounts}
+          onSnapshot={applyDashboardSnapshot}
+        />
+
         {/* ROW 1: PRIMARY POSITION */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
