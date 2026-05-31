@@ -1,8 +1,29 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import { LandingTerminal } from "@/components/landing/LandingTerminal";
 import { RunwaySimulator } from "@/components/landing/RunwaySimulator";
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        router.push("/dashboard");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
+
   return (
     <main className="bg-black text-white min-h-screen font-sans selection:bg-white selection:text-black overflow-x-hidden">
       {/* SECTION 1: THE HERO (The Hook) */}
