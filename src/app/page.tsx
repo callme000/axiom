@@ -1,125 +1,151 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
-export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Listen for auth changes to handle client-side redirect
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        router.push("/dashboard");
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [router]);
-
-  // Middleware handles redirection to /dashboard if logged in on request.
-  // This client component is now strictly for rendering the login form.
-
+export default function LandingPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background text-foreground p-6 relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-foreground/5 blur-[120px] rounded-full"></div>
-
-      <div className="w-full max-w-md relative z-10">
-        <div className="flex flex-col items-center mb-12 group">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 bg-foreground rounded-3xl rotate-6 transition-transform group-hover:rotate-12 group-hover:scale-110"></div>
-            <div className="absolute inset-0 w-16 h-16 bg-foreground/20 rounded-3xl -rotate-12 scale-95 transition-transform group-hover:-rotate-18"></div>
-            <div className="absolute inset-0 flex items-center justify-center font-black text-background text-2xl">
-              A
-            </div>
+    <main className="bg-black text-white min-h-screen font-sans selection:bg-white selection:text-black overflow-x-hidden">
+      {/* SECTION 1: THE HERO (The Hook) */}
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-24 max-w-7xl mx-auto relative">
+        <div className="absolute top-0 right-0 w-1/2 h-screen bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
+        <div className="space-y-8 relative z-10">
+          <div className="inline-block border border-white/20 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.3em] text-white/60 mb-4">
+            Axiom Intelligence Layer // v1.0
           </div>
-          <h1 className="text-6xl font-black tracking-tighter uppercase">
-            AXIOM
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.9] lg:text-[10rem]">
+            Stop tracking <br />
+            your expenses. <br />
+            It is keeping <br />
+            you broke.
           </h1>
-          <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3">
-            Intelligence Layer / Financial Truth
+          <p className="max-w-2xl text-xl md:text-2xl text-white/60 leading-relaxed font-light">
+            Traditional finance relies on passive tracking. Axiom is a
+            deterministic engine that forces every shilling into a strict
+            return-based taxonomy. Take control of your liquidity.
           </p>
-        </div>
-
-        <div className="bg-background/40 backdrop-blur-xl p-10 rounded-[2.5rem] border-2 border-foreground/5 shadow-2xl">
-          <Auth
-            supabaseClient={supabase}
-            appearance={{
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: "var(--foreground)",
-                    brandAccent: "var(--foreground)",
-                    brandButtonText: "var(--background)",
-                    defaultButtonBackground: "transparent",
-                    defaultButtonBackgroundHover: "var(--foreground)",
-                    defaultButtonText: "var(--foreground)",
-                    defaultButtonBorder: "var(--foreground)",
-                    inputText: "var(--foreground)",
-                    inputBackground: "transparent",
-                    inputBorder: "var(--input-border)",
-                    inputPlaceholder: "var(--input-placeholder)",
-                    inputLabelText: "var(--input-label)",
-                  },
-                  radii: {
-                    buttonBorderRadius: "20px",
-                    inputBorderRadius: "20px",
-                  },
-                },
-              },
-            }}
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: "Identifier",
-                  password_label: "Access Key",
-                  button_label: "Authorize Session",
-                  link_text: "Already have access? Authorize session",
-                },
-                sign_up: {
-                  email_label: "Professional Email",
-                  password_label: "Access Key",
-                  button_label: "Initialize Axiom Access",
-                  link_text: "Don't have an account? Initialize access",
-                },
-                forgotten_password: {
-                  link_text: "Recover access key?",
-                },
-              },
-            }}
-            providers={["google"]}
-            redirectTo={`${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`}
-          />
-
-          <div className="mt-8 text-center">
+          <div className="pt-8">
             <Link
               href="/signup"
-              className="text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-foreground transition-colors"
+              className="inline-block bg-white text-black px-12 py-6 text-sm font-black uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              Initialize New Protocol Access
+              Initialize Day Zero
             </Link>
           </div>
         </div>
+      </section>
 
-        <div className="mt-12 flex flex-col items-center gap-4">
-          <div className="h-[1px] w-12 bg-foreground/10"></div>
-          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest text-center max-w-[200px] leading-relaxed">
-            Authorized Personnel Only
-            <br />
-            Secure Encrypted Session
-          </p>
+      {/* SECTION 2: THE PROBLEM (The Pain) */}
+      <section className="py-32 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10">
+        <div className="grid md:grid-cols-2 gap-16 items-start">
+          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40 sticky top-32">
+            01 // The Systemic Failure
+          </div>
+          <div className="space-y-8">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase">
+              Inflation is silent theft. Cash is a depreciating liability.
+            </h2>
+            <p className="text-xl text-white/60 leading-relaxed">
+              If you are leaving your liquidity in an M-Pesa account or a
+              zero-interest checking account, you are losing purchasing power
+              daily. The Kenyan ecosystem demands strategic deployment, not
+              passive saving.
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* SECTION 3: THE PHILOSOPHY (The Pivot) */}
+      <section className="py-32 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 bg-white/5">
+        <div className="grid md:grid-cols-2 gap-16 items-start">
+          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40 sticky top-32">
+            02 // The Five Taxonomy Gates
+          </div>
+          <div className="space-y-12">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase">
+              Axiom rejects passive spending.
+            </h2>
+            <p className="text-xl text-white/60 leading-relaxed">
+              Every outbound transaction must be classified: Is it an Asset, a
+              Skill, Leverage, Experience, or Leakage?
+            </p>
+            <div className="grid grid-cols-1 gap-4 font-mono text-sm">
+              {[
+                { label: "ASSET", desc: "Capital that generates yield." },
+                {
+                  label: "SKILL",
+                  desc: "Investment in human capital / earning power.",
+                },
+                {
+                  label: "LEVERAGE",
+                  desc: "Tools that multiply output per hour.",
+                },
+                { label: "EXPERIENCE", desc: "High-value memory equity." },
+                { label: "LEAKAGE", desc: "Unstructured wealth destruction." },
+              ].map((gate) => (
+                <div
+                  key={gate.label}
+                  className="border border-white/10 p-6 flex justify-between items-center group hover:bg-white hover:text-black transition-all cursor-default"
+                >
+                  <span className="font-black tracking-widest">
+                    {gate.label}
+                  </span>
+                  <span className="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity uppercase text-right ml-4">
+                    {gate.desc}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: THE ENGINE (The Proof) */}
+      <section className="py-32 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10">
+        <div className="grid md:grid-cols-2 gap-16 items-start">
+          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40 sticky top-32">
+            03 // Kairos Intelligence
+          </div>
+          <div className="space-y-8">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase">
+              Meet Kairos.
+            </h2>
+            <p className="text-xl text-white/60 leading-relaxed">
+              Your deterministic, sandboxed financial analyst. No
+              hallucinations. Just clinical, mathematical truth about your
+              structural solvency and income concentration.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: FINAL CTA */}
+      <section className="py-64 px-6 md:px-24 text-center border-t border-white/10 bg-gradient-to-b from-black to-[#0a0a0a]">
+        <div className="max-w-4xl mx-auto space-y-12">
+          <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase">
+            Ready to deploy <br />
+            your capital?
+          </h2>
+          <div className="flex flex-col items-center gap-8">
+            <Link
+              href="/signup"
+              className="inline-block bg-white text-black px-16 py-8 text-sm font-black uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.05] active:scale-[0.95] shadow-[0_0_50px_rgba(255,255,255,0.1)]"
+            >
+              Establish Your Baseline
+            </Link>
+            <div className="h-24 w-[1px] bg-gradient-to-b from-white/20 to-transparent" />
+            <div className="text-[10px] font-mono uppercase tracking-[0.5em] text-white/20">
+              Axiom // Strategic Solvency Protocol
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="py-12 px-6 md:px-24 border-t border-white/5 text-[10px] font-mono text-white/20 uppercase tracking-widest flex flex-col md:flex-row justify-between items-center gap-8">
+        <div>© 2026 Axiom Labs // All Rights Reserved</div>
+        <div className="flex gap-8">
+          <span>Encrypted Session</span>
+          <span>Kenya Ecosystem Optimized</span>
+        </div>
+      </footer>
     </main>
   );
 }
