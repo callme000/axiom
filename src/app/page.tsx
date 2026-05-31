@@ -1,27 +1,31 @@
 import Link from "next/link";
+import { LandingTerminal } from "@/components/landing/LandingTerminal";
 
 export default function LandingPage() {
   return (
     <main className="bg-black text-white min-h-screen font-sans selection:bg-white selection:text-black overflow-x-hidden">
       {/* SECTION 1: THE HERO (The Hook) */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-24 max-w-7xl mx-auto relative">
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-24 max-w-7xl mx-auto relative overflow-hidden">
+        {/* Subtle Radial Gradient Background */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.03] rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-0 right-0 w-1/2 h-screen bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
-        <div className="space-y-8 relative z-10">
-          <div className="inline-block border border-white/20 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.3em] text-white/60 mb-4">
+
+        <div className="space-y-12 relative z-10 py-32">
+          <div className="inline-block border border-white/20 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.3em] text-white/60 mb-4 animate-in fade-in duration-700">
             Axiom Intelligence Layer // v1.0
           </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.9] lg:text-[10rem]">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.9] lg:text-[10rem] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both">
             Stop tracking <br />
             your expenses. <br />
-            It is keeping <br />
+            It's keeping <br />
             you broke.
           </h1>
-          <p className="max-w-2xl text-xl md:text-2xl text-white/60 leading-relaxed font-light">
+          <p className="max-w-2xl text-xl md:text-2xl text-white/60 leading-relaxed font-light animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
             Traditional finance relies on passive tracking. Axiom is a
             deterministic engine that forces every shilling into a strict
             return-based taxonomy. Take control of your liquidity.
           </p>
-          <div className="pt-8">
+          <div className="pt-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
             <Link
               href="/signup"
               className="inline-block bg-white text-black px-12 py-6 text-sm font-black uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -33,16 +37,17 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 2: THE PROBLEM (The Pain) */}
-      <section className="py-32 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10">
-        <div className="grid md:grid-cols-2 gap-16 items-start">
+      <section className="py-64 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10">
+        <div className="grid md:grid-cols-2 gap-24 items-start">
           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40 sticky top-32">
             01 // The Systemic Failure
           </div>
-          <div className="space-y-8">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase">
-              Inflation is silent theft. Cash is a depreciating liability.
+          <div className="space-y-12">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-tight">
+              Inflation is silent theft. <br />
+              Cash is a depreciating liability.
             </h2>
-            <p className="text-xl text-white/60 leading-relaxed">
+            <p className="text-2xl text-white/60 leading-relaxed font-light">
               If you are leaving your liquidity in an M-Pesa account or a
               zero-interest checking account, you are losing purchasing power
               daily. The Kenyan ecosystem demands strategic deployment, not
@@ -52,17 +57,43 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 3: THE PHILOSOPHY (The Pivot) */}
-      <section className="py-32 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 bg-white/5">
-        <div className="grid md:grid-cols-2 gap-16 items-start">
+      {/* SECTION 3: THE ENGINE (The Proof / Terminal) */}
+      <section className="py-64 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 relative">
+        <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
+        <div className="grid md:grid-cols-2 gap-24 items-center relative z-10">
+          <div className="space-y-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">
+              02 // Kairos Intelligence
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-tight">
+              Meet Kairos. <br />
+              Your clinical <br />
+              financial analyst.
+            </h2>
+            <p className="text-2xl text-white/60 leading-relaxed font-light">
+              No hallucinations. Just clinical, mathematical truth about your
+              structural solvency and income concentration. Watch Kairos audit a
+              sample deployment in real-time.
+            </p>
+          </div>
+          <div>
+            <LandingTerminal />
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: THE PHILOSOPHY (The Pivot) */}
+      <section className="py-64 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 bg-white/5">
+        <div className="grid md:grid-cols-2 gap-24 items-start">
           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40 sticky top-32">
-            02 // The Five Taxonomy Gates
+            03 // The Five Taxonomy Gates
           </div>
           <div className="space-y-12">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase">
-              Axiom rejects passive spending.
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-tight">
+              Axiom rejects <br />
+              passive spending.
             </h2>
-            <p className="text-xl text-white/60 leading-relaxed">
+            <p className="text-2xl text-white/60 leading-relaxed font-light">
               Every outbound transaction must be classified: Is it an Asset, a
               Skill, Leverage, Experience, or Leakage?
             </p>
@@ -82,9 +113,9 @@ export default function LandingPage() {
               ].map((gate) => (
                 <div
                   key={gate.label}
-                  className="border border-white/10 p-6 flex justify-between items-center group hover:bg-white hover:text-black transition-all cursor-default"
+                  className="border border-white/10 p-8 flex justify-between items-center group hover:bg-white hover:text-black transition-all cursor-default"
                 >
-                  <span className="font-black tracking-widest">
+                  <span className="font-black tracking-widest text-lg">
                     {gate.label}
                   </span>
                   <span className="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity uppercase text-right ml-4">
@@ -97,40 +128,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 4: THE ENGINE (The Proof) */}
-      <section className="py-32 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10">
-        <div className="grid md:grid-cols-2 gap-16 items-start">
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40 sticky top-32">
-            03 // Kairos Intelligence
-          </div>
-          <div className="space-y-8">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase">
-              Meet Kairos.
-            </h2>
-            <p className="text-xl text-white/60 leading-relaxed">
-              Your deterministic, sandboxed financial analyst. No
-              hallucinations. Just clinical, mathematical truth about your
-              structural solvency and income concentration.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* SECTION 5: FINAL CTA */}
       <section className="py-64 px-6 md:px-24 text-center border-t border-white/10 bg-gradient-to-b from-black to-[#0a0a0a]">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase">
+        <div className="max-w-4xl mx-auto space-y-16">
+          <h2 className="text-6xl md:text-9xl font-black tracking-tighter uppercase leading-[0.9]">
             Ready to deploy <br />
             your capital?
           </h2>
-          <div className="flex flex-col items-center gap-8">
+          <div className="flex flex-col items-center gap-12">
             <Link
               href="/signup"
               className="inline-block bg-white text-black px-16 py-8 text-sm font-black uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.05] active:scale-[0.95] shadow-[0_0_50px_rgba(255,255,255,0.1)]"
             >
               Establish Your Baseline
             </Link>
-            <div className="h-24 w-[1px] bg-gradient-to-b from-white/20 to-transparent" />
+            <div className="h-32 w-[1px] bg-gradient-to-b from-white/20 to-transparent" />
             <div className="text-[10px] font-mono uppercase tracking-[0.5em] text-white/20">
               Axiom // Strategic Solvency Protocol
             </div>
