@@ -140,13 +140,13 @@ class CarouselGeneratorAPI:
 
 def main():
     # CONFIGURATION
-    THEME = "dark server room, glowing data streams, cinematic black, moody tech"
+    THEME = "mechanical gears, machinery, dark metal"
     SLIDES = [
-        "1: A single stream of income is not stability.\\nIt is a single point of failure.",
-        "2: If 100% of your operational runway relies on next month's salary, you are not an operator.\\nYou are a hostage to your employer.",
-        "3: The elite do not rely on a single engine.\\nThey build decoupled yield to guarantee their baseline survives a catastrophic failure.",
-        "4: Axiom maps your Income Concentration Risk in real-time.\\nWe detect structural vulnerabilities before the system breaks.",
-        "5: Stop hoping. Start calculating.\\nEstablish your Day Zero Baseline today.\\nLink in bio.",
+        "1: Your wealth isn't bleeding out from a major wound.\\nIt is evaporating from 100 micro-cuts.",
+        "2: A forgotten KSh 1,500 subscription here.\\nAn uncalculated bank fee there.\\nCasual mobile transfers every single day.",
+        "3: In the Axiom ecosystem, this is classified as Leakage.\\nDead capital leaving your system without your conscious intent or strategic permission.",
+        "4: If you have a leaky bucket, pouring more water in won't fix it.\\nStop trying to earn more before you secure what you already have.",
+        "5: Patch the system.\\nIdentify your structural leakage instantly.\\nLink in bio.",
     ]
 
     generator = CarouselGeneratorAPI()

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -9,6 +9,7 @@ import Link from "next/link";
 
 export default function SignUp() {
   const router = useRouter();
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     const {
@@ -23,6 +24,29 @@ export default function SignUp() {
       subscription.unsubscribe();
     };
   }, [router]);
+
+  const handlePasskeyAuth = async () => {
+    setAuthError(null);
+    try {
+      const { error } = await supabase.auth.signInWithPasskey();
+      if (error) {
+        if (
+          error.message.includes("not found") ||
+          error.message.includes("failed")
+        ) {
+          setAuthError(
+            "BIOMETRIC HANDSHAKE FAILED. FALLBACK TO MANUAL DECRYPTION KEY REQUIRED.",
+          );
+        } else {
+          setAuthError(`SYSTEM ERROR: ${error.message.toUpperCase()}`);
+        }
+        return;
+      }
+      router.push("/dashboard");
+    } catch (err) {
+      setAuthError("CRITICAL BIOMETRIC FAILURE. INITIALIZE MANUAL OVERRIDE.");
+    }
+  };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white p-6 relative overflow-hidden">
@@ -45,6 +69,28 @@ export default function SignUp() {
         <div className="bg-black border border-white/10 p-10 rounded-none shadow-2xl relative">
           <div className="absolute -top-3 left-10 px-4 py-1 bg-white text-black text-[8px] font-mono font-black uppercase tracking-widest">
             New Protocol Initialization
+          </div>
+
+          <div className="mb-8">
+            <button
+              onClick={handlePasskeyAuth}
+              className="w-full py-4 bg-white text-black font-mono font-black uppercase tracking-widest text-xs hover:bg-white/90 transition-all border border-white active:scale-[0.98] cursor-pointer"
+            >
+              AUTHENTICATE VIA BIOMETRICS (PASSKEY)
+            </button>
+            {authError && (
+              <div className="mt-4 font-mono text-[9px] text-white/60 uppercase tracking-tighter border-l border-white/20 pl-3 py-1">
+                <span className="text-white/40 mr-2">{">"}</span> {authError}
+              </div>
+            )}
+          </div>
+
+          <div className="relative mb-8 flex items-center">
+            <div className="flex-grow h-[1px] bg-white/10"></div>
+            <span className="px-4 font-mono text-[8px] text-white/20 uppercase tracking-widest whitespace-nowrap">
+              OR MANUAL DECRYPTION
+            </span>
+            <div className="flex-grow h-[1px] bg-white/10"></div>
           </div>
 
           <Auth
