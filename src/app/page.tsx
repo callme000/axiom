@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LandingTerminal } from "@/components/landing/LandingTerminal";
+import { RunwaySimulator } from "@/components/landing/RunwaySimulator";
 
 export default function LandingPage() {
   return (
@@ -57,36 +58,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 3: THE ENGINE (The Proof / Terminal) */}
-      <section className="py-64 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 relative">
-        <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
-        <div className="grid md:grid-cols-2 gap-24 items-center relative z-10">
-          <div className="space-y-12">
-            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">
-              02 // Kairos Intelligence
-            </div>
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-tight">
-              Meet Kairos. <br />
-              Your clinical <br />
-              financial analyst.
-            </h2>
-            <p className="text-2xl text-white/60 leading-relaxed font-light">
-              No hallucinations. Just clinical, mathematical truth about your
-              structural solvency and income concentration. Watch Kairos audit a
-              sample deployment in real-time.
-            </p>
-          </div>
-          <div>
-            <LandingTerminal />
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 4: THE PHILOSOPHY (The Pivot) */}
+      {/* SECTION 3: THE PHILOSOPHY (The Pivot) */}
       <section className="py-64 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 bg-white/5">
         <div className="grid md:grid-cols-2 gap-24 items-start">
           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40 sticky top-32">
-            03 // The Five Taxonomy Gates
+            02 // The Five Taxonomy Gates
           </div>
           <div className="space-y-12">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-tight">
@@ -128,7 +104,57 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 5: FINAL CTA */}
+      {/* SECTION 4: THE SIMULATOR (Interactive Hook) */}
+      <section className="py-64 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.02] rounded-full blur-[100px] pointer-events-none" />
+        <div className="grid md:grid-cols-2 gap-24 items-center relative z-10">
+          <div className="space-y-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">
+              03 // Operational Runway
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-tight">
+              Calculate your <br />
+              structural <br />
+              solvency.
+            </h2>
+            <p className="text-2xl text-white/60 leading-relaxed font-light">
+              How long would you survive if your primary income stream collapsed
+              today? Axiom's deterministic engine measures your runway with
+              clinical precision.
+            </p>
+          </div>
+          <div>
+            <RunwaySimulator />
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: THE ENGINE (The Proof / Terminal) */}
+      <section className="py-64 px-6 md:px-24 max-w-7xl mx-auto border-t border-white/10 relative">
+        <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
+        <div className="grid md:grid-cols-2 gap-24 items-center relative z-10">
+          <div className="space-y-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">
+              04 // Kairos Intelligence
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-tight">
+              Meet Kairos. <br />
+              Your clinical <br />
+              financial analyst.
+            </h2>
+            <p className="text-2xl text-white/60 leading-relaxed font-light">
+              No hallucinations. Just clinical, mathematical truth about your
+              structural solvency and income concentration. Watch Kairos audit a
+              sample deployment in real-time.
+            </p>
+          </div>
+          <div>
+            <LandingTerminal />
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6: FINAL CTA */}
       <section className="py-64 px-6 md:px-24 text-center border-t border-white/10 bg-gradient-to-b from-black to-[#0a0a0a]">
         <div className="max-w-4xl mx-auto space-y-16">
           <h2 className="text-6xl md:text-9xl font-black tracking-tighter uppercase leading-[0.9]">
