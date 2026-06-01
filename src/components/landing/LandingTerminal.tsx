@@ -19,7 +19,7 @@ export function LandingTerminal() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const showNextLog = (index: number) => {
       if (index >= LOGS.length) {
@@ -33,10 +33,13 @@ export function LandingTerminal() {
         return;
       }
 
-      timeoutId = setTimeout(() => {
-        setVisibleLogs((prev) => [...prev, index]);
-        showNextLog(index + 1);
-      }, index === 0 ? 500 : 1200);
+      timeoutId = setTimeout(
+        () => {
+          setVisibleLogs((prev) => [...prev, index]);
+          showNextLog(index + 1);
+        },
+        index === 0 ? 500 : 1200,
+      );
     };
 
     showNextLog(0);
@@ -70,9 +73,9 @@ export function LandingTerminal() {
               <div
                 key={logIndex}
                 className={`
-                  ${log.type === 'warning' ? 'text-orange-500' : ''}
-                  ${log.type === 'success' ? 'text-emerald-500' : ''}
-                  ${log.type === 'info' ? 'text-white/70' : ''}
+                  ${log.type === "warning" ? "text-orange-500" : ""}
+                  ${log.type === "success" ? "text-emerald-500" : ""}
+                  ${log.type === "info" ? "text-white/70" : ""}
                   animate-in fade-in slide-in-from-left-2 duration-300
                 `}
               >
