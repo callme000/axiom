@@ -23,43 +23,43 @@ export interface TaxonomyCategory {
 export const TAXONOMY_CATEGORIES: TaxonomyCategory[] = [
   {
     value: "Asset",
-    label: "Asset",
-    definition: "Expected future value generation",
+    label: "Investments",
+    definition: "Future value generation (Stocks, Crypto, Property)",
     interpretation:
       "Strategic capital foundation. These deployments are expected to produce tangible appreciation or yield over time.",
   },
   {
     value: "Skill",
-    label: "Skill",
-    definition: "Improves future earning capability",
+    label: "Growth",
+    definition: "Learning and high-income skill development",
     interpretation:
       "Human capital investment. Deployments into skills increase your intrinsic market value and future inflow capacity.",
   },
   {
     value: "Leverage",
-    label: "Leverage",
-    definition: "Multiplies output or preserves time",
+    label: "Efficiency",
+    definition: "Buying back time or multiplying output",
     interpretation:
       "Operational efficiency. Leverage deployments are designed to buy back time or multiply the results of your effort.",
   },
   {
     value: "Experience",
-    label: "Experience",
-    definition: "Intentional quality-of-life deployment",
+    label: "Lifestyle",
+    definition: "Intentional quality-of-life and memories",
     interpretation:
       "Strategic utility. Non-yielding deployments that provide intentional lived-value and mental sustainability.",
   },
   {
     value: "Maintenance",
-    label: "Maintenance",
-    definition: "Structural survival requirements",
+    label: "Essentials",
+    definition: "Bills, rent, food, and survival core",
     interpretation:
       "Operational core. Survival-layer capital needed to maintain your current system (Rent, utilities, basic nourishment).",
   },
   {
     value: "Leakage",
-    label: "Leakage",
-    definition: "Non-strategic capital drift",
+    label: "Waste",
+    definition: "Non-strategic drift or impulse spending",
     interpretation:
       "Systemic inefficiency. Tracked separately to identify recurring capital drift. Excess leakage compresses operational runway.",
   },

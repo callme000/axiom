@@ -39,7 +39,7 @@ export default function LandingPage() {
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.9] lg:text-[10rem] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both">
             Stop tracking <br />
             your expenses. <br />
-            It's keeping <br />
+            It&apos;s keeping <br />
             you broke.
           </h1>
           <p className="max-w-2xl text-xl md:text-2xl text-white/60 leading-relaxed font-light animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
@@ -140,7 +140,7 @@ export default function LandingPage() {
             </h2>
             <p className="text-2xl text-white/60 leading-relaxed font-light">
               How long would you survive if your primary income stream collapsed
-              today? Axiom's deterministic engine measures your runway with
+              today? Axiom&apos;s deterministic engine measures your runway with
               clinical precision.
             </p>
           </div>

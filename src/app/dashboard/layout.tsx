@@ -78,7 +78,7 @@ export default function DashboardLayout({
     },
     {
       id: "deploy",
-      label: "Deploy",
+      label: "New Entry",
       icon: (
         <svg
           width="18"
@@ -88,13 +88,13 @@ export default function DashboardLayout({
           stroke="currentColor"
           strokeWidth="2.5"
         >
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          <path d="M12 5v14M5 12h14" />
         </svg>
       ),
     },
     {
       id: "intelligence",
-      label: "Intelligence",
+      label: "Insights",
       icon: (
         <svg
           width="18"
@@ -112,7 +112,7 @@ export default function DashboardLayout({
     },
     {
       id: "ledger",
-      label: "Expense Log",
+      label: "History",
       icon: (
         <svg
           width="18"

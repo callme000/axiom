@@ -132,7 +132,7 @@ export function AccountSection({
               activeTab === "sources" ? "text-foreground" : "text-foreground/20"
             }`}
           >
-            Sources
+            Accounts
           </button>
           <button
             onClick={() => {
@@ -143,7 +143,7 @@ export function AccountSection({
               activeTab === "log" ? "text-foreground" : "text-foreground/20"
             }`}
           >
-            Log Spend
+            Daily Log
           </button>
         </div>
         <button
@@ -154,24 +154,24 @@ export function AccountSection({
             {isAdding
               ? "Cancel"
               : activeTab === "sources"
-                ? "+ Add source"
-                : "+ New entry"}
+                ? "+ Add"
+                : "+ Entry"}
           </span>
         </button>
       </div>
 
       {isAdding && activeTab === "sources" && (
-        <div className="bg-background border-2 border-foreground rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
           <form onSubmit={handleSourceSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Source Name
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Primary Checking"
+                  placeholder="e.g. M-Pesa, Savings"
                   value={sourceForm.account_name}
                   onChange={(e) =>
                     setSourceForm({
@@ -179,12 +179,12 @@ export function AccountSection({
                       account_name: e.target.value,
                     })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Current Balance (KSh)
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Balance (KSh)
                 </label>
                 <input
                   type="number"
@@ -197,14 +197,14 @@ export function AccountSection({
                       current_balance: e.target.value,
                     })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
                   Type
                 </label>
                 <select
@@ -215,7 +215,7 @@ export function AccountSection({
                       account_type: e.target.value,
                     })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
                 >
                   {ACCOUNT_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -225,12 +225,12 @@ export function AccountSection({
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Institution (Optional)
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Institution
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Standard Chartered"
+                  placeholder="Optional"
                   value={sourceForm.institution}
                   onChange={(e) =>
                     setSourceForm({
@@ -238,7 +238,7 @@ export function AccountSection({
                       institution: e.target.value,
                     })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
             </div>
@@ -254,7 +254,7 @@ export function AccountSection({
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "ESTABLISHING..." : "ESTABLISH SOURCE"}
+              {isLoading ? "SAVING..." : "ADD ACCOUNT"}
             </button>
           </form>
         </div>
@@ -369,12 +369,12 @@ export function AccountSection({
             accounts.map((account) => (
               <div
                 key={account.id}
-                className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+                className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/[0.04] transition-all"
               >
-                <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                      <span className="text-[9px] font-black text-foreground/40 bg-foreground/5 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                         {AccountMap[account.account_type] ||
                           account.account_type}
                       </span>
@@ -382,19 +382,11 @@ export function AccountSection({
                         {account.account_name}
                       </h3>
                     </div>
-                    {account.institution && (
-                      <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
-                        {account.institution}
-                      </p>
-                    )}
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-lg font-black tabular-nums text-foreground">
                         {formatCurrency(account.current_balance)}
-                      </p>
-                      <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                        Authoritative Balance
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -404,8 +396,7 @@ export function AccountSection({
                           setLogForm({ ...logForm, accountId: account.id });
                           setIsAdding(true);
                         }}
-                        className="p-2 text-foreground/40 hover:text-foreground transition-colors"
-                        title="Log spending from this source"
+                        className="p-2 text-foreground/20 hover:text-foreground transition-colors"
                       >
                         <svg
                           width="16"
@@ -416,21 +407,6 @@ export function AccountSection({
                           strokeWidth="3"
                         >
                           <path d="M12 5v14M5 12h14" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSource(account.id)}
-                        className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                        >
-                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                         </svg>
                       </button>
                     </div>

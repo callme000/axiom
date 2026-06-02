@@ -88,11 +88,11 @@ function CategorySelector({
     <div className={compact ? "space-y-2" : "space-y-4"}>
       <div
         role="radiogroup"
-        aria-label="Capital category"
+        aria-label="Category"
         className={
           compact
-            ? "grid grid-cols-1 gap-1.5"
-            : "grid grid-cols-1 sm:grid-cols-2 gap-3"
+            ? "grid grid-cols-1 gap-2"
+            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
         }
       >
         {TAXONOMY_CATEGORIES.map((category) => {
@@ -106,30 +106,27 @@ function CategorySelector({
               aria-checked={isSelected}
               disabled={disabled}
               onClick={() => onChange(category.value)}
-              className={`w-full rounded-2xl border-2 text-left transition-all group disabled:cursor-not-allowed disabled:opacity-50 ${
+              className={`w-full rounded-xl border transition-all text-left disabled:cursor-not-allowed disabled:opacity-50 ${
                 compact ? "p-3" : "p-4"
               } ${
                 isSelected
-                  ? "border-foreground bg-foreground text-background shadow-xl scale-[1.02]"
-                  : "border-foreground/10 bg-background text-foreground hover:border-foreground/20 hover:bg-foreground/5"
+                  ? "border-foreground bg-foreground text-background shadow-lg scale-[1.02]"
+                  : "border-foreground/5 bg-foreground/[0.02] text-foreground hover:bg-foreground/[0.04]"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span
-                  className={`block font-black uppercase tracking-widest ${compact ? "text-[9px]" : "text-[10px]"}`}
+                  className={`block font-black uppercase tracking-widest ${compact ? "text-[8px]" : "text-[9px]"}`}
                 >
                   {DeploymentMap[
                     category.value as keyof typeof DeploymentMap
                   ] || category.label}
                 </span>
-                {isSelected && (
-                  <span className="w-1.5 h-1.5 bg-background rounded-full animate-pulse"></span>
-                )}
               </div>
               <span
-                className={`mt-1 block font-bold leading-snug ${
-                  compact ? "text-[8px]" : "text-[9px]"
-                } ${isSelected ? "text-background/70" : "text-foreground/60"}`}
+                className={`mt-1 block font-bold leading-tight ${
+                  compact ? "text-[8px]" : "text-[10px]"
+                } ${isSelected ? "text-background/60" : "text-foreground/40"}`}
               >
                 {category.definition}
               </span>
@@ -138,14 +135,12 @@ function CategorySelector({
         })}
       </div>
 
-      {value !== "Unclassified" && interpretation && (
-        <div className="p-4 bg-foreground/5 border-l-2 border-foreground rounded-r-2xl animate-in fade-in slide-in-from-left-2 duration-500">
-          <p className="text-[9px] font-black text-foreground/60 uppercase tracking-widest mb-1 opacity-60">
-            System Interpretation
+      {value !== "Unclassified" && interpretation && !compact && (
+        <div className="p-4 bg-foreground/[0.02] border-l-2 border-foreground/10 rounded-r-2xl animate-in fade-in slide-in-from-left-2 duration-500">
+          <p className="text-[9px] font-black text-foreground/30 uppercase tracking-widest mb-1">
+            Impact
           </p>
-          <p
-            className={`font-bold leading-snug text-foreground ${compact ? "text-[9px]" : "text-[11px]"}`}
-          >
+          <p className="font-bold leading-snug text-foreground/60 text-[10px]">
             {interpretation}
           </p>
         </div>
@@ -410,10 +405,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-24">
-      {/* Zone 1 — FINANCIAL TRUTH */}
+      {/* Zone 1 — FINANCIAL POSITION */}
       <section id="overview" className="space-y-12">
         <div className="flex items-center gap-4 mb-8">
-          <div className="h-0.5 w-12 bg-foreground/10"></div>
           <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase opacity-30">
             Current Position
           </h2>
@@ -428,7 +422,7 @@ export default function Dashboard() {
 
         {/* ROW 1: PRIMARY POSITION */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
+          <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
               Net Worth
             </span>
@@ -438,23 +432,23 @@ export default function Dashboard() {
               {formatCurrency(ledger.analytics?.netWorth || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Assets minus liabilities
+              Total equity
             </p>
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
+          <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
-              Total Assets
+              Assets
             </span>
             <span className="text-4xl font-black tabular-nums text-foreground">
               {formatCurrency(ledger.analytics?.totalAssets || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Monetary value possessions
+              Current holdings
             </p>
           </div>
 
-          <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
+          <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
               Liabilities
             </span>
@@ -462,7 +456,7 @@ export default function Dashboard() {
               {formatCurrency(ledger.analytics?.totalLiabilities || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Debts you owe
+              Total debt
             </p>
           </div>
         </div>
@@ -470,25 +464,24 @@ export default function Dashboard() {
         {/* ROW 2: OPERATIONAL SURVIVAL */}
         <div className="space-y-8">
           <div className="flex items-center gap-4">
-            <div className="h-0.5 w-8 bg-foreground/10"></div>
             <h2 className="text-xl font-black text-foreground tracking-tighter uppercase opacity-30">
-              The Horizon
+              Cash Flow
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div
-              className={`bg-foreground/5 border rounded-2xl p-6 md:p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/10"}`}
+              className={`bg-foreground/[0.02] border rounded-3xl p-6 md:p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/5"} hover:bg-foreground/[0.04]`}
             >
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                  {liquidityError ? "Sync Error" : "Liquidity Pool"}
+                  {liquidityError ? "Sync Error" : "Available Cash"}
                 </span>
                 <button
                   onClick={() =>
                     !isLiquidityLoading && setIsEditingLiquidity(true)
                   }
                   className="p-1.5 rounded-lg hover:bg-foreground/10 transition-colors text-foreground/60 hover:text-foreground"
-                  title="Set starting liquid capital"
+                  title="Update cash balance"
                 >
                   <svg
                     width="12"
@@ -517,7 +510,7 @@ export default function Dashboard() {
                     onClick={() => handleUpdateLiquidity()}
                     className="bg-foreground text-background text-[10px] font-black py-2 rounded-lg disabled:opacity-50 uppercase tracking-widest"
                   >
-                    {isLiquidityLoading ? "SYNCING..." : "Confirm Liquidity"}
+                    {isLiquidityLoading ? "SYNCING..." : "Confirm Balance"}
                   </button>
                 </div>
               ) : (
@@ -526,13 +519,13 @@ export default function Dashboard() {
                     {formatCurrency(liquidity)}
                   </span>
                   <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                    Ready to invest money
+                    Ready to use
                   </p>{" "}
                 </div>
               )}
             </div>
 
-            <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between">
+            <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
                   Monthly Inflow
@@ -543,7 +536,7 @@ export default function Dashboard() {
                   {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}
                 </span>
                 <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                  Aggregate Yield
+                  Average monthly
                 </p>{" "}
               </div>
             </div>
@@ -760,13 +753,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Zone 2 — DEPLOY CAPITAL (REFINED CONSOLE) */}
+      {/* Zone 2 — LOG ENTRY */}
       <section
         id="deploy"
         className={`transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
       >
-        <div className="bg-background border rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden group">
-          <div className="absolute -top-24 -left-24 w-48 h-48 bg-foreground/5 blur-3xl rounded-full transition-all group-hover:bg-foreground/10"></div>
+        <div className="bg-background border border-foreground/5 rounded-[2rem] p-6 md:p-10 shadow-2xl relative overflow-hidden group">
           <div className="relative z-10 max-w-3xl mx-auto">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-12 h-12 bg-foreground rounded-2xl flex items-center justify-center shadow-lg">
@@ -784,10 +776,10 @@ export default function Dashboard() {
               </div>
               <div className="space-y-1">
                 <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">
-                  Deploy Capital
+                  New Entry
                 </h2>
                 <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">
-                  Strategic Allocation Console :: v1.0
+                  Log spending or investments
                 </p>
               </div>
             </div>
@@ -797,33 +789,27 @@ export default function Dashboard() {
               <div className="space-y-6">
                 <div>
                   <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
-                    Strategic Designation
+                    What was this for?
                   </label>
                   <input
                     type="text"
                     disabled={isActionLoading}
-                    placeholder="What is this capital achieving?"
+                    placeholder="e.g. Monthly Rent, BTC Investment, Groceries"
                     value={title}
                     onChange={(e) => {
                       setTitle(e.target.value);
                       if (formError) setFormError(null);
                     }}
-                    className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-5 focus:outline-none focus:border-foreground transition-all text-foreground text-xl placeholder:text-foreground/20 font-bold shadow-sm disabled:opacity-50"
+                    className="w-full border-2 border-foreground/5 bg-foreground/[0.02] rounded-2xl p-5 focus:outline-none focus:border-foreground/20 transition-all text-foreground text-xl placeholder:text-foreground/20 font-bold shadow-sm disabled:opacity-50"
                     required
                   />
-                  {showTitleQualityHint && (
-                    <p className="mt-3 ml-2 text-[11px] font-bold leading-snug text-orange-500/80 uppercase tracking-tight">
-                      Notice: Strategic clarity improves intelligence signal
-                      quality.
-                    </p>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
                   <div className="md:col-span-5 space-y-6">
                     <div>
                       <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
-                        Deployment Amount (KSh)
+                        Amount (KSh)
                       </label>
                       <input
                         type="number"
@@ -834,7 +820,7 @@ export default function Dashboard() {
                           setAmount(e.target.value);
                           if (formError) setFormError(null);
                         }}
-                        className="w-full border-2 border-foreground/10 bg-background rounded-2xl p-5 focus:outline-none focus:border-foreground transition-all text-foreground text-2xl placeholder:text-foreground/20 font-black tabular-nums shadow-sm disabled:opacity-50"
+                        className="w-full border-2 border-foreground/5 bg-foreground/[0.02] rounded-2xl p-5 focus:outline-none focus:border-foreground/20 transition-all text-foreground text-2xl placeholder:text-foreground/20 font-black tabular-nums shadow-sm disabled:opacity-50"
                         required
                       />
                     </div>
@@ -842,7 +828,7 @@ export default function Dashboard() {
 
                   <div className="md:col-span-7">
                     <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
-                      Strategic Classification
+                      Category
                     </label>
                     <CategorySelector
                       disabled={isActionLoading}
@@ -1008,16 +994,16 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Zone 3 — KAIROS INTELLIGENCE */}
+      {/* Zone 3 — INSIGHTS */}
       <section
         id="intelligence"
         className="grid grid-cols-1 lg:grid-cols-12 gap-10"
       >
         <div
-          className={`lg:col-span-8 bg-foreground border rounded-3xl p-6 md:p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "border-orange-500/50 ring-4 ring-orange-500/10" : "border-background/10"} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
+          className={`lg:col-span-8 bg-foreground border-none rounded-[2rem] p-6 md:p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/20" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
           <div>
-            {/* LAYER A — STRATEGIC STATUS BAR (Refined v5E) */}
+            {/* LAYER A — STATUS BAR */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-background/10 pb-4 mb-6">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
@@ -1026,21 +1012,7 @@ export default function Dashboard() {
                   ></div>
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-background">
                     {kairosInsight?.category?.replace("_", " ") ||
-                      "STRATEGIC EVALUATION"}
-                  </span>
-                </div>
-                <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-background/60">
-                    Efficiency: {kairosInsight?.capitalEfficiency ?? 100}%
-                  </span>
-                </div>
-                <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-background/60">
-                    Runway:{" "}
-                    {kairosInsight?.runway !== undefined &&
-                    kairosInsight.runway !== null
-                      ? `${Math.round(kairosInsight.runway)} Days`
-                      : "Infinite"}
+                      "SYSTEM SCAN"}
                   </span>
                 </div>
               </div>
@@ -1052,41 +1024,27 @@ export default function Dashboard() {
                     {kairosInsight.severity.toUpperCase()}
                   </span>
                 )}
-                <span className="text-[10px] font-black uppercase tracking-widest text-background/40">
-                  Last strategic evaluation:{" "}
-                  {isClient && kairosInsight
-                    ? new Date(kairosInsight.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })
-                    : "--:--:--"}
-                </span>
               </div>
             </div>
 
-            {/* LAYER B — PRIMARY ASSESSMENT & SILENCE STATE */}
+            {/* LAYER B — ASSESSMENT */}
             <div className="space-y-6">
               {kairosInsight ? (
                 kairosInsight.isSilent ? (
                   <div className="py-4">
                     <p className="text-base font-bold leading-tight text-background/60 italic">
-                      No material structural deterioration detected since
-                      previous evaluation.
+                      No material changes detected.
                     </p>
                   </div>
                 ) : (
                   <div
                     className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
                   >
-                    <p className="text-base md:text-lg font-bold leading-tight text-background">
-                      <span className="text-background/40 font-black uppercase text-[10px] tracking-tighter not-italic block mb-2">
-                        Strategic Assessment:
-                      </span>
+                    <p className="text-lg md:text-xl font-black leading-tight text-background">
                       {kairosInsight.message}
                     </p>
 
-                    {/* LAYER C — SUPPORTING SIGNALS (Deterministic Telemetry) */}
+                    {/* LAYER C — SUPPORTING SIGNALS */}
                     {kairosInsight.supportingSignals &&
                       kairosInsight.supportingSignals.length > 0 && (
                         <div className="mt-6 space-y-3">
@@ -1108,139 +1066,20 @@ export default function Dashboard() {
                 <div className="space-y-3 opacity-20">
                   <div className="h-4 bg-background/20 rounded-full w-full"></div>
                   <div className="h-4 bg-background/20 rounded-full w-3/4"></div>
-                  <p className="text-[10px] font-black uppercase mt-6 tracking-widest text-background">
-                    Orchestrating strategic evaluation...
-                  </p>
                 </div>
               )}
             </div>
-
-            {/* ACTIVE SIGNAL MEMORY */}
-            {kairosInsight &&
-              (kairosInsight.severity === "critical" ||
-                kairosInsight.severity === "warning") &&
-              !kairosInsight.isSilent && (
-                <div
-                  className={`mt-8 p-5 border rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in duration-700 ${kairosInsight.severity === "critical" ? "border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.1)]" : "border-orange-500/30 bg-orange-500/5"}`}
-                >
-                  <div>
-                    <p
-                      className={`text-[9px] font-black uppercase tracking-widest mb-1 ${kairosInsight.severity === "critical" ? "text-orange-500" : "text-orange-400"}`}
-                    >
-                      {kairosInsight.severity === "critical"
-                        ? "Critical Operational Breach"
-                        : "Active Operational Signal"}
-                    </p>
-                    <p className="text-xs font-bold text-background/80">
-                      {kairosInsight.category === "solvency_pressure"
-                        ? "Liquidity shortfall detected. Immediate structural adjustment required."
-                        : kairosInsight.category === "objective_starvation"
-                          ? "Strategic objective stagnation detected. Review funding velocity."
-                          : kairosInsight.category === "capital_efficiency"
-                            ? "Capital allocation conflict detected. Review deployment behavior."
-                            : "Material strategic shift detected. Review required."}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const targetMap: Record<string, string> = {
-                        solvency_pressure: "capital-velocity",
-                        objective_starvation: "capital-velocity",
-                        capital_efficiency: "ledger",
-                        strategic_alignment: "overview",
-                      };
-                      const targetId =
-                        targetMap[kairosInsight.category] || "overview";
-
-                      // Set Flash Context
-                      setActiveFlashInsight({
-                        message: kairosInsight.message,
-                        action: `Reviewing ${targetId.replace("_", " ")}`,
-                      });
-
-                      // Scroll to target
-                      const element = document.getElementById(targetId);
-                      if (element) {
-                        element.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                      }
-                    }}
-                    className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors shrink-0 flex items-center gap-2 ${kairosInsight.severity === "critical" ? "bg-orange-500 text-background hover:bg-orange-600 shadow-lg shadow-orange-500/20" : "bg-background/10 hover:bg-background/20 text-background"}`}
-                  >
-                    <span>
-                      {kairosInsight.category === "solvency_pressure"
-                        ? "Adjust Objectives"
-                        : kairosInsight.category === "objective_starvation"
-                          ? "View Objectives"
-                          : kairosInsight.category === "capital_efficiency"
-                            ? "Adjust Allocation"
-                            : "Investigate Signal"}
-                    </span>
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-              )}
           </div>
-
-          {/* LAYER D — SYSTEM TELEMETRY */}
-          {ledger.analytics && (
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-background/10 pt-6">
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Liquidity baseline
-                </p>
-                <p className="text-[11px] font-black tabular-nums text-background/80">
-                  {formatCurrency(liquidity)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Commitment pressure
-                </p>
-                <p className="text-[11px] font-black tabular-nums text-background/80">
-                  {formatCurrency(ledger.analytics?.totalLiabilities || 0)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Monthly Inflow
-                </p>
-                <p className="text-[11px] font-black tabular-nums text-background/80">
-                  {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-background/40 mb-1">
-                  Horizon stability
-                </p>
-                <p className="text-[11px] font-black tabular-nums text-background/80">
-                  {kairosInsight?.runway !== null ? "Evaluative" : "Structural"}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Capital Allocation Section (Contextual Interpretation) */}
+        {/* Breakdown Section */}
         <div id="capital-purpose" className="lg:col-span-4 space-y-6">
           {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
             <div className="space-y-6 animate-in fade-in duration-500">
               <div className="flex items-center gap-3">
                 <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-                  Capital Purpose
+                  Allocation
                 </h2>
-                <div className="h-0.5 w-8 bg-foreground/10"></div>
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {Object.entries(ledger.analytics.categoryBreakdown)
@@ -1251,7 +1090,7 @@ export default function Dashboard() {
                     return (
                       <div
                         key={cat}
-                        className="bg-background border rounded-3xl p-5 shadow-sm hover:border-foreground/20 transition-all group"
+                        className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:bg-foreground/[0.04] transition-all group"
                       >
                         <div className="flex justify-between items-end mb-3">
                           <div>
@@ -1283,14 +1122,13 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Zone 4 — CHRONOLOGICAL LEDGER STREAM */}
+      {/* Zone 4 — HISTORY */}
       <section id="ledger" className="space-y-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">
-              Capital purpose
+              History
             </h2>
-            <div className="h-0.5 w-16 bg-foreground/10"></div>
           </div>
           <div className="flex items-center gap-4 relative">
             <button
@@ -1301,16 +1139,6 @@ export default function Dashboard() {
                   : "bg-background text-foreground/60 border-foreground/10 hover:border-foreground/20"
               }`}
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-              >
-                <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
-              </svg>
               {ledgerFilter === "all" ? "Filter" : ledgerFilter}
             </button>
 
