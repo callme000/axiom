@@ -135,57 +135,44 @@ export function StrategicObjectiveSection({
           <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
             Strategic Objectives
           </h2>
-          <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
-            Directional Financial Intentions
-          </p>
         </div>
         <button
           onClick={() => {
             if (isAdding) {
               setEditingId(null);
-              setForm({
-                objective_name: "",
-                objective_type: "emergency_reserve",
-                target_amount: "",
-                current_amount: "",
-                priority_level: "moderate",
-                status: "active",
-                target_date: "",
-                notes: "",
-              });
             }
             setIsAdding(!isAdding);
           }}
           className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Set Objective"}
+            {isAdding ? "Cancel" : "+ Add objective"}
           </span>
         </button>
       </div>
 
       {isAdding && (
-        <div className="bg-background border-2 border-foreground rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Objective Name
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Multi-Asset Liquidity Base"
+                  placeholder="e.g. Emergency Fund"
                   value={form.objective_name}
                   onChange={(e) =>
                     setForm({ ...form, objective_name: e.target.value })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Target Date (Optional)
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Target Date
                 </label>
                 <input
                   type="date"
@@ -193,15 +180,15 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, target_date: e.target.value })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Target Amount (KSh)
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Target Amount
                 </label>
                 <input
                   type="number"
@@ -211,12 +198,12 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, target_amount: e.target.value })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Current Position (KSh)
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Current Position
                 </label>
                 <input
                   type="number"
@@ -225,82 +212,9 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, current_amount: e.target.value })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Objective Type
-                </label>
-                <select
-                  value={form.objective_type}
-                  onChange={(e) =>
-                    setForm({ ...form, objective_type: e.target.value })
-                  }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                >
-                  {OBJECTIVE_TYPES.map(
-                    (t: { value: string; label: string }) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Priority Level
-                </label>
-                <select
-                  value={form.priority_level}
-                  onChange={(e) =>
-                    setForm({ ...form, priority_level: e.target.value })
-                  }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                >
-                  {OBJECTIVE_PRIORITIES.map(
-                    (p: { value: string; label: string }) => (
-                      <option key={p.value} value={p.value}>
-                        {p.label}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Operational Status
-                </label>
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                >
-                  {OBJECTIVE_STATUSES.map(
-                    (s: { value: string; label: string }) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                Strategic Notes (Optional)
-              </label>
-              <textarea
-                placeholder="Details of this strategic intention..."
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold min-h-[80px]"
-              />
             </div>
 
             {error && (
@@ -312,13 +226,13 @@ export function StrategicObjectiveSection({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-foreground text-background py-4 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50 shadow-xl"
+              className="w-full bg-foreground text-background py-4 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
               {isLoading
-                ? "ESTABLISHING..."
+                ? "SAVING..."
                 : editingId
-                  ? "Update Strategic Intent"
-                  : "Establish Strategic Intent"}
+                  ? "Update Intent"
+                  : "Set Intent"}
             </button>
           </form>
         </div>
@@ -326,13 +240,9 @@ export function StrategicObjectiveSection({
 
       <div className="grid grid-cols-1 gap-6">
         {objectives.length === 0 ? (
-          <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-16 text-center group hover:border-foreground/20 transition-colors">
-            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No strategic objectives defined.
-            </p>
-            <p className="text-foreground/40 text-[10px] mt-3 uppercase tracking-tight opacity-60 leading-relaxed">
-              Axiom currently observes financial behavior <br /> without
-              directional context.
+          <div className="border border-dashed border-foreground/10 rounded-2xl p-16 text-center">
+            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
+              No objectives defined.
             </p>
           </div>
         ) : (
@@ -341,18 +251,16 @@ export function StrategicObjectiveSection({
             return (
               <div
                 key={obj.id}
-                className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+                className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-6 group hover:bg-foreground/[0.04] transition-all"
               >
-                <div className="flex items-center justify-between relative z-10 mb-6">
+                <div className="flex items-center justify-between mb-6">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-3">
                       <span
                         className={`text-[9px] font-black text-background px-2 py-0.5 rounded uppercase tracking-[0.1em] ${
                           obj.priority_level === "critical"
                             ? "bg-orange-500"
-                            : obj.priority_level === "high"
-                              ? "bg-foreground/70"
-                              : "bg-foreground/40"
+                            : "bg-foreground/40"
                         }`}
                       >
                         {obj.priority_level}
@@ -361,93 +269,32 @@ export function StrategicObjectiveSection({
                         {obj.objective_name}
                       </h3>
                     </div>
-                    <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-[0.2em]">
-                      {obj.objective_type.replace("_", " ").toUpperCase()} ::{" "}
-                      {obj.status}
-                      {obj.target_date &&
-                        ` • Target: ${formatDate(obj.target_date)}`}
-                    </p>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-2xl font-black tabular-nums text-foreground">
-                        {Math.round(ratio)}%
-                      </p>
-                      <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
-                        Funding Ratio
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => startEdit(obj)}
-                        className="p-2 text-foreground/20 hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                        >
-                          <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(obj.id)}
-                        className="p-2 text-foreground/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                        >
-                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      </button>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-black tabular-nums text-foreground">
+                      {Math.round(ratio)}%
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="h-2 w-full bg-foreground/5 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-1000 ease-out ${
-                        ratio >= 100 ? "bg-green-500" : "bg-foreground/60"
+                        ratio >= 100 ? "bg-green-500" : "bg-foreground/40"
                       }`}
                       style={{ width: `${ratio}%` }}
                     />
                   </div>
                   <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest mb-0.5">
-                        Current Position
-                      </p>
-                      <p className="text-xs font-black text-foreground tabular-nums">
-                        {formatCurrency(obj.current_amount)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest mb-0.5">
-                        Strategic Target
-                      </p>
-                      <p className="text-xs font-black text-foreground/60 tabular-nums">
-                        {formatCurrency(obj.target_amount)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {obj.notes && (
-                  <div className="mt-5 pt-4 border-t border-foreground/5">
-                    <p className="text-[10px] font-bold text-foreground/40 italic leading-relaxed">
-                      &quot;{obj.notes}&quot;
+                    <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">
+                      {formatCurrency(obj.current_amount)}
+                    </p>
+                    <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">
+                      Target: {formatCurrency(obj.target_amount)}
                     </p>
                   </div>
-                )}
+                </div>
               </div>
             );
           })

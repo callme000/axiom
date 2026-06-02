@@ -93,7 +93,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Financial Goals
+          Goals
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -106,27 +106,27 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
       </div>
 
       {isAdding && (
-        <div className="bg-background border-2 border-foreground rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Goal Designation
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 6-Month Emergency Fund"
+                  placeholder="e.g. Emergency Fund"
                   value={form.goal_name}
                   onChange={(e) =>
                     setForm({ ...form, goal_name: e.target.value })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Target Capital (KSh)
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Target Amount
                 </label>
                 <input
                   type="number"
@@ -136,60 +136,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   onChange={(e) =>
                     setForm({ ...form, target_amount: e.target.value })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Strategy Type
-                </label>
-                <select
-                  value={form.goal_type}
-                  onChange={(e) =>
-                    setForm({ ...form, goal_type: e.target.value })
-                  }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                >
-                  {GOAL_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Priority
-                </label>
-                <select
-                  value={form.priority}
-                  onChange={(e) =>
-                    setForm({ ...form, priority: e.target.value })
-                  }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                >
-                  {GOAL_PRIORITIES.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Current Inception
-                </label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  value={form.current_progress}
-                  onChange={(e) =>
-                    setForm({ ...form, current_progress: e.target.value })
-                  }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
             </div>
@@ -205,7 +152,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "INITIALIZING..." : "INITIALIZE GOAL"}
+              {isLoading ? "SAVING..." : "SAVE GOAL"}
             </button>
           </form>
         </div>
@@ -213,12 +160,9 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
 
       <div className="grid grid-cols-1 gap-4">
         {goals.length === 0 ? (
-          <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
-            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No financial goals defined.
-            </p>
-            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Capital currently operating without specific achievement targets.
+          <div className="border border-dashed border-foreground/10 rounded-2xl p-12 text-center">
+            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
+              No active goals.
             </p>
           </div>
         ) : (
@@ -227,18 +171,16 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
             return (
               <div
                 key={goal.id}
-                className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+                className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/[0.04] transition-all"
               >
-                <div className="flex items-center justify-between relative z-10 mb-4">
+                <div className="flex items-center justify-between mb-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span
                         className={`text-[8px] font-black text-background px-1.5 py-0.5 rounded uppercase tracking-tighter ${
                           goal.priority === "critical"
                             ? "bg-orange-500"
-                            : goal.priority === "high"
-                              ? "bg-foreground/60"
-                              : "bg-foreground/30"
+                            : "bg-foreground/30"
                         }`}
                       >
                         {goal.priority}
@@ -247,39 +189,14 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                         {goal.goal_name}
                       </h3>
                     </div>
-                    <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
-                      {goal.goal_type.replace("_", " ").toUpperCase()} •{" "}
-                      {goal.status}
-                    </p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-lg font-black tabular-nums text-foreground">
-                        {Math.round(progress)}%
-                      </p>
-                      <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                        Goal Fulfullment
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(goal.id)}
-                      className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      >
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                      </svg>
-                    </button>
+                  <div className="text-right">
+                    <p className="text-lg font-black tabular-nums text-foreground">
+                      {Math.round(progress)}%
+                    </p>
                   </div>
                 </div>
 
-                {/* Deterministic Progress Track */}
                 <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-1000 ease-out ${

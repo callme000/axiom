@@ -38,10 +38,10 @@ export const IncomeMap: Record<IncomeType, string> = {
 };
 
 export const DeploymentMap: Record<ValidCategory, string> = {
-  Asset: "MMF / Chama / Equities",
-  Skill: "Upskilling / Certifications",
-  Leverage: "Tools / Automation",
-  Experience: "Lifestyle / Experiences",
-  Maintenance: "Basic Survival (Rent/Food)",
-  Leakage: "M-Pesa Leakage / Unclassified",
+  Asset: "Investments",
+  Skill: "Growth",
+  Leverage: "Efficiency",
+  Experience: "Lifestyle",
+  Maintenance: "Essentials",
+  Leakage: "Waste",
 };

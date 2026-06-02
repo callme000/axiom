@@ -1,49 +1,30 @@
 "use client";
 
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  useSyncExternalStore,
-} from "react";
-import {
-  createDeploymentAction,
-  deleteDeploymentAction,
   getDashboardSnapshotAction,
-  updateDeploymentAction,
-  updateLiquidityAction,
+  createDeploymentAction,
   type DashboardSnapshot,
 } from "./actions";
-import type { AnalyticsSummary } from "@/lib/analytics";
-import {
-  getTaxonomyInterpretation,
-  TAXONOMY_CATEGORIES,
-} from "@/lib/finance/taxonomy";
-import { evaluateMetadataQuality } from "@/lib/finance/metadataQuality";
-import {
-  EXPECTED_RETURN_HORIZONS,
-  type DeploymentAdvancedContextInput,
-} from "@/lib/finance/deploymentContext";
 import { AccountSection } from "./AccountSection";
 import { LiabilitySection } from "./LiabilitySection";
 import { IncomeSection } from "./IncomeSection";
 import { GoalSection } from "./GoalSection";
 import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
 import { BaselineSection } from "./BaselineSection";
-import { RunwayCard } from "./RunwayCard";
 import { PendingInflows } from "./PendingInflows";
-import { HistoricalAudit } from "./HistoricalAudit";
 import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
 import DayZeroOnboarding from "@/components/dashboard/DayZeroOnboarding";
+import { NewEntryForm } from "./NewEntryForm";
 import type {
+  AnalyticsSummary,
+  Deployment,
   Account,
   Liability,
   IncomeStream,
   FinancialGoal,
   StrategicObjective,
   OperationalBaseline,
-  Deployment,
 } from "@/lib/analytics/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { DeploymentMap } from "@/lib/utils/taxonomy";
@@ -61,103 +42,13 @@ interface LedgerState {
 
 type KairosInsight = DashboardSnapshot["kairosInsight"];
 
-const EMPTY_ADVANCED_CONTEXT: DeploymentAdvancedContextInput = {
+const EMPTY_ADVANCED_CONTEXT = {
   associatedAccount: "",
   expectedReturnHorizon: "",
   tags: "",
 };
 
-/**
- * COMPONENT: Taxonomy Category Selector
- * Implementation of the "Taxonomy Clarity Layer".
- */
-function CategorySelector({
-  value,
-  onChange,
-  disabled,
-  compact = false,
-}: {
-  value: string;
-  onChange: (category: string) => void;
-  disabled?: boolean;
-  compact?: boolean;
-}) {
-  const interpretation = getTaxonomyInterpretation(value);
-
-  return (
-    <div className={compact ? "space-y-2" : "space-y-4"}>
-      <div
-        role="radiogroup"
-        aria-label="Category"
-        className={
-          compact
-            ? "grid grid-cols-1 gap-2"
-            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-        }
-      >
-        {TAXONOMY_CATEGORIES.map((category) => {
-          const isSelected = value === category.value;
-
-          return (
-            <button
-              key={category.value}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              disabled={disabled}
-              onClick={() => onChange(category.value)}
-              className={`w-full rounded-xl border transition-all text-left disabled:cursor-not-allowed disabled:opacity-50 ${
-                compact ? "p-3" : "p-4"
-              } ${
-                isSelected
-                  ? "border-foreground bg-foreground text-background shadow-lg scale-[1.02]"
-                  : "border-foreground/5 bg-foreground/[0.02] text-foreground hover:bg-foreground/[0.04]"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={`block font-black uppercase tracking-widest ${compact ? "text-[8px]" : "text-[9px]"}`}
-                >
-                  {DeploymentMap[
-                    category.value as keyof typeof DeploymentMap
-                  ] || category.label}
-                </span>
-              </div>
-              <span
-                className={`mt-1 block font-bold leading-tight ${
-                  compact ? "text-[8px]" : "text-[10px]"
-                } ${isSelected ? "text-background/60" : "text-foreground/40"}`}
-              >
-                {category.definition}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {value !== "Unclassified" && interpretation && !compact && (
-        <div className="p-4 bg-foreground/[0.02] border-l-2 border-foreground/10 rounded-r-2xl animate-in fade-in slide-in-from-left-2 duration-500">
-          <p className="text-[9px] font-black text-foreground/30 uppercase tracking-widest mb-1">
-            Impact
-          </p>
-          <p className="font-bold leading-snug text-foreground/60 text-[10px]">
-            {interpretation}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const emptySubscribe = () => () => {};
-
 export default function Dashboard() {
-  const isClient = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-
   const [ledger, setLedger] = useState<LedgerState>({
     deployments: [],
     accounts: [],
@@ -169,69 +60,20 @@ export default function Dashboard() {
     analytics: null,
   });
   const [liquidity, setLiquidity] = useState<number>(0);
-  const [category, setCategory] = useState("Unclassified");
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
-  const [isKairosAcknowledged, setIsKairosAcknowledged] = useState(false);
-  const [lastAcknowledgedAt, setLastAcknowledgedAt] = useState<string | null>(
-    null,
-  );
-
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [deploymentAccountId, setDeploymentAccountId] = useState("");
-  const [isAdvancedContextOpen, setIsAdvancedContextOpen] = useState(false);
-  const [advancedContext, setAdvancedContext] =
-    useState<DeploymentAdvancedContextInput>({ ...EMPTY_ADVANCED_CONTEXT });
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
-  const [isLiquidityLoading, setIsLiquidityLoading] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [isIntelligenceSyncing, setIsIntelligenceSyncing] = useState(false);
-
-  const [activeFlashInsight, setActiveFlashInsight] = useState<{
-    message: string;
-    action: string;
-  } | null>(null);
-
-  const titleMetadataQuality = evaluateMetadataQuality(title);
-  const showTitleQualityHint =
-    title.trim().length > 0 && titleMetadataQuality.isLowQuality;
 
   const isExecuting = useRef(false);
   const fetchCount = useRef(0);
-  const flashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    // Persistence Refinement: Flash insights now remain active until user dismissal
-    // to ensure guidance is fully absorbed.
-    return () => {
-      if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
-    };
-  }, [activeFlashInsight]);
-
-  const [globalError, setGlobalError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [liquidityError, setLiquidityError] = useState<string | null>(null);
-
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [ledgerFilter, setLedgerFilter] = useState("all");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [editForm, setEditForm] = useState({
-    title: "",
-    amount: "",
-    category: "Unclassified",
-  });
-  const [isEditingLiquidity, setIsEditingLiquidity] = useState(false);
-  const [liquidityInput, setLiquidityInput] = useState("");
 
   const applyDashboardSnapshot = useCallback((snapshot: DashboardSnapshot) => {
     if (!snapshot.authenticated) return;
     setLiquidity(snapshot.liquidity);
-    setLiquidityInput(snapshot.liquidity.toString());
     setLedger({
       deployments: snapshot.deployments as Deployment[],
       accounts: snapshot.accounts,
@@ -240,171 +82,85 @@ export default function Dashboard() {
       goals: snapshot.goals,
       objectives: snapshot.objectives,
       baseline: snapshot.baseline,
-      analytics: snapshot.analytics,
+      analytics: snapshot.analytics as AnalyticsSummary | null,
     });
     setKairosInsight(snapshot.kairosInsight);
-    if (snapshot.kairosInsight?.is_new_signal) {
-      setIsKairosAcknowledged(false);
-    }
   }, []);
 
   const fetchDashboardData = useCallback(async () => {
     const requestId = ++fetchCount.current;
-    setGlobalError(null);
     try {
       const snapshot = await getDashboardSnapshotAction();
       if (requestId !== fetchCount.current) return;
       applyDashboardSnapshot(snapshot);
     } catch {
-      setGlobalError("Connectivity failure. Intelligence layer offline.");
+      // Fail silently for background fetches
     } finally {
       if (requestId === fetchCount.current) setIsInitialLoading(false);
     }
   }, [applyDashboardSnapshot]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDashboardData();
+    let mounted = true;
+    const load = async () => {
+      if (!mounted) return;
+      await fetchDashboardData();
+    };
+    void load();
+    return () => {
+      mounted = false;
+    };
   }, [fetchDashboardData]);
-
-  async function handleAddDeployment(e: React.FormEvent) {
-    e.preventDefault();
-    if (isExecuting.current) return;
-    setIsActionLoading(true);
-    setFormError(null);
-    isExecuting.current = true;
-    setIsIntelligenceSyncing(true);
-
-    try {
-      if (category === "Unclassified")
-        throw new Error("Strategic classification required before execution");
-
-      if (Number(amount) > liquidity) {
-        throw new Error("Deployment exceeds available liquidity.");
-      }
-
-      const snapshot = await createDeploymentAction({
-        title,
-        amount: Number(amount),
-        category,
-        advancedContext,
-        accountId: deploymentAccountId || undefined,
-      });
-      setTitle("");
-      setAmount("");
-      setDeploymentAccountId("");
-      setCategory("Unclassified");
-      setAdvancedContext({ ...EMPTY_ADVANCED_CONTEXT });
-      setIsAdvancedContextOpen(false);
-      applyDashboardSnapshot(snapshot);
-    } catch (err: unknown) {
-      setFormError(err instanceof Error ? err.message : "Deployment failed");
-    } finally {
-      setIsActionLoading(false);
-      isExecuting.current = false;
-      setIsIntelligenceSyncing(false);
-    }
-  }
-
-  async function handleUpdateLiquidity() {
-    if (isExecuting.current) return;
-    setIsLiquidityLoading(true);
-    setLiquidityError(null);
-    isExecuting.current = true;
-    setIsIntelligenceSyncing(true);
-    try {
-      const newAmount = Number(liquidityInput);
-      if (isNaN(newAmount)) throw new Error("Invalid value");
-      const snapshot = await updateLiquidityAction(newAmount);
-      setIsEditingLiquidity(false);
-      applyDashboardSnapshot(snapshot);
-    } catch {
-      setLiquidityError("Update failed");
-    } finally {
-      setIsLiquidityLoading(false);
-      isExecuting.current = false;
-      setIsIntelligenceSyncing(false);
-    }
-  }
-
-  async function handleDelete(id: string) {
-    if (isExecuting.current) return;
-    if (
-      !confirm(
-        "Archive this deployment? It will be removed from your active ledger but retained for historical analytics.",
-      )
-    )
-      return;
-    setDeletingId(id);
-    isExecuting.current = true;
-    setIsIntelligenceSyncing(true);
-    try {
-      const snapshot = await deleteDeploymentAction(id);
-      applyDashboardSnapshot(snapshot);
-    } catch {
-      setGlobalError("Deletion interrupted.");
-    } finally {
-      setDeletingId(null);
-      isExecuting.current = false;
-      setIsIntelligenceSyncing(false);
-    }
-  }
-
-  function startEdit(deployment: Deployment) {
-    setEditingId(deployment.id);
-    setEditForm({
-      title: deployment.title,
-      amount: deployment.amount.toString(),
-      category: deployment.category || "Unclassified",
-    });
-  }
-
-  async function handleUpdate(id: string) {
-    if (isExecuting.current) return;
-    setUpdatingId(id);
-    isExecuting.current = true;
-    setIsIntelligenceSyncing(true);
-    try {
-      if (!editForm.title.trim()) throw new Error("Title required");
-      if (Number(editForm.amount) <= 0) throw new Error("Amount invalid");
-      const snapshot = await updateDeploymentAction(id, {
-        title: editForm.title,
-        amount: Number(editForm.amount),
-        category: editForm.category,
-      });
-      setEditingId(null);
-      applyDashboardSnapshot(snapshot);
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Update failed");
-    } finally {
-      setUpdatingId(null);
-      isExecuting.current = false;
-      setIsIntelligenceSyncing(false);
-    }
-  }
 
   if (isInitialLoading) {
     return (
       <div className="max-w-6xl mx-auto p-6 pb-20 animate-pulse space-y-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div className="space-y-3">
-            <div className="h-12 w-64 bg-foreground/5 rounded-2xl"></div>
-            <div className="h-4 w-48 bg-foreground/5 rounded-full"></div>
-          </div>
-        </div>
-        <div className="h-96 bg-foreground/5 rounded-4xl"></div>
+        <div className="h-12 w-64 bg-foreground/5 rounded-2xl"></div>
         <div className="h-96 bg-foreground/5 rounded-4xl"></div>
       </div>
     );
   }
 
-  // Day Zero Onboarding Gate: If no financial truth exists, force established baseline.
   if (ledger.accounts.length === 0 && ledger.baseline.length === 0) {
     return <DayZeroOnboarding onComplete={applyDashboardSnapshot} />;
   }
 
   return (
     <div className="space-y-24">
+      {/* Zone 0 — PSYCHOLOGICAL ANCHOR (RUNWAY) */}
+      <section className="pt-8 md:pt-16 text-center space-y-4">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-foreground/5 rounded-full mb-4">
+          <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
+          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-foreground/40">
+            Active Solvency Monitor
+          </span>
+        </div>
+        <div className="flex flex-col items-center">
+          <h1 className="text-7xl md:text-9xl font-black text-foreground tracking-tighter tabular-nums leading-none">
+            {ledger.analytics?.runwayDays !== null &&
+            ledger.analytics?.runwayDays !== undefined
+              ? Math.round(ledger.analytics.runwayDays)
+              : "∞"}
+          </h1>
+          <p className="text-sm md:text-lg font-black text-foreground/40 uppercase tracking-[0.5em] mt-4">
+            Days of Runway
+          </p>
+        </div>
+        <div className="max-w-md mx-auto pt-8">
+          <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-foreground transition-all duration-1000 ease-out"
+              style={{
+                width: `${Math.min(100, (ledger.analytics?.runwayDays ?? 0) / 3.65)}%`,
+              }}
+            ></div>
+          </div>
+          <p className="text-[9px] font-bold text-foreground/20 uppercase tracking-widest mt-3">
+            Deterministic survival projection :: v1.0
+          </p>
+        </div>
+      </section>
+
       {/* Zone 1 — FINANCIAL POSITION */}
       <section id="overview" className="space-y-12">
         <div className="flex items-center gap-4 mb-8">
@@ -413,14 +169,12 @@ export default function Dashboard() {
           </h2>
         </div>
 
-        {/* PENDING ACTIONS LAYER */}
         <PendingInflows
           incomeStreams={ledger.incomeStreams}
           accounts={ledger.accounts}
           onSnapshot={applyDashboardSnapshot}
         />
 
-        {/* ROW 1: PRIMARY POSITION */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
@@ -438,561 +192,142 @@ export default function Dashboard() {
 
           <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
-              Assets
+              Total Capital
             </span>
             <span className="text-4xl font-black tabular-nums text-foreground">
-              {formatCurrency(ledger.analytics?.totalAssets || 0)}
+              {formatCurrency(liquidity)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Current holdings
+              Liquid liquidity
             </p>
           </div>
 
           <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
             <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">
-              Liabilities
+              Monthly Inflow
             </span>
             <span className="text-4xl font-black tabular-nums text-foreground">
-              {formatCurrency(ledger.analytics?.totalLiabilities || 0)}
+              {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}
             </span>
             <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-4">
-              Total debt
+              Replenishment velocity
             </p>
-          </div>
-        </div>
-
-        {/* ROW 2: OPERATIONAL SURVIVAL */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-black text-foreground tracking-tighter uppercase opacity-30">
-              Cash Flow
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div
-              className={`bg-foreground/[0.02] border rounded-3xl p-6 md:p-8 relative group transition-colors ${liquidityError ? "border-red-500/50 bg-red-500/5" : "border-foreground/5"} hover:bg-foreground/[0.04]`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                  {liquidityError ? "Sync Error" : "Available Cash"}
-                </span>
-                <button
-                  onClick={() =>
-                    !isLiquidityLoading && setIsEditingLiquidity(true)
-                  }
-                  className="p-1.5 rounded-lg hover:bg-foreground/10 transition-colors text-foreground/60 hover:text-foreground"
-                  title="Update cash balance"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  >
-                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                  </svg>
-                </button>
-              </div>
-              {isEditingLiquidity ? (
-                <div className="flex flex-col gap-2">
-                  <input
-                    autoFocus
-                    type="number"
-                    disabled={isLiquidityLoading}
-                    value={liquidityInput}
-                    onChange={(e) => setLiquidityInput(e.target.value)}
-                    className="bg-background border-none rounded p-1 text-center font-black text-xl w-full focus:outline-none disabled:opacity-50"
-                  />
-                  <button
-                    disabled={isLiquidityLoading}
-                    onClick={() => handleUpdateLiquidity()}
-                    className="bg-foreground text-background text-[10px] font-black py-2 rounded-lg disabled:opacity-50 uppercase tracking-widest"
-                  >
-                    {isLiquidityLoading ? "SYNCING..." : "Confirm Balance"}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col">
-                  <span className="text-4xl font-black tabular-nums text-foreground">
-                    {formatCurrency(liquidity)}
-                  </span>
-                  <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                    Ready to use
-                  </p>{" "}
-                </div>
-              )}
-            </div>
-
-            <div className="bg-foreground/[0.02] border border-foreground/5 rounded-3xl p-6 md:p-8 flex flex-col justify-between hover:bg-foreground/[0.04] transition-colors">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                  Monthly Inflow
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-4xl font-black tabular-nums text-foreground">
-                  {formatCurrency(ledger.analytics?.totalMonthlyIncome || 0)}
-                </span>
-                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-3">
-                  Average monthly
-                </p>{" "}
-              </div>
-            </div>
-
-            <RunwayCard
-              runwayDays={ledger.analytics?.runwayDays ?? null}
-              netWorth={ledger.analytics?.netWorth ?? 0}
-            />
-          </div>
-        </div>
-
-        {globalError && (
-          <div className="bg-red-500/10 border-2 border-red-500/20 p-6 md:p-8 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-center gap-5 text-center md:text-left">
-              <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  className="text-red-500"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-1">
-                  System Anomaly Detected
-                </h3>
-                <p className="text-red-600/70 text-xs font-bold uppercase tracking-widest leading-tight max-w-md">
-                  {globalError}
-                </p>
-              </div>
-            </div>
-            <button
-              disabled={isInitialLoading}
-              onClick={fetchDashboardData}
-              className="bg-foreground text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10 disabled:opacity-50"
-            >
-              Attempt Re-Sync
-            </button>
-          </div>
-        )}
-
-        {/* SUBSECTION C — FINANCIAL CONTAINERS, OBLIGATIONS & STRATEGY */}
-        <div className="space-y-8">
-          <div
-            id="capital-velocity"
-            className="flex items-center gap-4 scroll-mt-20"
-          >
-            <div className="h-0.5 w-8 bg-foreground/10"></div>
-            <h2 className="text-xl font-black text-foreground tracking-tighter uppercase opacity-30">
-              Capital Velocity
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div
-              id="accounts"
-              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-            >
-              <AccountSection
-                accounts={ledger.accounts}
-                deployments={ledger.deployments}
-                onSnapshot={applyDashboardSnapshot}
-              />
-            </div>
-            <div
-              id="liabilities"
-              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-            >
-              <LiabilitySection
-                liabilities={ledger.liabilities}
-                onSnapshot={applyDashboardSnapshot}
-              />
-            </div>
-            <div
-              id="income"
-              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-            >
-              <IncomeSection
-                incomeStreams={ledger.incomeStreams}
-                onSnapshot={applyDashboardSnapshot}
-              />
-            </div>
-            <div
-              id="baseline"
-              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-            >
-              <BaselineSection
-                baseline={ledger.baseline}
-                onSnapshot={applyDashboardSnapshot}
-              />
-            </div>
-            <div
-              id="objectives"
-              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-            >
-              <StrategicObjectiveSection
-                objectives={ledger.objectives}
-                onSnapshot={applyDashboardSnapshot}
-              />
-            </div>
-            <div
-              id="goals"
-              className="bg-background border border-foreground/10 rounded-3xl p-6 md:p-8 shadow-2xl scroll-mt-10"
-            >
-              <GoalSection
-                goals={ledger.goals}
-                onSnapshot={applyDashboardSnapshot}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Strategic Fulfillment Context (Analytical Summary) */}
-        <div className="bg-foreground border border-foreground/10 rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 text-background shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 md:gap-10 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-background/5 blur-[80px] rounded-full -mr-32 -mt-32"></div>
-
-          <div className="space-y-2 relative z-10 text-center md:text-left">
-            <h2 className="text-xl md:text-2xl font-black uppercase tracking-[0.1em]">
-              Strategic Fulfillment
-            </h2>
-            <p className="text-background/60 text-[11px] md:text-sm font-bold uppercase tracking-widest max-w-lg leading-relaxed">
-              Alignment of authoritative capital with defined long-term
-              intentions. Calculated mean across all active objectives.
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 md:gap-12 relative z-10">
-            <div className="text-center md:text-right">
-              <p className="text-4xl md:text-5xl font-black tabular-nums">
-                {Math.round(ledger.analytics?.averageGoalProgress || 0)}%
-              </p>
-              <p className="text-[8px] md:text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-1 md:mt-2">
-                Fulfillment Mean
-              </p>
-            </div>
-
-            {ledger.analytics && ledger.analytics.criticalGoalCount > 0 && (
-              <div className="bg-orange-500 text-background px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl shadow-xl shadow-orange-500/20">
-                <p className="text-xs md:text-sm font-black uppercase tracking-widest leading-none">
-                  {ledger.analytics.criticalGoalCount}
-                </p>
-                <p className="text-[7px] md:text-[9px] font-black uppercase tracking-tighter mt-1 opacity-80">
-                  Critical
-                </p>
-              </div>
-            )}
-
-            <div className="bg-background/10 h-12 md:h-16 w-[1px] hidden sm:block"></div>
-
-            <div className="text-center md:text-right">
-              <p className="text-4xl md:text-5xl font-black tabular-nums">
-                {ledger.goals.length + ledger.objectives.length}
-              </p>
-              <p className="text-[8px] md:text-[10px] font-black text-background/40 uppercase tracking-[0.2em] mt-1 md:mt-2">
-                Active Intentions
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* GUIDING STRATEGIC INSIGHT (Persistent bottom-right) */}
-      {activeFlashInsight && (
-        <div className="fixed bottom-8 right-8 z-50 animate-in fade-in slide-in-from-right-8 duration-700 max-w-sm w-full">
-          <div className="bg-background border-2 border-foreground rounded-[2rem] p-6 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] text-foreground relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-foreground/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-foreground/10 transition-colors"></div>
-
-            <div className="flex items-start gap-5 relative z-10">
-              <div className="w-12 h-12 bg-foreground text-background rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 16v-4M12 8h.01" />
-                </svg>
-              </div>
-
-              <div className="space-y-1 pr-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 block">
-                  Strategic Guidance
-                </span>
-                <p className="text-sm font-bold leading-relaxed text-foreground">
-                  {activeFlashInsight.message}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center justify-between pt-4 border-t border-foreground/5 relative z-10">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-foreground/20 rounded-full"></span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">
-                  {activeFlashInsight.action}
-                </span>
-              </div>
-              <button
-                onClick={() => setActiveFlashInsight(null)}
-                className="px-4 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+      {/* Zone 2 — NEW ENTRY */}
+      <section id="deploy" className="max-w-4xl mx-auto w-full">
+        <div className="bg-background border border-foreground/5 rounded-[2rem] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="w-12 h-12 bg-foreground rounded-2xl flex items-center justify-center shadow-lg">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                className="text-background"
               >
-                Dismiss
-              </button>
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">
+                New Entry
+              </h2>
+              <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">
+                Strategic Allocation & Log
+              </p>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Zone 2 — LOG ENTRY */}
-      <section
-        id="deploy"
-        className={`transition-opacity duration-500 ${globalError && !isInitialLoading && ledger.deployments.length === 0 ? "opacity-40 pointer-events-none grayscale" : "opacity-100"}`}
-      >
-        <div className="bg-background border border-foreground/5 rounded-[2rem] p-6 md:p-10 shadow-2xl relative overflow-hidden group">
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-12 h-12 bg-foreground rounded-2xl flex items-center justify-center shadow-lg">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  className="text-background"
-                >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-              </div>
-              <div className="space-y-1">
-                <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">
-                  New Entry
-                </h2>
-                <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">
-                  Log spending or investments
-                </p>
-              </div>
-            </div>
-
-            <form onSubmit={handleAddDeployment} className="space-y-10">
-              {/* Primary Intent Layer */}
-              <div className="space-y-6">
-                <div>
-                  <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
-                    What was this for?
-                  </label>
-                  <input
-                    type="text"
-                    disabled={isActionLoading}
-                    placeholder="e.g. Monthly Rent, BTC Investment, Groceries"
-                    value={title}
-                    onChange={(e) => {
-                      setTitle(e.target.value);
-                      if (formError) setFormError(null);
-                    }}
-                    className="w-full border-2 border-foreground/5 bg-foreground/[0.02] rounded-2xl p-5 focus:outline-none focus:border-foreground/20 transition-all text-foreground text-xl placeholder:text-foreground/20 font-bold shadow-sm disabled:opacity-50"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
-                  <div className="md:col-span-5 space-y-6">
-                    <div>
-                      <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
-                        Amount (KSh)
-                      </label>
-                      <input
-                        type="number"
-                        disabled={isActionLoading}
-                        placeholder="0.00"
-                        value={amount}
-                        onChange={(e) => {
-                          setAmount(e.target.value);
-                          if (formError) setFormError(null);
-                        }}
-                        className="w-full border-2 border-foreground/5 bg-foreground/[0.02] rounded-2xl p-5 focus:outline-none focus:border-foreground/20 transition-all text-foreground text-2xl placeholder:text-foreground/20 font-black tabular-nums shadow-sm disabled:opacity-50"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="md:col-span-7">
-                    <label className="text-[11px] font-black text-foreground/60 uppercase tracking-[0.2em] mb-3 block ml-1">
-                      Category
-                    </label>
-                    <CategorySelector
-                      disabled={isActionLoading}
-                      value={category}
-                      onChange={(nextCategory) => {
-                        setCategory(nextCategory);
-                        if (formError) setFormError(null);
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Infrastructural Layer */}
-              <div className="border-t border-foreground/10 pt-6">
-                <button
-                  type="button"
-                  disabled={isActionLoading}
-                  aria-expanded={isAdvancedContextOpen}
-                  aria-controls="advanced-context-drawer"
-                  onClick={() => setIsAdvancedContextOpen((isOpen) => !isOpen)}
-                  className="flex w-full items-center justify-between py-2 text-left group disabled:opacity-50"
-                >
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 group-hover:text-foreground/60 transition-colors">
-                    Advanced Context
-                  </span>
-                  <span className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-foreground/40">
-                    {isAdvancedContextOpen
-                      ? "Hide Options"
-                      : "Reveal Infrastructural Parameters"}
-                    <span
-                      className={`inline-block transition-transform duration-500 ${isAdvancedContextOpen ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    >
-                      v
-                    </span>
-                  </span>
-                </button>
-                <div
-                  id="advanced-context-drawer"
-                  aria-hidden={!isAdvancedContextOpen}
-                  className={`grid transition-[grid-template-rows,opacity] duration-500 ease-in-out ${isAdvancedContextOpen ? "grid-rows-[1fr] opacity-100 mt-6" : "grid-rows-[0fr] opacity-0"}`}
-                >
-                  <div className="overflow-hidden">
-                    <div className="space-y-6 pb-4">
-                      <div>
-                        <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                          Funding Source
-                        </label>
-                        <select
-                          disabled={isActionLoading || !isAdvancedContextOpen}
-                          value={deploymentAccountId}
-                          onChange={(e) => {
-                            setDeploymentAccountId(e.target.value);
-                            if (formError) setFormError(null);
-                          }}
-                          className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-bold appearance-none disabled:opacity-50"
-                        >
-                          <option value="">No Deduction (Manual)</option>
-                          {ledger.accounts.map((acc) => (
-                            <option key={acc.id} value={acc.id}>
-                              {acc.account_name} (
-                              {formatCurrency(acc.current_balance)})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                          <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                            Expected Return Horizon
-                          </label>
-                          <select
-                            disabled={isActionLoading || !isAdvancedContextOpen}
-                            value={advancedContext.expectedReturnHorizon || ""}
-                            onChange={(e) => {
-                              setAdvancedContext((current) => ({
-                                ...current,
-                                expectedReturnHorizon: e.target.value,
-                              }));
-                              if (formError) setFormError(null);
-                            }}
-                            className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground font-black uppercase tracking-tighter appearance-none disabled:opacity-50"
-                          >
-                            <option value="">Unspecified</option>
-                            {EXPECTED_RETURN_HORIZONS.map((horizon) => (
-                              <option key={horizon.value} value={horizon.value}>
-                                {horizon.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-2 block ml-1">
-                            Strategic Tags
-                          </label>
-                          <input
-                            type="text"
-                            disabled={isActionLoading || !isAdvancedContextOpen}
-                            placeholder="ops, recurring, essential"
-                            value={
-                              typeof advancedContext.tags === "string"
-                                ? advancedContext.tags
-                                : advancedContext.tags?.join(", ") || ""
-                            }
-                            onChange={(e) => {
-                              setAdvancedContext((current) => ({
-                                ...current,
-                                tags: e.target.value,
-                              }));
-                              if (formError) setFormError(null);
-                            }}
-                            className="w-full border-2 border-foreground/10 bg-background rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/40 transition-colors text-sm text-foreground placeholder:text-foreground/20 font-bold disabled:opacity-50"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Execution Action */}
-              <div className="space-y-4">
-                {formError && (
-                  <div className="bg-red-500/10 border-2 border-red-500/20 p-5 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-300">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      className="text-red-500 shrink-0"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    <p className="text-[11px] font-black text-red-600 uppercase tracking-[0.1em] leading-tight">
-                      {formError}
-                    </p>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <button
-                    type="submit"
-                    disabled={isActionLoading}
-                    className={`w-full px-6 py-6 rounded-2xl font-black text-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 shadow-2xl uppercase tracking-[0.2em] ${formError ? "bg-red-600 text-white shadow-red-500/20" : "bg-foreground text-background shadow-foreground/20"}`}
-                  >
-                    {isActionLoading
-                      ? "INITIALIZING DEPLOYMENT..."
-                      : "Execute deployment"}
-                  </button>
-                  <p className="text-center text-[10px] font-black text-foreground/30 uppercase tracking-[0.1em]">
-                    Deployment becomes part of immutable financial truth once
-                    verified.
-                  </p>
-                </div>
-              </div>
-            </form>
-          </div>
+          <NewEntryForm
+            accounts={ledger.accounts}
+            liquidity={liquidity}
+            isActionLoading={isActionLoading}
+            onSubmit={async (data) => {
+              if (isExecuting.current) return;
+              setIsActionLoading(true);
+              isExecuting.current = true;
+              setIsIntelligenceSyncing(true);
+              try {
+                const snapshot = await createDeploymentAction({
+                  title: data.title,
+                  amount: data.amount,
+                  category: data.category,
+                  accountId: data.accountId,
+                  advancedContext: EMPTY_ADVANCED_CONTEXT,
+                });
+                applyDashboardSnapshot(snapshot);
+              } finally {
+                setIsActionLoading(false);
+                isExecuting.current = false;
+                setIsIntelligenceSyncing(false);
+              }
+            }}
+          />
         </div>
       </section>
+
+      {/* Subsections Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div
+          id="accounts"
+          className="bg-background border-none rounded-3xl p-6 md:p-8 scroll-mt-10"
+        >
+          <AccountSection
+            accounts={ledger.accounts}
+            onSnapshot={applyDashboardSnapshot}
+          />
+        </div>
+        <div
+          id="liabilities"
+          className="bg-background border-none rounded-3xl p-6 md:p-8 scroll-mt-10"
+        >
+          <LiabilitySection
+            liabilities={ledger.liabilities}
+            onSnapshot={applyDashboardSnapshot}
+          />
+        </div>
+        <div
+          id="income"
+          className="bg-background border-none rounded-3xl p-6 md:p-8 scroll-mt-10"
+        >
+          <IncomeSection
+            incomeStreams={ledger.incomeStreams}
+            onSnapshot={applyDashboardSnapshot}
+          />
+        </div>
+        <div
+          id="baseline"
+          className="bg-background border-none rounded-3xl p-6 md:p-8 scroll-mt-10"
+        >
+          <BaselineSection
+            baseline={ledger.baseline}
+            onSnapshot={applyDashboardSnapshot}
+          />
+        </div>
+        <div
+          id="objectives"
+          className="bg-background border-none rounded-3xl p-6 md:p-8 scroll-mt-10"
+        >
+          <StrategicObjectiveSection
+            objectives={ledger.objectives}
+            onSnapshot={applyDashboardSnapshot}
+          />
+        </div>
+        <div
+          id="goals"
+          className="bg-background border-none rounded-3xl p-6 md:p-8 scroll-mt-10"
+        >
+          <GoalSection
+            goals={ledger.goals}
+            onSnapshot={applyDashboardSnapshot}
+          />
+        </div>
+      </div>
 
       {/* Zone 3 — INSIGHTS */}
       <section
@@ -1000,21 +335,17 @@ export default function Dashboard() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-10"
       >
         <div
-          className={`lg:col-span-8 bg-foreground border-none rounded-[2rem] p-6 md:p-8 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/20" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
+          className={`lg:col-span-8 bg-foreground border-none rounded-[2rem] p-8 md:p-12 text-background shadow-2xl min-h-64 flex flex-col justify-between transition-all duration-500 ${kairosInsight?.severity === "critical" ? "ring-4 ring-orange-500/20" : ""} ${isIntelligenceSyncing ? "opacity-70 grayscale scale-[0.98]" : "opacity-100 scale-100"}`}
         >
           <div>
-            {/* LAYER A — STATUS BAR */}
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-background/10 pb-4 mb-6">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${kairosInsight?.severity === "critical" ? "bg-orange-500 animate-pulse" : "bg-background/20"}`}
-                  ></div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-background">
-                    {kairosInsight?.category?.replace("_", " ") ||
-                      "SYSTEM SCAN"}
-                  </span>
-                </div>
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-background/10 pb-6 mb-8">
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-2 h-2 rounded-full ${kairosInsight?.severity === "critical" ? "bg-orange-500 animate-pulse" : "bg-background/20"}`}
+                ></div>
+                <span className="text-xs font-mono uppercase tracking-[0.2em] text-background/60">
+                  {kairosInsight?.category?.replace("_", " ") || "SYSTEM SCAN"}
+                </span>
               </div>
               <div className="flex items-center gap-6">
                 {kairosInsight && (
@@ -1027,32 +358,25 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* LAYER B — ASSESSMENT */}
             <div className="space-y-6">
               {kairosInsight ? (
                 kairosInsight.isSilent ? (
-                  <div className="py-4">
-                    <p className="text-base font-bold leading-tight text-background/60 italic">
-                      No material changes detected.
-                    </p>
-                  </div>
+                  <p className="text-lg font-medium leading-tight text-background/60 italic">
+                    No material changes detected.
+                  </p>
                 ) : (
-                  <div
-                    className={`transition-all duration-700 ${kairosInsight.is_new_signal ? "animate-in fade-in slide-in-from-bottom-2" : ""}`}
-                  >
-                    <p className="text-lg md:text-xl font-black leading-tight text-background">
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <p className="text-xl md:text-2xl font-medium leading-snug text-background">
                       {kairosInsight.message}
                     </p>
-
-                    {/* LAYER C — SUPPORTING SIGNALS */}
                     {kairosInsight.supportingSignals &&
                       kairosInsight.supportingSignals.length > 0 && (
-                        <div className="mt-6 space-y-3">
+                        <div className="mt-8 space-y-4">
                           {kairosInsight.supportingSignals.map(
                             (signal, idx) => (
                               <p
                                 key={idx}
-                                className="text-[11px] font-bold leading-snug text-background/60 border-l-2 border-background/20 pl-3"
+                                className="text-sm font-medium leading-relaxed text-background/50 border-l border-background/20 pl-6"
                               >
                                 {signal}
                               </p>
@@ -1063,7 +387,7 @@ export default function Dashboard() {
                   </div>
                 )
               ) : (
-                <div className="space-y-3 opacity-20">
+                <div className="space-y-4 opacity-20">
                   <div className="h-4 bg-background/20 rounded-full w-full"></div>
                   <div className="h-4 bg-background/20 rounded-full w-3/4"></div>
                 </div>
@@ -1072,15 +396,12 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Breakdown Section */}
-        <div id="capital-purpose" className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-6">
           {ledger.analytics && ledger.analytics.totalDeployed > 0 && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-                  Allocation
-                </h2>
-              </div>
+            <div className="space-y-6">
+              <h2 className="text-xl font-black text-foreground tracking-tight uppercase opacity-30">
+                Allocation
+              </h2>
               <div className="grid grid-cols-1 gap-4">
                 {Object.entries(ledger.analytics.categoryBreakdown)
                   .sort(([, a], [, b]) => b - a)
@@ -1090,20 +411,20 @@ export default function Dashboard() {
                     return (
                       <div
                         key={cat}
-                        className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:bg-foreground/[0.04] transition-all group"
+                        className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:bg-foreground/[0.04] transition-all"
                       >
                         <div className="flex justify-between items-end mb-3">
                           <div>
-                            <span className="text-[9px] font-black text-foreground/60 uppercase tracking-widest block mb-1">
+                            <span className="text-[9px] font-black text-foreground/40 uppercase tracking-widest block mb-1">
                               {DeploymentMap[
                                 cat as keyof typeof DeploymentMap
                               ] || cat}
                             </span>
-                            <span className="text-base font-black text-foreground tabular-nums">
+                            <span className="text-lg font-black text-foreground tabular-nums">
                               {formatCurrency(amt)}
                             </span>
                           </div>
-                          <span className="text-xs font-black text-foreground/40">
+                          <span className="text-xs font-bold text-foreground/30">
                             {Math.round(percentage)}%
                           </span>
                         </div>
@@ -1123,301 +444,64 @@ export default function Dashboard() {
       </section>
 
       {/* Zone 4 — HISTORY */}
-      <section id="ledger" className="space-y-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">
-              History
-            </h2>
-          </div>
-          <div className="flex items-center gap-4 relative">
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${
-                ledgerFilter !== "all"
-                  ? "bg-foreground text-background border-foreground"
-                  : "bg-background text-foreground/60 border-foreground/10 hover:border-foreground/20"
-              }`}
-            >
-              {ledgerFilter === "all" ? "Filter" : ledgerFilter}
-            </button>
-
-            {isFilterOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsFilterOpen(false)}
-                ></div>
-                <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                  <div className="p-2 space-y-1">
-                    <button
-                      onClick={() => {
-                        setLedgerFilter("all");
-                        setIsFilterOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
-                        ledgerFilter === "all"
-                          ? "bg-foreground text-background"
-                          : "text-foreground/60 hover:bg-foreground/5"
-                      }`}
-                    >
-                      All Signals
-                    </button>
-                    {TAXONOMY_CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.value}
-                        onClick={() => {
-                          setLedgerFilter(cat.value);
-                          setIsFilterOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
-                          ledgerFilter === cat.value
-                            ? "bg-foreground text-background"
-                            : "text-foreground/60 hover:bg-foreground/5"
-                        }`}
-                      >
-                        {DeploymentMap[
-                          cat.value as keyof typeof DeploymentMap
-                        ] || cat.label}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => {
-                        setLedgerFilter("Unclassified");
-                        setIsFilterOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
-                        ledgerFilter === "Unclassified"
-                          ? "bg-foreground text-background"
-                          : "text-foreground/60 hover:bg-foreground/5"
-                      }`}
-                    >
-                      Unclassified
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            <span className="hidden md:inline text-[10px] font-black text-foreground/40 uppercase tracking-widest ml-2">
-              Audit Trail :: Verified
-            </span>
-          </div>
-        </div>
-
-        {ledger.deployments.length === 0 && !globalError ? (
-          <div className="bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-4xl p-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <div className="max-w-md mx-auto">
-              <div className="w-20 h-20 bg-foreground/5 rounded-3xl flex items-center justify-center mx-auto mb-8 text-foreground">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase mb-4">
-                Establish Financial Truth
-              </h2>
-              <p className="text-foreground/60 text-sm font-bold uppercase tracking-widest leading-relaxed">
-                Axiom is observing your capital behavior. Deployments will
-                materialize here as an immutable audit trail.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {ledger.deployments
-              .filter(
-                (d) => ledgerFilter === "all" || d.category === ledgerFilter,
-              )
-              .map((deployment) => (
-                <div
-                  key={deployment.id}
-                  className="bg-background border rounded-4xl p-6 shadow-sm hover:shadow-2xl hover:border-foreground/20 transition-all flex flex-col gap-4 group"
-                >
-                  {editingId === deployment.id ? (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <input
-                          type="text"
-                          disabled={updatingId === deployment.id}
-                          value={editForm.title}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              title: e.target.value,
-                            })
-                          }
-                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-bold disabled:opacity-50"
-                        />
-                        <input
-                          type="number"
-                          disabled={updatingId === deployment.id}
-                          value={editForm.amount}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              amount: e.target.value,
-                            })
-                          }
-                          className="bg-foreground/5 border-none rounded-xl p-2 text-foreground font-black disabled:opacity-50"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0 flex-1">
-                          <CategorySelector
-                            disabled={updatingId === deployment.id}
-                            value={editForm.category}
-                            onChange={(nextCategory) =>
-                              setEditForm({
-                                ...editForm,
-                                category: nextCategory,
-                              })
-                            }
-                            compact
-                          />
-                        </div>
-                        <div className="flex shrink-0 gap-2 pt-1">
-                          <button
-                            disabled={updatingId === deployment.id}
-                            onClick={() => setEditingId(null)}
-                            className="text-xs font-black text-foreground/60 uppercase px-3 py-1 disabled:opacity-50"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            disabled={updatingId === deployment.id}
-                            onClick={() => handleUpdate(deployment.id)}
-                            className="text-xs font-black bg-foreground text-background rounded-lg px-4 py-1 uppercase disabled:opacity-50"
-                          >
-                            {updatingId === deployment.id
-                              ? "SAVING..."
-                              : "Save"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-5">
-                        <div
-                          className={`w-14 h-14 bg-foreground/5 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-foreground group-hover:text-background ${deletingId === deployment.id ? "animate-pulse" : ""}`}
-                        >
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                          >
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-black text-xl text-foreground transition-colors leading-none">
-                              {deployment.title}
-                            </h3>
-                            <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/40">
-                              {DeploymentMap[
-                                deployment.category as keyof typeof DeploymentMap
-                              ] ||
-                                deployment.category ||
-                                "Unclassified"}
-                            </span>
-                            {deployment.account_id && (
-                              <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/10 rounded-full uppercase tracking-tighter text-foreground/60">
-                                via{" "}
-                                {ledger.accounts.find(
-                                  (a) => a.id === deployment.account_id,
-                                )?.account_name || "Source"}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-foreground/60 font-bold uppercase tracking-tighter">
-                            <span>
-                              {isClient
-                                ? new Date(
-                                    deployment.created_at,
-                                  ).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })
-                                : "--- --, ----"}
-                            </span>
-                            <span className="w-1 h-1 bg-foreground/20 rounded-full"></span>
-                            <span>
-                              {isClient
-                                ? new Date(
-                                    deployment.created_at,
-                                  ).toLocaleTimeString(undefined, {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
-                                : "--:--"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right flex flex-col items-end">
-                        <p className="font-black text-2xl tabular-nums text-foreground tracking-tighter">
-                          {formatCurrency(deployment.amount)}
-                        </p>
-                        <div className="mt-1 flex items-center gap-3">
-                          <button
-                            disabled={deletingId !== null}
-                            onClick={() => startEdit(deployment)}
-                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-foreground disabled:opacity-30"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            disabled={deletingId !== null}
-                            onClick={() => handleDelete(deployment.id)}
-                            className="text-[10px] font-black text-foreground/40 uppercase tracking-widest hover:text-red-500 disabled:opacity-30"
-                          >
-                            {deletingId === deployment.id
-                              ? "ARCHIVING..."
-                              : "Archive"}
-                          </button>
-                          <div className="px-3 py-1 bg-green-500/10 rounded-full ml-2">
-                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                              Verified
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-          </div>
-        )}
-      </section>
-
-      {/* Zone 5 — FORENSIC AUDIT */}
-      <section id="audit" className="pb-12">
-        <div className="bg-background border border-foreground/5 rounded-[3rem] p-8 md:p-12 shadow-sm">
-          <HistoricalAudit />
-        </div>
-      </section>
-
-      {/* Zone 6 — SYSTEM OBSERVABILITY */}
-      <section id="observability" className="pb-24 space-y-12">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="h-0.5 w-12 bg-foreground/10"></div>
-          <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase opacity-30">
-            System Observability
+      <section id="ledger" className="space-y-12">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-black text-foreground tracking-tight uppercase opacity-30">
+            History
           </h2>
         </div>
-        <div className="bg-background border border-foreground/5 rounded-[3rem] p-8 md:p-12 shadow-sm">
+
+        <div className="grid grid-cols-1 gap-4">
+          {ledger.deployments.map((deployment) => (
+            <div
+              key={deployment.id}
+              className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-6 hover:bg-foreground/[0.04] transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-12 h-12 bg-foreground/5 rounded-xl flex items-center justify-center text-foreground/40">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-foreground">
+                      {deployment.title}
+                    </h3>
+                    <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest mt-1">
+                      {DeploymentMap[
+                        deployment.category as keyof typeof DeploymentMap
+                      ] || deployment.category}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-black text-xl tabular-nums text-foreground">
+                    {formatCurrency(deployment.amount)}
+                  </p>
+                  <p className="text-[9px] font-bold text-foreground/30 uppercase mt-1">
+                    {new Date(deployment.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Zone 6 — OBSERVABILITY */}
+      <section id="observability" className="space-y-12">
+        <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase opacity-30">
+          Telemetry
+        </h2>
+        <div className="bg-foreground/[0.02] border border-foreground/5 rounded-[2rem] p-8 md:p-12">
           <TelemetryDashboard />
         </div>
       </section>

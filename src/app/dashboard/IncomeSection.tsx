@@ -152,53 +152,44 @@ export function IncomeSection({
           className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add inflow source"}
+            {isAdding ? "Cancel" : "+ Add inflow"}
           </span>
         </button>
       </div>
 
       {isAdding && (
-        <div className="bg-background border-2 border-foreground rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
           <form onSubmit={handleSubmit} className="space-y-8">
             {entries.map((entry, index) => (
               <div key={index} className="space-y-4 relative">
                 {index > 0 && (
-                  <div className="border-t-2 border-foreground/10 pt-8" />
+                  <div className="border-t border-foreground/5 pt-8" />
                 )}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-foreground/30">
                     Source #{index + 1}
                   </span>
-                  {entries.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeEntry(index)}
-                      className="text-[10px] font-black uppercase tracking-widest text-red-500/60 hover:text-red-500 transition-colors"
-                    >
-                      Remove
-                    </button>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                      Inflow Name
+                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                      Name
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Primary Salary"
+                      placeholder="e.g. Salary"
                       value={entry.income_name}
                       onChange={(e) =>
                         updateEntry(index, "income_name", e.target.value)
                       }
-                      className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                      Amount (per cadence)
+                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                      Amount
                     </label>
                     <input
                       type="number"
@@ -208,14 +199,14 @@ export function IncomeSection({
                       onChange={(e) =>
                         updateEntry(index, "amount", e.target.value)
                       }
-                      className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
+                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
                       Type
                     </label>
                     <select
@@ -227,7 +218,7 @@ export function IncomeSection({
                           e.target.value as IncomeType,
                         )
                       }
-                      className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
                     >
                       {INCOME_TYPES.map((t) => (
                         <option key={t.value} value={t.value}>
@@ -237,62 +228,22 @@ export function IncomeSection({
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                      Cadence
+                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                      Frequency
                     </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={entry.cadence}
-                        onChange={(e) =>
-                          updateEntry(
-                            index,
-                            "cadence",
-                            e.target.value as Cadence,
-                          )
-                        }
-                        className="flex-1 border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                      >
-                        {CADENCES.map((c) => (
-                          <option key={c.value} value={c.value}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </select>
-
-                      {(entry.cadence === "weekly" ||
-                        entry.cadence === "monthly" ||
-                        entry.cadence === "biweekly") && (
-                        <select
-                          value={entry.execution_day}
-                          onChange={(e) =>
-                            updateEntry(
-                              index,
-                              "execution_day",
-                              Number(e.target.value),
-                            )
-                          }
-                          className="w-20 border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                        >
-                          {entry.cadence === "weekly" ? (
-                            <>
-                              <option value={1}>Mon</option>
-                              <option value={2}>Tue</option>
-                              <option value={3}>Wed</option>
-                              <option value={4}>Thu</option>
-                              <option value={5}>Fri</option>
-                              <option value={6}>Sat</option>
-                              <option value={7}>Sun</option>
-                            </>
-                          ) : (
-                            Array.from({ length: 31 }, (_, i) => (
-                              <option key={i + 1} value={i + 1}>
-                                {i + 1}
-                              </option>
-                            ))
-                          )}
-                        </select>
-                      )}
-                    </div>
+                    <select
+                      value={entry.cadence}
+                      onChange={(e) =>
+                        updateEntry(index, "cadence", e.target.value as Cadence)
+                      }
+                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
+                    >
+                      {CADENCES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex flex-col justify-center pl-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
@@ -302,28 +253,13 @@ export function IncomeSection({
                         onChange={(e) =>
                           updateEntry(index, "is_recurring", e.target.checked)
                         }
-                        className="w-4 h-4 rounded border-2 border-foreground accent-foreground"
+                        className="w-4 h-4 rounded border border-foreground accent-foreground"
                       />
-                      <span className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">
-                        Recurring Inflow
+                      <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">
+                        Recurring
                       </span>
                     </label>
                   </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                    Source (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Acme Corp"
-                    value={entry.source}
-                    onChange={(e) =>
-                      updateEntry(index, "source", e.target.value)
-                    }
-                    className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
-                  />
                 </div>
               </div>
             ))}
@@ -332,9 +268,9 @@ export function IncomeSection({
               <button
                 type="button"
                 onClick={addEntry}
-                className="w-full border-2 border-dashed border-foreground/20 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-foreground/60 hover:border-foreground/40 hover:text-foreground transition-all"
+                className="w-full border border-dashed border-foreground/10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-foreground/30 hover:text-foreground/60 transition-all"
               >
-                + Add another income source
+                + Add another source
               </button>
 
               {error && (
@@ -348,7 +284,7 @@ export function IncomeSection({
                 disabled={isLoading}
                 className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
               >
-                {isLoading ? "ACKNOWLEDGING..." : "VERIFY ALL INFLOWS"}
+                {isLoading ? "SAVING..." : "SAVE INFLOWS"}
               </button>
             </div>
           </form>
@@ -357,74 +293,39 @@ export function IncomeSection({
 
       <div className="grid grid-cols-1 gap-4">
         {incomeStreams.length === 0 ? (
-          <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
-            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No replenishment sources recorded.
-            </p>
-            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Add recurring inflows to improve runway accuracy.
+          <div className="border border-dashed border-foreground/10 rounded-2xl p-12 text-center">
+            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
+              No inflow sources.
             </p>
           </div>
         ) : (
           incomeStreams.map((stream) => (
             <div
               key={stream.id}
-              className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+              className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/[0.04] transition-all"
             >
-              <div className="flex items-center justify-between relative z-10">
+              <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                    <span className="text-[9px] font-black text-foreground/40 bg-foreground/5 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                       {IncomeMap[stream.income_type] || stream.income_type}
                     </span>
                     <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
                       {stream.income_name}
                     </h3>
                   </div>
-                  <div className="flex gap-3">
-                    <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest">
-                      {stream.cadence} •{" "}
-                      {stream.is_recurring ? "Recurring" : "One-off"}
-                    </p>
-                    {stream.source && (
-                      <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">
-                        Via {stream.source}
-                      </p>
-                    )}
-                  </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-lg font-black tabular-nums text-foreground">
                       {formatCurrency(stream.amount)}
-                      <span className="text-[10px] ml-1 text-foreground/60 uppercase">
+                      <span className="text-[10px] ml-1 text-foreground/40 uppercase">
                         /{" "}
                         {CADENCES.find((c) => c.value === stream.cadence)
                           ?.label || stream.cadence}
                       </span>
                     </p>
-                    {stream.cadence !== "monthly" && (
-                      <p className="text-[8px] font-black text-foreground/40 uppercase tracking-widest mt-0.5">
-                        ≈ {formatCurrency(calculateMonthlyInflow(stream))}{" "}
-                        Monthly
-                      </p>
-                    )}
                   </div>
-                  <button
-                    onClick={() => handleDelete(stream.id)}
-                    className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                    >
-                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                  </button>
                 </div>
               </div>
             </div>

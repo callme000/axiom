@@ -97,7 +97,7 @@ export function BaselineSection({
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Personal expenses
+          Subscriptions
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -110,25 +110,25 @@ export function BaselineSection({
       </div>
 
       {isAdding && (
-        <div className="bg-background border-2 border-foreground rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Designation
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Rent, Crypto DCA"
+                  placeholder="e.g. Rent, Netflix"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Amount (KSh)
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Amount
                 </label>
                 <input
                   type="number"
@@ -136,14 +136,14 @@ export function BaselineSection({
                   placeholder="0.00"
                   value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
                   Category
                 </label>
                 <select
@@ -151,7 +151,7 @@ export function BaselineSection({
                   onChange={(e) =>
                     setForm({ ...form, category: e.target.value })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
                 >
                   {TAXONOMY_CATEGORIES.map((cat) => (
                     <option key={cat.value} value={cat.value}>
@@ -161,8 +161,8 @@ export function BaselineSection({
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Cadence
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  Frequency
                 </label>
                 <select
                   value={form.cadence}
@@ -172,31 +172,13 @@ export function BaselineSection({
                       cadence: e.target.value as BaselineCadence,
                     })
                   }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
+                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
                 >
                   {CADENCES.map((c) => (
                     <option key={c.value} value={c.value}>
                       {c.label}
                     </option>
                   ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest mb-1.5 block ml-1">
-                  Flow Type
-                </label>
-                <select
-                  value={form.baseline_type}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      baseline_type: e.target.value as "expense" | "allocation",
-                    })
-                  }
-                  className="w-full border-2 border-foreground/10 bg-background rounded-xl p-3 focus:outline-none focus:border-foreground transition-colors text-foreground text-sm font-bold appearance-none"
-                >
-                  <option value="expense">Expense (Burn)</option>
-                  <option value="allocation">Allocation (Investment)</option>
                 </select>
               </div>
             </div>
@@ -212,7 +194,7 @@ export function BaselineSection({
               disabled={isLoading}
               className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "CONFIGURING..." : "ESTABLISH FOUNDATION"}
+              {isLoading ? "SAVING..." : "SAVE RECURRING"}
             </button>
           </form>
         </div>
@@ -220,69 +202,34 @@ export function BaselineSection({
 
       <div className="grid grid-cols-1 gap-4">
         {baseline.length === 0 ? (
-          <div className="border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center group hover:border-foreground/20 transition-colors">
-            <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">
-              No structural flows defined.
-            </p>
-            <p className="text-foreground/40 text-[10px] mt-2 uppercase tracking-tight opacity-60">
-              Define recurring expenses to track automatic burn.
+          <div className="border border-dashed border-foreground/10 rounded-2xl p-12 text-center">
+            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
+              No recurring flows.
             </p>
           </div>
         ) : (
           baseline.map((item) => (
             <div
               key={item.id}
-              className="bg-foreground/5 border border-foreground/10 rounded-2xl p-5 group hover:bg-foreground/10 transition-all relative overflow-hidden"
+              className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/[0.04] transition-all"
             >
-              <div className="flex items-center justify-between relative z-10">
+              <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${
-                        item.baseline_type === "expense"
-                          ? "bg-orange-500/20 text-orange-600"
-                          : "bg-emerald-500/20 text-emerald-600"
-                      }`}
-                    >
-                      {item.baseline_type}
-                    </span>
-                    <span className="text-[9px] font-black text-background bg-foreground/30 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                    <span className="text-[9px] font-black text-foreground/40 bg-foreground/5 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                       {item.cadence}
                     </span>
                     <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
                       {item.title}
                     </h3>
                   </div>
-                  <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
-                    {DeploymentMap[
-                      item.category as keyof typeof DeploymentMap
-                    ] || item.category}
-                  </p>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-lg font-black tabular-nums text-foreground">
                       {formatCurrency(item.amount)}
                     </p>
-                    <p className="text-[8px] font-black text-foreground/60 uppercase tracking-widest opacity-60">
-                      Amount per {item.cadence.replace("ly", "")}
-                    </p>
                   </div>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="p-2 text-foreground/40 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                    >
-                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                  </button>
                 </div>
               </div>
             </div>
