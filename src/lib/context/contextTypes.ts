@@ -21,6 +21,7 @@ export interface BehavioralContext {
   liquidity: number;
   totalMonthlyIncome: number;
   maxIncomeConcentrationRatio: number;
+  pendingVerificationCount: number;
 
   strategicAlignment: StrategicAlignment;
 
@@ -65,6 +66,7 @@ export interface ContextInput {
     liquidity: number;
     totalMonthlyIncome: number;
     maxIncomeConcentrationRatio: number;
+    pendingVerificationCount: number;
     strategicAlignment: StrategicAlignment;
   };
   historicalMetrics?: {

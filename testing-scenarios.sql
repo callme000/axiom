@@ -12,6 +12,8 @@ DELETE FROM public.financial_goals WHERE user_id = '453007ef-8eba-4f6a-8d86-8144
 DELETE FROM public.strategic_objectives WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
 DELETE FROM public.accounts WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
 DELETE FROM public.kairos_insights WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
+DELETE FROM public.operational_baseline WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
+
 
 -- Initialize default settings
 INSERT INTO public.user_settings (user_id, total_liquidity)

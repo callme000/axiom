@@ -3,6 +3,10 @@
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
+import Link from "next/link";
+import { SmoothScrollProvider } from "@/components/ui/smooth-scroll-provider";
+import { checkOnboardingStatusAction } from "./actions";
+import { BrandMark } from "@/components/ui/brand-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -14,21 +18,27 @@ export default function DashboardLayout({
   const [user, setUser] = useState<User | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
-    async function getUser() {
+    async function init() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
+
+      try {
+        const { isOnboarded } = await checkOnboardingStatusAction();
+        setIsOnboarded(isOnboarded);
+      } catch {
+        setIsOnboarded(false);
+      }
     }
-    getUser();
+    init();
 
     const handleScroll = () => {
       const sections = ["overview", "deploy", "intelligence", "ledger"];
-      const scrollPosition = window.scrollY + 100;
+      const scrollPosition = window.scrollY + 200;
 
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -54,88 +64,17 @@ export default function DashboardLayout({
     window.location.href = "/";
   }
 
-  const userInitial = user?.email?.[0].toUpperCase() || "U";
-
   const navItems = [
-    {
-      id: "overview",
-      label: "Overview",
-      icon: (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-        </svg>
-      ),
-    },
-    {
-      id: "deploy",
-      label: "New Entry",
-      icon: (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      ),
-    },
-    {
-      id: "intelligence",
-      label: "Insights",
-      icon: (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-          <line x1="12" y1="22.08" x2="12" y2="12" />
-        </svg>
-      ),
-    },
-    {
-      id: "ledger",
-      label: "History",
-      icon: (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <line x1="16" y1="13" x2="8" y2="13" />
-          <line x1="16" y1="17" x2="8" y2="17" />
-          <polyline points="10 9 9 9 8 9" />
-        </svg>
-      ),
-    },
+    { id: "overview", label: "Overview", roman: "I" },
+    { id: "deploy", label: "Architecture", roman: "II" },
+    { id: "intelligence", label: "Intelligence", roman: "III" },
+    { id: "ledger", label: "Ledger", roman: "IV" },
   ];
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 80;
+      const offset = 100;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -145,302 +84,150 @@ export default function DashboardLayout({
         top: offsetPosition,
         behavior: "smooth",
       });
-      setIsMobileMenuOpen(false);
     }
   };
 
-  const activeLabel = navItems.find((item) => item.id === activeSection)?.label;
-
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row">
-      {/* MOBILE HEADER */}
-      <header className="md:hidden h-16 border-b border-foreground/5 bg-background/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-[60]">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-foreground rounded-lg flex items-center justify-center">
-            <span className="font-black text-background text-[8px]">A</span>
-          </div>
-          <span className="text-xs font-black uppercase tracking-widest">
-            {activeLabel}
-          </span>
-        </div>
+    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row relative selection:bg-white selection:text-black">
+      {/* Background Atmosphere */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
+      </div>
 
-        {/* Profile trigger moved to top header for mobile */}
-        <button
-          onClick={() => setIsProfileOpen(!isProfileOpen)}
-          className="w-8 h-8 rounded-lg bg-foreground/5 border border-foreground/10 flex items-center justify-center overflow-hidden shrink-0"
-        >
-          {user?.user_metadata?.avatar_url ? (
-            <img
-              src={user.user_metadata.avatar_url}
-              alt="Avatar"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="font-black text-foreground/40 text-[10px]">
-              {userInitial}
-            </span>
-          )}
-        </button>
+      {isOnboarded === true && (
+        <>
+          {/* SIDEBAR */}
+          <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-80 bg-black border-r border-white/5 z-50 p-12 animate-in fade-in slide-in-from-left-4 duration-1000">
+            <div className="flex flex-col h-full justify-between">
+              <div className="space-y-24">
+                {/* Logo */}
+                <Link href="/" className="group">
+                  <div className="flex items-center gap-4">
+                    <BrandMark />
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-bold text-white">
+                        AXIOM
+                      </span>
+                      <span className="text-[7px] font-mono tracking-[0.2em] uppercase text-white/30">
+                        Intelligence Layer
+                      </span>
+                    </div>
+                  </div>
+                </Link>
 
-        {isProfileOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setIsProfileOpen(false)}
-            ></div>
-            <div className="absolute top-full right-6 mt-2 w-48 bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="p-4 border-b border-foreground/5">
-                <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest mb-1">
-                  Session Details
-                </p>
-                <p className="text-[10px] font-bold text-foreground truncate">
-                  {user?.email}
-                </p>
+                {/* Navigation */}
+                <nav className="space-y-12">
+                  <p className="text-[10px] font-mono tracking-[0.5em] text-white/20 uppercase mb-8">
+                    Client Portal
+                  </p>
+                  {navItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => scrollToSection(item.id)}
+                      className={`w-full group text-left transition-all ${
+                        activeSection === item.id
+                          ? "opacity-100"
+                          : "opacity-30 hover:opacity-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-6">
+                        <span className="font-cormorant italic text-2xl text-white/60">
+                          {item.roman}.
+                        </span>
+                        <span
+                          className={`font-cormorant text-2xl tracking-wide transition-all ${
+                            activeSection === item.id
+                              ? "translate-x-2"
+                              : "group-hover:translate-x-2"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </nav>
               </div>
-              <div className="p-2">
+
+              {/* User Profile */}
+              <div className="pt-12 border-t border-white/5 relative">
                 <button
-                  disabled
-                  className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-foreground/40 cursor-not-allowed flex items-center justify-between"
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-4 w-full group"
                 >
-                  Settings
-                  <span className="text-[7px] bg-foreground/5 px-1.5 py-0.5 rounded text-foreground/30">
-                    Soon
-                  </span>
+                  <div className="w-10 h-10 border border-white/10 flex items-center justify-center font-mono text-xs text-white/60 group-hover:bg-white group-hover:text-black transition-all">
+                    {user?.email?.[0].toUpperCase()}
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-[10px] font-mono tracking-widest text-white/80 uppercase truncate max-w-[120px]">
+                      {user?.email?.split("@")[0]}
+                    </span>
+                    <span className="text-[8px] font-mono tracking-widest text-white/20 uppercase">
+                      Verified Session
+                    </span>
+                  </div>
                 </button>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-colors"
-                >
-                  Log Out
-                </button>
+
+                {isProfileOpen && (
+                  <div className="absolute bottom-full left-0 mb-4 w-full bg-black border border-white/10 p-4 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left font-mono text-[9px] tracking-widest text-red-500 hover:text-red-400 uppercase py-2"
+                    >
+                      Terminate Session
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-          </>
-        )}
-      </header>
+          </aside>
+
+          {/* MOBILE HEADER */}
+          <header className="md:hidden sticky top-0 bg-black/80 backdrop-blur-xl border-b border-white/5 z-50 px-6 py-6 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <BrandMark className="w-8 h-8" />
+              <span className="font-mono text-[10px] tracking-widest uppercase text-white/40">
+                Axiom // Portal
+              </span>
+            </div>
+            <button onClick={() => setIsProfileOpen(!isProfileOpen)}>
+              <div className="w-8 h-8 border border-white/10 flex items-center justify-center font-mono text-[10px]">
+                {user?.email?.[0].toUpperCase()}
+              </div>
+            </button>
+          </header>
+        </>
+      )}
+
+      {/* MAIN CONTENT AREA */}
+      <main
+        className={`flex-1 min-h-screen relative z-10 transition-all duration-1000 ${isOnboarded === true ? "md:ml-80" : "md:ml-0"}`}
+      >
+        <div
+          className={`max-w-5xl mx-auto px-6 md:px-16 py-12 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
+        >
+          {children}
+        </div>
+      </main>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl border-t border-foreground/5 flex items-center justify-around px-4 z-[60] pb-safe">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => scrollToSection(item.id)}
-            className={`flex flex-col items-center gap-1 transition-all duration-300 ${
-              activeSection === item.id
-                ? "text-foreground"
-                : "text-foreground/30"
-            }`}
-          >
-            <span
-              className={`transition-transform duration-300 ${activeSection === item.id ? "scale-110" : ""}`}
-            >
-              {item.icon}
-            </span>
-            <span className="text-[8px] font-black uppercase tracking-[0.2em]">
-              {item.label}
-            </span>
-            {activeSection === item.id && (
-              <div className="w-1 h-1 bg-foreground rounded-full animate-pulse mt-0.5"></div>
-            )}
-          </button>
-        ))}
-      </nav>
-
-      {/* SIDEBAR (DESKTOP ONLY) */}
-      <aside
-        className={`${
-          isSidebarCollapsed ? "md:w-20" : "md:w-64"
-        } hidden md:flex border-r border-foreground/5 bg-background flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out`}
-      >
-        {/* BRANDING */}
-        <div className={`p-8 ${isSidebarCollapsed ? "px-4" : "pb-12"}`}>
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative shrink-0">
-              <div className="w-8 h-8 bg-foreground rounded-xl rotate-3 transition-transform group-hover:rotate-12 group-hover:scale-110"></div>
-              <div className="absolute inset-0 w-8 h-8 bg-foreground/20 rounded-xl -rotate-6 scale-95 transition-transform group-hover:-rotate-12"></div>
-              <div className="absolute inset-0 flex items-center justify-center font-black text-background text-[10px]">
-                A
-              </div>
-            </div>
-            {!isSidebarCollapsed && (
-              <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
-                <span className="text-lg font-black tracking-tighter uppercase leading-none">
-                  AXIOM
-                </span>
-                <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest mt-1">
-                  Intelligence Layer
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* NAVIGATION */}
-        <nav className="flex-1 px-4 space-y-1">
-          {!isSidebarCollapsed && (
-            <p className="px-4 text-[9px] font-black text-foreground/30 uppercase tracking-[0.3em] mb-4 animate-in fade-in duration-300">
-              Financial Terminal
-            </p>
-          )}
+      {isOnboarded === true && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl border-t border-white/5 z-50 px-6 py-4 flex justify-between items-center">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-4 px-4"} py-3 rounded-2xl transition-all duration-300 group ${
-                activeSection === item.id
-                  ? "bg-foreground text-background shadow-lg shadow-foreground/10"
-                  : "text-foreground/50 hover:bg-foreground/5 hover:text-foreground"
+              className={`font-mono text-[8px] tracking-widest uppercase transition-all ${
+                activeSection === item.id ? "text-white" : "text-white/20"
               }`}
             >
-              <span
-                className={`transition-transform duration-300 ${activeSection === item.id ? "scale-110" : "group-hover:scale-110"}`}
-              >
-                {item.icon}
-              </span>
-              {!isSidebarCollapsed && (
-                <span className="text-[10px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-300">
-                  {item.label}
-                </span>
-              )}
-              {activeSection === item.id && !isSidebarCollapsed && (
-                <div className="ml-auto w-1.5 h-1.5 bg-background rounded-full animate-pulse"></div>
-              )}
+              {item.label}
             </button>
           ))}
         </nav>
-
-        {/* COLLAPSE TOGGLE (DESKTOP) */}
-        <div className="hidden md:block px-4 mb-4">
-          <button
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="w-full flex items-center justify-center p-3 rounded-2xl text-foreground/30 hover:text-foreground hover:bg-foreground/5 transition-all"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              className={`transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180" : ""}`}
-            >
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-        </div>
-
-        {/* USER PROFILE (BOTTOM) */}
-        <div className="p-4 mt-auto border-t border-foreground/5">
-          <div className="relative">
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-3 p-3"} rounded-2xl hover:bg-foreground/5 transition-all group text-left`}
-            >
-              <div className="w-9 h-9 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center group-hover:bg-foreground/10 transition-all overflow-hidden shrink-0">
-                {user?.user_metadata?.avatar_url ? (
-                  <img
-                    src={user.user_metadata.avatar_url}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="font-black text-foreground/40 group-hover:text-foreground transition-colors text-xs">
-                    {userInitial}
-                  </span>
-                )}
-              </div>
-              {!isSidebarCollapsed && (
-                <>
-                  <div className="flex flex-col min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
-                    <p className="text-[10px] font-black text-foreground truncate">
-                      {user?.email?.split("@")[0]}
-                    </p>
-                    <p className="text-[8px] font-bold text-foreground/40 uppercase tracking-widest">
-                      Verified
-                    </p>
-                  </div>
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    className={`ml-auto transition-transform duration-300 ${isProfileOpen ? "rotate-180" : ""}`}
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </>
-              )}
-            </button>
-
-            {isProfileOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsProfileOpen(false)}
-                ></div>
-                <div
-                  className={`absolute ${isSidebarCollapsed ? "left-full bottom-0 ml-2" : "bottom-full left-0 mb-2"} w-48 md:w-full bg-background border border-foreground/10 rounded-2xl shadow-2xl z-20 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200`}
-                >
-                  <div className="p-4 border-b border-foreground/5">
-                    <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest mb-1">
-                      Session Details
-                    </p>
-                    <p className="text-[10px] font-bold text-foreground truncate">
-                      {user?.email}
-                    </p>
-                  </div>
-                  <div className="p-2">
-                    <button
-                      disabled
-                      className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-foreground/40 cursor-not-allowed flex items-center justify-between"
-                    >
-                      Settings
-                      <span className="text-[7px] bg-foreground/5 px-1.5 py-0.5 rounded text-foreground/30">
-                        Soon
-                      </span>
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-colors"
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <main
-        className={`flex-1 min-h-screen transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
-        }`}
-      >
-        {/* DESKTOP STICKY HEADER FOR SECTION TITLE */}
-        <header className="hidden md:flex h-20 sticky top-0 bg-background/50 backdrop-blur-xl z-30 items-center px-12 border-b border-foreground/5">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-black uppercase tracking-tighter">
-              {activeLabel}
-            </h1>
-            <div className="h-4 w-[1px] bg-foreground/10"></div>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
-                Real-time Intelligence Active
-              </span>
-            </div>
-          </div>
-        </header>
-
-        <div className="max-w-6xl mx-auto px-6 md:px-12 pt-8 md:py-16 pb-32 md:pb-16">
-          {children}
-        </div>
-      </main>
+      )}
     </div>
   );
 }

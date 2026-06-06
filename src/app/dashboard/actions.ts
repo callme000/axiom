@@ -101,6 +101,10 @@ export interface CreateLiabilityActionInput {
   minimum_payment?: number;
   due_date?: string | null;
   institution?: string;
+  is_paid_in_cadences?: boolean;
+  cadence?: string | null;
+  cadence_day_date?: string | null;
+  cadence_amount?: number | null;
 }
 
 export interface CreateIncomeActionInput {
@@ -294,6 +298,25 @@ async function buildDashboardSnapshot(
 
 export async function getDashboardSnapshotAction() {
   return buildDashboardSnapshot();
+}
+
+export async function checkOnboardingStatusAction() {
+  const { userId, supabase } = await requireAuth();
+
+  const [accounts, baseline] = await Promise.all([
+    supabase
+      .from("accounts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+    supabase
+      .from("operational_baseline")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+  ]);
+
+  return {
+    isOnboarded: (accounts.count ?? 0) > 0 || (baseline.count ?? 0) > 0,
+  };
 }
 
 export async function createDeploymentAction(
@@ -538,7 +561,67 @@ export async function resolvePendingInflowAction(payload: {
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
-    console.error("Failed to resolve pending inflow:", error);
+    console.error("Failed to resolve pending income:", error);
+    throw error;
+  }
+}
+
+export async function resolvePendingLiabilityAction(payload: {
+  liabilityId: string;
+  accountId: string;
+  amount: number;
+}) {
+  const { userId, supabase } = await requireAuth();
+
+  try {
+    // 1. Get current account and liability state
+    const [accountRes, liabRes] = await Promise.all([
+      supabase
+        .from("accounts")
+        .select("current_balance")
+        .eq("id", payload.accountId)
+        .eq("user_id", userId)
+        .single(),
+      supabase
+        .from("liabilities")
+        .select("outstanding_balance")
+        .eq("id", payload.liabilityId)
+        .eq("user_id", userId)
+        .single(),
+    ]);
+
+    if (accountRes.error || !accountRes.data)
+      throw new Error("Source account not found.");
+    if (liabRes.error || !liabRes.data)
+      throw new Error("Liability record not found.");
+
+    // 2. Update balances
+    const newAccBalance =
+      Number(accountRes.data.current_balance) - payload.amount;
+    const newLiabBalance = Math.max(
+      0,
+      Number(liabRes.data.outstanding_balance) - payload.amount,
+    );
+
+    await Promise.all([
+      updateAccount(supabase, payload.accountId, userId, {
+        current_balance: newAccBalance,
+      }),
+      updateLiability(supabase, payload.liabilityId, userId, {
+        outstanding_balance: newLiabBalance,
+        last_executed_at: new Date().toISOString(),
+      }),
+    ]);
+
+    // 3. Update global liquidity
+    const settings = await getUserSettings(supabase, userId);
+    const newLiquidity = Number(settings.total_liquidity) - payload.amount;
+    await updateLiquidity(supabase, userId, newLiquidity);
+
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to resolve pending liability:", error);
     throw error;
   }
 }
@@ -689,19 +772,34 @@ export async function submitDayZeroBaselineAction(payload: {
     account_name: string;
     account_type: string;
     current_balance: number;
+    institution?: string;
   }[];
   incomes: {
     income_name: string;
     income_type: string;
     amount: number;
     cadence: string;
+    is_recurring?: boolean;
+    source?: string;
   }[];
   liabilities: {
     liability_name: string;
     liability_type: string;
     outstanding_balance: number;
+    interest_rate?: number;
+    minimum_payment?: number;
+    institution?: string;
+    is_paid_in_cadences?: boolean;
+    cadence?: string | null;
+    cadence_day_date?: string | null;
+    cadence_amount?: number | null;
   }[];
-  baseline: { amount: number; cadence: string };
+  baselines: {
+    title?: string;
+    amount: number;
+    cadence: string;
+    category?: string;
+  }[];
 }) {
   const { userId, supabase } = await requireAuth();
 
@@ -718,7 +816,7 @@ export async function submitDayZeroBaselineAction(payload: {
         userId,
         payload.incomes.map((inc) => ({
           ...inc,
-          is_recurring: true,
+          is_recurring: inc.is_recurring ?? true,
         })),
       );
     }
@@ -730,15 +828,17 @@ export async function submitDayZeroBaselineAction(payload: {
       }
     }
 
-    // 4. Insert Operational Baseline
-    await createOperationalBaseline(supabase, userId, {
-      title: "Core Survival Baseline",
-      amount: payload.baseline.amount,
-      category: "Maintenance",
-      cadence: payload.baseline.cadence as BaselineCadence,
-      baseline_type: "expense",
-      is_active: true,
-    });
+    // 4. Insert Operational Baselines
+    for (const item of payload.baselines) {
+      await createOperationalBaseline(supabase, userId, {
+        title: item.title || "Core Survival Baseline",
+        amount: item.amount,
+        category: item.category || "Maintenance",
+        cadence: item.cadence as BaselineCadence,
+        baseline_type: "expense",
+        is_active: true,
+      });
+    }
 
     // 5. Update initial liquidity pool to match sum of all accounts
     const totalLiquidity = payload.accounts.reduce(

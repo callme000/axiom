@@ -2,17 +2,10 @@
 
 import { useState } from "react";
 import {
-  GOAL_TYPES,
-  GOAL_PRIORITIES,
-  GOAL_STATUSES,
   calculateGoalProgressPercentage,
   type FinancialGoal,
 } from "@/lib/finance/goals";
-import {
-  createGoalAction,
-  deleteGoalAction,
-  type DashboardSnapshot,
-} from "./actions";
+import { createGoalAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 interface GoalSectionProps {
@@ -71,47 +64,27 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (
-      !confirm(
-        "Archive this financial goal? It will be removed from active tracking but retained in historical data.",
-      )
-    )
-      return;
-    setIsLoading(true);
-    try {
-      const snapshot = await deleteGoalAction(id);
-      onSnapshot(snapshot);
-    } catch {
-      alert("Failed to archive goal");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Goals
+    <div className="space-y-12">
+      <div className="flex items-center justify-between">
+        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+          Wealth Milestones
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add goal"}
-          </span>
+          {isAdding ? "✕ CANCEL" : "+ APPEND MILESTONE"}
         </button>
       </div>
 
       {isAdding && (
-        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
-                  Name
+        <div className="bg-white/[0.02] border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Milestone Name
                 </label>
                 <input
                   type="text"
@@ -121,11 +94,11 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   onChange={(e) =>
                     setForm({ ...form, goal_name: e.target.value })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                   Target Amount
                 </label>
                 <input
@@ -136,13 +109,13 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   onChange={(e) =>
                     setForm({ ...form, target_amount: e.target.value })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
             </div>
 
             {error && (
-              <p className="text-red-500 text-[10px] font-black uppercase tracking-tight ml-1">
+              <p className="text-red-500 font-mono text-[9px] uppercase tracking-widest">
                 {error}
               </p>
             )}
@@ -150,19 +123,19 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
+              className="w-full bg-white text-black py-4 font-medium tracking-[0.2em] uppercase text-[10px] hover:bg-white/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "SAVING..." : "SAVE GOAL"}
+              {isLoading ? "SAVING..." : "CONFIRM MILESTONE"}
             </button>
           </form>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-8">
         {goals.length === 0 ? (
-          <div className="border border-dashed border-foreground/10 rounded-2xl p-12 text-center">
-            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
-              No active goals.
+          <div className="py-12 text-center opacity-20">
+            <p className="text-[10px] font-mono uppercase tracking-[0.5em]">
+              No milestones active
             </p>
           </div>
         ) : (
@@ -171,45 +144,42 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
             return (
               <div
                 key={goal.id}
-                className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/[0.04] transition-all"
+                className="space-y-4 group cursor-default pb-8 border-b border-white/5 last:border-0"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-2">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-[8px] font-black text-background px-1.5 py-0.5 rounded uppercase tracking-tighter ${
-                          goal.priority === "critical"
-                            ? "bg-orange-500"
-                            : "bg-foreground/30"
-                        }`}
-                      >
-                        {goal.priority}
-                      </span>
-                      <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
-                        {goal.goal_name}
-                      </h3>
-                    </div>
+                    <span
+                      className={`text-[8px] font-mono tracking-widest uppercase ${
+                        goal.priority === "critical"
+                          ? "text-red-500"
+                          : "text-white/20"
+                      }`}
+                    >
+                      {goal.priority}
+                    </span>
+                    <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">
+                      {goal.goal_name}
+                    </h3>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-black tabular-nums text-foreground">
+                    <p className="font-cormorant text-3xl text-white tabular-nums">
                       {Math.round(progress)}%
                     </p>
                   </div>
                 </div>
 
-                <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
+                <div className="h-[1px] w-full bg-white/5 relative overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-1000 ease-out ${
-                      progress >= 100 ? "bg-green-500" : "bg-foreground/40"
-                    }`}
-                    style={{ width: `${progress}%` }}
+                    className="absolute inset-y-0 left-0 bg-white/60 transition-all duration-1000 ease-out"
+                    style={{ width: `${Math.min(100, progress)}%` }}
                   />
                 </div>
-                <div className="flex justify-between mt-2">
-                  <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
+
+                <div className="flex justify-between items-end pt-2 opacity-30 group-hover:opacity-60 transition-opacity">
+                  <p className="text-[9px] font-mono uppercase tracking-widest">
                     {formatCurrency(goal.current_progress)}
                   </p>
-                  <p className="text-[9px] font-black text-foreground/40 uppercase tracking-widest">
+                  <p className="text-[9px] font-mono uppercase tracking-widest">
                     Target: {formatCurrency(goal.target_amount)}
                   </p>
                 </div>

@@ -53,7 +53,7 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
 
   const description = isInfiniteRunway
     ? isInsolvent
-      ? "Burn is absorbed by inflows, but total commitments exceed assets."
+      ? "Burn is absorbed by incomes, but total commitments exceed assets."
       : "Net inbound capital completely absorbs current structural burn."
     : isCritical
       ? "A recalibration of The Foundation is recommended."

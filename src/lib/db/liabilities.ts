@@ -20,7 +20,10 @@ export async function createLiability(
     liability_type: string;
     outstanding_balance: number;
     interest_rate?: number;
-    minimum_payment?: number;
+    is_paid_in_cadences?: boolean;
+    cadence?: string | null;
+    cadence_day_date?: string | null;
+    cadence_amount?: number | null;
     due_date?: string | null;
     institution?: string;
     currency?: string;
@@ -32,7 +35,10 @@ export async function createLiability(
     liability_type: data.liability_type,
     outstanding_balance: data.outstanding_balance,
     interest_rate: data.interest_rate,
-    minimum_payment: data.minimum_payment,
+    is_paid_in_cadences: data.is_paid_in_cadences,
+    cadence: data.cadence,
+    cadence_day_date: data.cadence_day_date,
+    cadence_amount: data.cadence_amount,
   });
 
   const { data: liability, error } = await supabase
@@ -43,7 +49,10 @@ export async function createLiability(
       liability_type: validated.liability_type,
       outstanding_balance: validated.outstanding_balance,
       interest_rate: validated.interest_rate,
-      minimum_payment: validated.minimum_payment,
+      is_paid_in_cadences: validated.is_paid_in_cadences,
+      cadence: validated.cadence,
+      cadence_day_date: validated.cadence_day_date,
+      cadence_amount: validated.cadence_amount,
       due_date: data.due_date,
       institution: data.institution,
       currency: data.currency || "KSh",
@@ -64,7 +73,11 @@ export async function updateLiability(
     liability_type?: string;
     outstanding_balance?: number;
     interest_rate?: number;
-    minimum_payment?: number;
+    is_paid_in_cadences?: boolean;
+    cadence?: string | null;
+    cadence_day_date?: string | null;
+    cadence_amount?: number | null;
+    last_executed_at?: string | null;
     due_date?: string | null;
     institution?: string;
     deleted_at?: string | null;

@@ -7,6 +7,26 @@ import { InsightRule } from "../types";
  */
 
 export const rules: InsightRule[] = [
+  // 0. PENDING VERIFICATION (High Priority Alert)
+  {
+    id: "pending_verification",
+    priority: "critical",
+    condition: (ctx) => ctx.pendingVerificationCount > 0,
+    generate: (ctx) => ({
+      type: "warning",
+      severity: "critical",
+      category: "strategic_alignment",
+      timestamp: new Date().toISOString(),
+      message: `Action Required: ${ctx.pendingVerificationCount} financial verification${ctx.pendingVerificationCount > 1 ? "s" : ""} detected for today.`,
+      supportingSignals: [
+        "Axiom has detected scheduled transaction flows that require manual confirmation to ascertain absolute truth.",
+        "Verification will update your structural solvency window and capital ledger.",
+      ],
+      runway: ctx.runway.currentDays,
+      capitalEfficiency: ctx.capitalEfficiencyScore,
+      isSilent: false,
+    }),
+  },
   // 1. SOLVENCY CRISIS (Critical Severity)
   {
     id: "solvency_crisis",

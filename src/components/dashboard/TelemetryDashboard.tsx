@@ -3,15 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   fetchTelemetryLogsAction,
-  type AuditLog,
   type TelemetrySummary,
 } from "@/app/dashboard/actions";
 
-/**
- * TELEMETRY DASHBOARD (Phase 2)
- * High-density forensic UI for the Kairos Insight Engine.
- * Aesthetic: Quiet System (monochromatic, high-precision).
- */
 export function TelemetryDashboard() {
   const [telemetry, setTelemetry] = useState<TelemetrySummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,28 +26,27 @@ export function TelemetryDashboard() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadTelemetry();
+    const timer = setTimeout(() => loadTelemetry(), 10);
+    return () => clearTimeout(timer);
   }, [loadTelemetry]);
 
   if (isLoading) {
     return (
-      <div className="p-8 space-y-6 animate-pulse">
-        <div className="h-4 w-32 bg-foreground/5 rounded"></div>
-        <div className="grid grid-cols-3 gap-6">
-          <div className="h-24 bg-foreground/5 rounded-xl"></div>
-          <div className="h-24 bg-foreground/5 rounded-xl"></div>
-          <div className="h-24 bg-foreground/5 rounded-xl"></div>
+      <div className="py-12 space-y-12 animate-pulse opacity-20">
+        <div className="h-[1px] bg-white/20 w-full" />
+        <div className="grid grid-cols-4 gap-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-white/10" />
+          ))}
         </div>
-        <div className="h-64 bg-foreground/5 rounded-xl"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-8 text-center border-2 border-dashed border-red-500/10 rounded-3xl">
-        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">
+      <div className="py-12 text-center opacity-40">
+        <p className="text-[10px] font-mono uppercase tracking-[0.5em]">
           {error}
         </p>
       </div>
@@ -61,110 +54,74 @@ export function TelemetryDashboard() {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-24">
       {/* PERFORMANCE SUMMARY */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="p-6 border border-foreground/10 rounded-2xl bg-foreground/[0.02]">
-          <span className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.2em] block mb-2">
-            Total Cycles
-          </span>
-          <span className="text-2xl font-black tabular-nums text-foreground">
-            {telemetry?.totalCycles || 0}
-          </span>
-        </div>
-        <div className="p-6 border border-foreground/10 rounded-2xl bg-foreground/[0.02]">
-          <span className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.2em] block mb-2">
-            Avg. Latency
-          </span>
-          <span className="text-2xl font-black tabular-nums text-foreground">
-            {telemetry?.averageLatency || 0}
-            <span className="text-xs ml-1 text-foreground/40 font-bold uppercase">
-              ms
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-white/5">
+        {[
+          { label: "Evaluation Cycles", value: telemetry?.totalCycles || 0 },
+          {
+            label: "Avg. Latency",
+            value: `${telemetry?.averageLatency || 0}ms`,
+          },
+          {
+            label: "Intelligence Yield",
+            value: `${telemetry?.matchRate || 0}%`,
+          },
+          {
+            label: "Active Heuristics",
+            value: Object.keys(telemetry?.ruleHits || {}).length,
+          },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-black p-8 group">
+            <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em] block mb-4 group-hover:text-white/40 transition-colors">
+              {stat.label}
             </span>
-          </span>
-        </div>
-        <div className="p-6 border border-foreground/10 rounded-2xl bg-foreground/[0.02]">
-          <span className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.2em] block mb-2">
-            Match Rate
-          </span>
-          <span className="text-2xl font-black tabular-nums text-foreground">
-            {telemetry?.matchRate || 0}%
-          </span>
-        </div>
-        <div className="p-6 border border-foreground/10 rounded-2xl bg-foreground/[0.02]">
-          <span className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.2em] block mb-2">
-            Active Rules
-          </span>
-          <span className="text-2xl font-black tabular-nums text-foreground">
-            {Object.keys(telemetry?.ruleHits || {}).length}
-          </span>
-        </div>
+            <span className="font-cormorant text-3xl text-white">
+              {stat.value}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* RULE FREQUENCY */}
-      {telemetry && Object.keys(telemetry.ruleHits).length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.3em] ml-1">
-            Rule Trigger Frequency
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(telemetry.ruleHits)
-              .sort(([, a], [, b]) => b - a)
-              .map(([ruleId, count]) => (
-                <div
-                  key={ruleId}
-                  className="p-4 border border-foreground/5 rounded-xl flex items-center justify-between"
-                >
-                  <span className="text-[10px] font-bold text-foreground/60 uppercase tracking-tighter truncate max-w-[180px]">
-                    {ruleId}
-                  </span>
-                  <span className="text-[10px] font-black bg-foreground/5 px-2 py-0.5 rounded text-foreground/80">
-                    {count}
-                  </span>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-
       {/* FORENSIC LOG TABLE */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between ml-1">
-          <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.3em]">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <h3 className="font-cormorant italic text-xl text-white/40">
             Evaluation Audit Trail
           </h3>
           <button
             onClick={() => loadTelemetry(true)}
-            className="text-[9px] font-black text-foreground/40 uppercase tracking-widest hover:text-foreground transition-colors"
+            className="text-[8px] font-mono text-white/20 hover:text-white uppercase tracking-widest transition-colors"
           >
-            Refresh Log
+            Refresh Logs
           </button>
         </div>
-        <div className="overflow-hidden border border-foreground/10 rounded-2xl">
-          <table className="w-full text-left border-collapse">
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
             <thead>
-              <tr className="bg-foreground/[0.02] border-b border-foreground/10">
-                <th className="p-4 text-[9px] font-black text-foreground/40 uppercase tracking-widest">
+              <tr className="border-b border-white/5">
+                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal">
                   Timestamp
                 </th>
-                <th className="p-4 text-[9px] font-black text-foreground/40 uppercase tracking-widest">
-                  Rule ID
+                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal">
+                  Heuristic ID
                 </th>
-                <th className="p-4 text-[9px] font-black text-foreground/40 uppercase tracking-widest">
+                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal">
                   Severity
                 </th>
-                <th className="p-4 text-[9px] font-black text-foreground/40 uppercase tracking-widest text-right">
-                  Latency
+                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal text-right">
+                  Compute
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-foreground/5">
+            <tbody className="divide-y divide-white/5">
               {telemetry?.logs.map((log) => (
                 <tr
                   key={log.id}
-                  className="hover:bg-foreground/[0.01] transition-colors group"
+                  className="group hover:bg-white/[0.01] transition-all"
                 >
-                  <td className="p-4 text-[10px] font-bold text-foreground/40 tabular-nums">
+                  <td className="py-4 text-[10px] font-mono text-white/40 tabular-nums">
                     {new Date(log.created_at).toLocaleTimeString([], {
                       hour12: false,
                       hour: "2-digit",
@@ -172,28 +129,24 @@ export function TelemetryDashboard() {
                       second: "2-digit",
                     })}
                   </td>
-                  <td className="p-4 text-[10px] font-black text-foreground/80 uppercase tracking-tighter">
+                  <td className="py-4 text-[11px] text-white/80 font-light group-hover:translate-x-1 transition-transform">
                     {log.rule_id}
                   </td>
-                  <td className="p-4">
+                  <td className="py-4">
                     <span
-                      className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
+                      className={`text-[8px] font-mono uppercase tracking-widest ${
                         log.severity === "critical"
-                          ? "bg-red-500/10 text-red-500"
+                          ? "text-red-500"
                           : log.severity === "high"
-                            ? "bg-orange-500/10 text-orange-500"
-                            : log.severity === "medium"
-                              ? "bg-yellow-500/10 text-yellow-500"
-                              : log.severity === "none"
-                                ? "text-foreground/20"
-                                : "bg-foreground/5 text-foreground/60"
+                            ? "text-orange-500"
+                            : "text-white/20"
                       }`}
                     >
                       {log.severity}
                     </span>
                   </td>
-                  <td className="p-4 text-[10px] font-bold text-foreground/60 tabular-nums text-right">
-                    {(log.evaluation_time_ms || 0).toFixed(2)}ms
+                  <td className="py-4 text-[10px] font-mono text-white/40 text-right tabular-nums">
+                    {log.evaluation_time_ms?.toFixed(2)}ms
                   </td>
                 </tr>
               ))}
@@ -201,9 +154,9 @@ export function TelemetryDashboard() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="p-12 text-center text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em]"
+                    className="py-12 text-center text-[10px] font-mono text-white/10 uppercase tracking-widest"
                   >
-                    No evaluation data recorded in current window.
+                    No forensic data available.
                   </td>
                 </tr>
               )}

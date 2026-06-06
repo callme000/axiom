@@ -92,6 +92,7 @@ export const buildBehavioralContext = (
     liquidity: currentAnalytics.liquidity,
     totalMonthlyIncome: currentAnalytics.totalMonthlyIncome,
     maxIncomeConcentrationRatio: currentAnalytics.maxIncomeConcentrationRatio,
+    pendingVerificationCount: currentAnalytics.pendingVerificationCount,
 
     strategicAlignment: currentAnalytics.strategicAlignment,
 

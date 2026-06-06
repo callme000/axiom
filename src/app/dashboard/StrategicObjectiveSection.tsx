@@ -2,20 +2,15 @@
 
 import { useState } from "react";
 import {
-  OBJECTIVE_TYPES,
-  OBJECTIVE_PRIORITIES,
-  OBJECTIVE_STATUSES,
-  calculateObjectiveProgressPercentage,
   calculateObjectiveFundingRatio,
   type StrategicObjective,
 } from "@/lib/finance/objectives";
 import {
   createStrategicObjectiveAction,
   updateStrategicObjectiveAction,
-  deleteStrategicObjectiveAction,
   type DashboardSnapshot,
 } from "./actions";
-import { formatCurrency, formatDate } from "@/lib/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatters";
 
 interface StrategicObjectiveSectionProps {
   objectives: StrategicObjective[];
@@ -41,21 +36,6 @@ export function StrategicObjectiveSection({
     target_date: "",
     notes: "",
   });
-
-  function startEdit(obj: StrategicObjective) {
-    setEditingId(obj.id);
-    setForm({
-      objective_name: obj.objective_name,
-      objective_type: obj.objective_type,
-      target_amount: obj.target_amount.toString(),
-      current_amount: obj.current_amount.toString(),
-      priority_level: obj.priority_level,
-      status: obj.status,
-      target_date: obj.target_date || "",
-      notes: obj.notes || "",
-    });
-    setIsAdding(true);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -110,54 +90,27 @@ export function StrategicObjectiveSection({
     }
   }
 
-  async function handleDelete(id: string) {
-    if (
-      !confirm(
-        "Archive this strategic objective? It will be removed from the active mission board but retained for alignment history.",
-      )
-    )
-      return;
-    setIsLoading(true);
-    try {
-      const snapshot = await deleteStrategicObjectiveAction(id);
-      onSnapshot(snapshot);
-    } catch {
-      alert("Failed to archive objective");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between px-1">
-        <div className="space-y-1">
-          <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-            Strategic Objectives
-          </h2>
-        </div>
+    <div className="space-y-12">
+      <div className="flex items-center justify-between">
+        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+          Strategic Intent
+        </h2>
         <button
-          onClick={() => {
-            if (isAdding) {
-              setEditingId(null);
-            }
-            setIsAdding(!isAdding);
-          }}
-          className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
+          onClick={() => setIsAdding(!isAdding)}
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add objective"}
-          </span>
+          {isAdding ? "✕ CANCEL" : "+ APPEND OBJECTIVE"}
         </button>
       </div>
 
       {isAdding && (
-        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
-                  Name
+        <div className="bg-white/[0.02] border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Objective Name
                 </label>
                 <input
                   type="text"
@@ -167,11 +120,11 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, objective_name: e.target.value })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                   Target Date
                 </label>
                 <input
@@ -180,14 +133,14 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, target_date: e.target.value })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                   Target Amount
                 </label>
                 <input
@@ -198,11 +151,11 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, target_amount: e.target.value })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                   Current Position
                 </label>
                 <input
@@ -212,13 +165,13 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, current_amount: e.target.value })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
             </div>
 
             {error && (
-              <p className="text-red-500 text-[10px] font-black uppercase tracking-tight ml-1">
+              <p className="text-red-500 font-mono text-[9px] uppercase tracking-widest">
                 {error}
               </p>
             )}
@@ -226,23 +179,19 @@ export function StrategicObjectiveSection({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-foreground text-background py-4 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
+              className="w-full bg-white text-black py-4 font-medium tracking-[0.2em] uppercase text-[10px] hover:bg-white/90 transition-colors disabled:opacity-50"
             >
-              {isLoading
-                ? "SAVING..."
-                : editingId
-                  ? "Update Intent"
-                  : "Set Intent"}
+              {isLoading ? "ESTABLISHING..." : "SET STRATEGIC INTENT"}
             </button>
           </form>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="space-y-8">
         {objectives.length === 0 ? (
-          <div className="border border-dashed border-foreground/10 rounded-2xl p-16 text-center">
-            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
-              No objectives defined.
+          <div className="py-12 text-center opacity-20">
+            <p className="text-[10px] font-mono uppercase tracking-[0.5em]">
+              No objectives active
             </p>
           </div>
         ) : (
@@ -251,49 +200,44 @@ export function StrategicObjectiveSection({
             return (
               <div
                 key={obj.id}
-                className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-6 group hover:bg-foreground/[0.04] transition-all"
+                className="space-y-4 group cursor-default pb-8 border-b border-white/5 last:border-0"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`text-[9px] font-black text-background px-2 py-0.5 rounded uppercase tracking-[0.1em] ${
-                          obj.priority_level === "critical"
-                            ? "bg-orange-500"
-                            : "bg-foreground/40"
-                        }`}
-                      >
-                        {obj.priority_level}
-                      </span>
-                      <h3 className="text-base font-black text-foreground uppercase tracking-tight">
-                        {obj.objective_name}
-                      </h3>
-                    </div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="space-y-1">
+                    <span
+                      className={`text-[8px] font-mono tracking-widest uppercase ${
+                        obj.priority_level === "critical"
+                          ? "text-red-500"
+                          : "text-white/20"
+                      }`}
+                    >
+                      {obj.priority_level}
+                    </span>
+                    <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">
+                      {obj.objective_name}
+                    </h3>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-black tabular-nums text-foreground">
+                    <p className="font-cormorant text-3xl text-white tabular-nums">
                       {Math.round(ratio)}%
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-1000 ease-out ${
-                        ratio >= 100 ? "bg-green-500" : "bg-foreground/40"
-                      }`}
-                      style={{ width: `${ratio}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between items-end">
-                    <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">
-                      {formatCurrency(obj.current_amount)}
-                    </p>
-                    <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">
-                      Target: {formatCurrency(obj.target_amount)}
-                    </p>
-                  </div>
+                <div className="h-[1px] w-full bg-white/5 relative overflow-hidden">
+                  <div
+                    className="absolute inset-y-0 left-0 bg-white/60 transition-all duration-1000 ease-out"
+                    style={{ width: `${Math.min(100, ratio)}%` }}
+                  />
+                </div>
+
+                <div className="flex justify-between items-end pt-2 opacity-30 group-hover:opacity-60 transition-opacity">
+                  <p className="text-[9px] font-mono uppercase tracking-widest">
+                    {formatCurrency(obj.current_amount)}
+                  </p>
+                  <p className="text-[9px] font-mono uppercase tracking-widest">
+                    Target: {formatCurrency(obj.target_amount)}
+                  </p>
                 </div>
               </div>
             );

@@ -8,13 +8,7 @@ import {
   type IncomeType,
   type Cadence,
 } from "@/lib/finance/income";
-import { calculateMonthlyInflow } from "@/lib/finance/income";
-import {
-  createIncomeAction,
-  deleteIncomeAction,
-  type DashboardSnapshot,
-  type CreateIncomeActionInput,
-} from "./actions";
+import { createIncomeAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { IncomeMap } from "@/lib/utils/taxonomy";
 
@@ -68,11 +62,6 @@ export function IncomeSection({
     ]);
   };
 
-  const removeEntry = (index: number) => {
-    if (entries.length === 1) return;
-    setEntries(entries.filter((_, i) => i !== index));
-  };
-
   const updateEntry = <K extends keyof FormEntry>(
     index: number,
     field: K,
@@ -123,58 +112,31 @@ export function IncomeSection({
     }
   }
 
-  async function handleDelete(id: string) {
-    if (
-      !confirm(
-        "Archive this replenishment source? Historical inflow data will be preserved.",
-      )
-    )
-      return;
-    setIsLoading(true);
-    try {
-      const snapshot = await deleteIncomeAction(id);
-      onSnapshot(snapshot);
-    } catch {
-      alert("Failed to archive income stream");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
-          Inflows
+    <div className="space-y-12">
+      <div className="flex items-center justify-between">
+        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+          Income Velocity
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add inflow"}
-          </span>
+          {isAdding ? "✕ CANCEL" : "+ APPEND INCOME"}
         </button>
       </div>
 
       {isAdding && (
-        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-white/[0.02] border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
+          <form onSubmit={handleSubmit} className="space-y-12">
             {entries.map((entry, index) => (
-              <div key={index} className="space-y-4 relative">
-                {index > 0 && (
-                  <div className="border-t border-foreground/5 pt-8" />
-                )}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-foreground/30">
-                    Source #{index + 1}
-                  </span>
-                </div>
+              <div key={index} className="space-y-8 relative">
+                {index > 0 && <div className="border-t border-white/5 pt-8" />}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
-                      Name
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                      Source Name
                     </label>
                     <input
                       type="text"
@@ -184,11 +146,11 @@ export function IncomeSection({
                       onChange={(e) =>
                         updateEntry(index, "income_name", e.target.value)
                       }
-                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                     />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                       Amount
                     </label>
                     <input
@@ -199,14 +161,14 @@ export function IncomeSection({
                       onChange={(e) =>
                         updateEntry(index, "amount", e.target.value)
                       }
-                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                       Type
                     </label>
                     <select
@@ -218,17 +180,21 @@ export function IncomeSection({
                           e.target.value as IncomeType,
                         )
                       }
-                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
                     >
                       {INCOME_TYPES.map((t) => (
-                        <option key={t.value} value={t.value}>
+                        <option
+                          key={t.value}
+                          value={t.value}
+                          className="bg-black"
+                        >
                           {t.label}
                         </option>
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                       Frequency
                     </label>
                     <select
@@ -236,26 +202,30 @@ export function IncomeSection({
                       onChange={(e) =>
                         updateEntry(index, "cadence", e.target.value as Cadence)
                       }
-                      className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
                     >
                       {CADENCES.map((c) => (
-                        <option key={c.value} value={c.value}>
+                        <option
+                          key={c.value}
+                          value={c.value}
+                          className="bg-black"
+                        >
                           {c.label}
                         </option>
                       ))}
                     </select>
                   </div>
-                  <div className="flex flex-col justify-center pl-2">
-                    <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="flex items-center pt-6">
+                    <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={entry.is_recurring}
                         onChange={(e) =>
                           updateEntry(index, "is_recurring", e.target.checked)
                         }
-                        className="w-4 h-4 rounded border border-foreground accent-foreground"
+                        className="w-4 h-4 border border-white/20 accent-white"
                       />
-                      <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">
+                      <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                         Recurring
                       </span>
                     </label>
@@ -264,17 +234,17 @@ export function IncomeSection({
               </div>
             ))}
 
-            <div className="flex flex-col gap-4">
+            <div className="space-y-6">
               <button
                 type="button"
                 onClick={addEntry}
-                className="w-full border border-dashed border-foreground/10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-foreground/30 hover:text-foreground/60 transition-all"
+                className="text-[9px] font-mono tracking-widest uppercase text-white/20 hover:text-white transition-colors"
               >
-                + Add another source
+                + APPEND ANOTHER SOURCE
               </button>
 
               {error && (
-                <p className="text-red-500 text-[10px] font-black uppercase tracking-tight ml-1">
+                <p className="text-red-500 font-mono text-[9px] uppercase tracking-widest">
                   {error}
                 </p>
               )}
@@ -282,51 +252,43 @@ export function IncomeSection({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
+                className="w-full bg-white text-black py-4 font-medium tracking-[0.2em] uppercase text-[10px] hover:bg-white/90 transition-colors disabled:opacity-50"
               >
-                {isLoading ? "SAVING..." : "SAVE INFLOWS"}
+                {isLoading ? "SAVING..." : "CONFIRM INCOMES"}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-2">
         {incomeStreams.length === 0 ? (
-          <div className="border border-dashed border-foreground/10 rounded-2xl p-12 text-center">
-            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
-              No inflow sources.
+          <div className="py-12 text-center opacity-20">
+            <p className="text-[10px] font-mono uppercase tracking-[0.5em]">
+              No income streams active
             </p>
           </div>
         ) : (
           incomeStreams.map((stream) => (
             <div
               key={stream.id}
-              className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/[0.04] transition-all"
+              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/[0.01] transition-all px-2"
             >
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-foreground/40 bg-foreground/5 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                      {IncomeMap[stream.income_type] || stream.income_type}
-                    </span>
-                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
-                      {stream.income_name}
-                    </h3>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-lg font-black tabular-nums text-foreground">
-                      {formatCurrency(stream.amount)}
-                      <span className="text-[10px] ml-1 text-foreground/40 uppercase">
-                        /{" "}
-                        {CADENCES.find((c) => c.value === stream.cadence)
-                          ?.label || stream.cadence}
-                      </span>
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-1">
+                <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                  {IncomeMap[stream.income_type] || stream.income_type}
+                </span>
+                <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                  {stream.income_name}
+                </h3>
+              </div>
+              <div className="text-right">
+                <p className="font-cormorant text-xl text-white">
+                  {formatCurrency(stream.amount)}
+                  <span className="text-[10px] ml-2 text-white/20 font-sans tracking-widest uppercase">
+                    / {stream.cadence}
+                  </span>
+                </p>
               </div>
             </div>
           ))

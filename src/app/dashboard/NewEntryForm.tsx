@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TAXONOMY_CATEGORIES, getTaxonomyInterpretation } from "@/lib/finance/taxonomy";
+import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
 import { DeploymentMap } from "@/lib/utils/taxonomy";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { Account } from "@/lib/analytics/types";
@@ -41,10 +41,6 @@ export function NewEntryForm({
       return;
     }
 
-    if (Number(amount) > liquidity && accountId) {
-       // Only error if we are deducting from an account
-    }
-
     try {
       await onSubmit({
         title,
@@ -62,28 +58,28 @@ export function NewEntryForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-10">
-      <div className="space-y-6">
-        <div>
-          <label className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 block ml-1">
+    <form onSubmit={handleSubmit} className="space-y-12">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
             Intent
           </label>
           <input
             type="text"
             disabled={isActionLoading}
-            placeholder="What is this achieving?"
+            placeholder="Objective of this deployment?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-foreground/10 bg-foreground/[0.02] rounded-2xl p-5 focus:outline-none focus:border-foreground/20 transition-all text-foreground text-xl placeholder:text-foreground/20 font-bold"
+            className="w-full bg-transparent border-b border-white/10 py-6 font-cormorant text-4xl text-white placeholder:text-white/5 focus:outline-none focus:border-white transition-all"
             required
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
-          <div className="md:col-span-5 space-y-6">
-            <div>
-              <label className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 block ml-1">
-                Amount (KSh)
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
+                Amount (KES)
               </label>
               <input
                 type="number"
@@ -91,23 +87,25 @@ export function NewEntryForm({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full border border-foreground/10 bg-foreground/[0.02] rounded-2xl p-5 focus:outline-none focus:border-foreground/20 transition-all text-foreground text-2xl placeholder:text-foreground/20 font-black tabular-nums"
+                className="w-full bg-transparent border-b border-white/10 py-4 font-cormorant text-3xl text-white placeholder:text-white/5 focus:outline-none focus:border-white transition-all tabular-nums"
                 required
               />
             </div>
-            <div>
-              <label className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 block ml-1">
+            <div className="space-y-4">
+              <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
                 Funding Source
               </label>
               <select
                 disabled={isActionLoading}
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="w-full border border-foreground/10 bg-foreground/[0.02] rounded-xl px-5 py-4 focus:outline-none focus:border-foreground/20 transition-colors text-sm text-foreground font-bold appearance-none"
+                className="w-full bg-transparent border-b border-white/10 py-3 font-mono text-[10px] tracking-widest uppercase text-white/60 focus:outline-none"
               >
-                <option value="">No Deduction (Manual)</option>
+                <option value="" className="bg-black">
+                  External / Manual
+                </option>
                 {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
+                  <option key={acc.id} value={acc.id} className="bg-black">
                     {acc.account_name} ({formatCurrency(acc.current_balance)})
                   </option>
                 ))}
@@ -115,26 +113,28 @@ export function NewEntryForm({
             </div>
           </div>
 
-          <div className="md:col-span-7">
-            <label className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 block ml-1">
+          <div className="space-y-6">
+            <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
               Strategic Classification
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-4">
               {TAXONOMY_CATEGORIES.map((cat) => (
                 <button
                   key={cat.value}
                   type="button"
                   onClick={() => setCategory(cat.value)}
-                  className={`p-3 rounded-xl border text-left transition-all ${
+                  className={`p-4 border transition-all text-left space-y-2 ${
                     category === cat.value
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-foreground/5 bg-foreground/[0.02] text-foreground hover:bg-foreground/[0.04]"
+                      ? "border-white bg-white text-black"
+                      : "border-white/5 bg-white/[0.02] text-white/40 hover:border-white/20 hover:text-white"
                   }`}
                 >
-                  <span className="block text-[9px] font-black uppercase tracking-widest">
+                  <span className="block text-[8px] font-mono tracking-widest uppercase">
                     {DeploymentMap[cat.value] || cat.label}
                   </span>
-                  <span className={`block text-[8px] font-bold mt-1 ${category === cat.value ? "text-background/60" : "text-foreground/40"}`}>
+                  <span
+                    className={`block text-[7px] font-light leading-tight ${category === cat.value ? "text-black/60" : "text-white/20"}`}
+                  >
                     {cat.definition}
                   </span>
                 </button>
@@ -145,29 +145,18 @@ export function NewEntryForm({
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3">
-          <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">
-            {error}
-          </p>
+        <div className="p-4 border border-white/10 font-mono text-[9px] text-white/60 uppercase tracking-widest">
+          ERROR: {error}
         </div>
       )}
 
-      <div className="flex gap-4">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 px-6 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-foreground/40 hover:bg-foreground/5 transition-all"
-          >
-            Cancel
-          </button>
-        )}
+      <div className="pt-8">
         <button
           type="submit"
           disabled={isActionLoading}
-          className="flex-[2] bg-foreground text-background px-6 py-5 rounded-2xl font-black text-lg uppercase tracking-[0.2em] hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl shadow-foreground/10 disabled:opacity-50"
+          className="w-full bg-white text-black py-6 font-medium tracking-[0.3em] uppercase text-xs hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-white/5 disabled:opacity-50"
         >
-          {isActionLoading ? "EXECUTING..." : "Execute Entry"}
+          {isActionLoading ? "EXECUTING..." : "AUTHORIZE DEPLOYMENT"}
         </button>
       </div>
     </form>

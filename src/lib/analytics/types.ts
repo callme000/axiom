@@ -105,4 +105,5 @@ export interface AnalyticsSummary {
   // Operational Baseline v1
   totalStructuralMonthlyBurn: number;
   totalSystemicMonthlyAllocation: number;
+  pendingVerificationCount: number;
 }

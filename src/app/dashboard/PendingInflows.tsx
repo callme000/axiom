@@ -18,21 +18,18 @@ export function PendingInflows({
   onSnapshot,
 }: PendingInflowsProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string>>({});
+  const [selectedAccounts, setSelectedAccounts] = useState<
+    Record<string, string>
+  >({});
 
   const today = new Date();
-  const currentDayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
+  const currentDayOfWeek = today.getDay();
   const currentDayOfMonth = today.getDate();
-
-  // Map JS getDay (0-6) to our 1-7 (Mon-Sun) if necessary
-  // Standard getDay: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-  // Our Weekly selection used 1=Mon, ..., 7=Sun
   const mappedDayOfWeek = currentDayOfWeek === 0 ? 7 : currentDayOfWeek;
 
   const pendingInflows = incomeStreams.filter((stream) => {
     if (!stream.is_recurring || !stream.execution_day) return false;
 
-    // Check if last_executed_at is today
     if (stream.last_executed_at) {
       const lastExecuted = new Date(stream.last_executed_at);
       if (
@@ -79,10 +76,10 @@ export function PendingInflows({
   }
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-      <div className="flex items-center gap-3">
-        <div className="h-0.5 w-8 bg-orange-500/20"></div>
-        <h2 className="text-[10px] font-black text-orange-500/60 uppercase tracking-[0.3em]">
+    <div className="space-y-6 animate-in fade-in duration-700">
+      <div className="flex items-center gap-4">
+        <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+        <h2 className="text-[10px] font-mono text-white/60 uppercase tracking-[0.4em]">
           Verification Required
         </h2>
       </div>
@@ -90,32 +87,22 @@ export function PendingInflows({
       {pendingInflows.map((stream) => (
         <div
           key={stream.id}
-          className="bg-background border-2 border-foreground rounded-2xl p-4 md:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6"
+          className="bg-white p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-8 text-black"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-foreground text-background rounded-xl flex items-center justify-center shrink-0">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-              >
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-0.5">
-                [PENDING INFLOW]
-              </p>
-              <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
-                {formatCurrency(stream.amount)} / {IncomeMap[stream.income_type] || stream.income_type} / {stream.income_name}
-              </h3>
-            </div>
+          <div className="space-y-2">
+            <p className="text-[10px] font-mono tracking-widest uppercase opacity-40">
+              Expected Income Detected
+            </p>
+            <h3 className="font-cormorant text-4xl">
+              {formatCurrency(stream.amount)}
+            </h3>
+            <p className="text-xs font-light tracking-wide opacity-60">
+              {stream.income_name} (
+              {IncomeMap[stream.income_type] || stream.income_type})
+            </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <select
               disabled={loadingId === stream.id}
               value={selectedAccounts[stream.id] || ""}
@@ -125,9 +112,9 @@ export function PendingInflows({
                   [stream.id]: e.target.value,
                 })
               }
-              className="border-2 border-foreground/10 bg-background rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-foreground transition-colors appearance-none min-w-[180px]"
+              className="bg-transparent border-b border-black/20 py-2 font-mono text-[10px] tracking-widest uppercase focus:outline-none focus:border-black transition-colors min-w-[200px]"
             >
-              <option value="">Select Account</option>
+              <option value="">Destination Account</option>
               {accounts.map((acc) => (
                 <option key={acc.id} value={acc.id}>
                   {acc.account_name}
@@ -138,9 +125,9 @@ export function PendingInflows({
             <button
               disabled={loadingId === stream.id}
               onClick={() => handleVerify(stream)}
-              className="bg-foreground text-background px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-foreground/90 transition-all disabled:opacity-50 shrink-0"
+              className="bg-black text-white px-10 py-4 font-medium tracking-widest uppercase text-[10px] hover:bg-black/90 transition-all disabled:opacity-50"
             >
-              {loadingId === stream.id ? "VERIFYING..." : "Verify & Clear"}
+              {loadingId === stream.id ? "VERIFYING..." : "CONFIRM RECEIPT"}
             </button>
           </div>
         </div>

@@ -5,25 +5,40 @@ import {
   submitDayZeroBaselineAction,
   type DashboardSnapshot,
 } from "@/app/dashboard/actions";
-import { formatCurrency } from "@/lib/utils/formatters";
+import { BrandMark } from "@/components/ui/brand-mark";
+import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
+import { HoverButton } from "@/components/ui/hover-glow-button";
+import { LuxuryCard } from "@/components/ui/luxury-card";
+import { motion, AnimatePresence } from "framer-motion";
+import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
 
 interface DayZeroOnboardingProps {
   onComplete: (snapshot: DashboardSnapshot) => void;
 }
 
 const ACCOUNT_TYPES = [
-  { value: "mobile_money", label: "Mobile Money (M-Pesa)" },
-  { value: "checking", label: "Checking / Current Account" },
-  { value: "savings", label: "Savings Account" },
-  { value: "cash", label: "Cash on Hand" },
-  { value: "crypto", label: "Digital Assets / Crypto" },
+  { value: "mobile_money", label: "Mobile Money" },
+  { value: "checking", label: "Checking" },
+  { value: "savings", label: "Savings" },
+  { value: "cash", label: "Cash" },
+  { value: "crypto", label: "Crypto" },
 ];
 
 const INCOME_TYPES = [
   { value: "salary", label: "Salary" },
-  { value: "freelance", label: "Freelance / Gig" },
-  { value: "business", label: "Business Profits" },
-  { value: "other", label: "Other Inflow" },
+  { value: "freelance", label: "Freelance" },
+  { value: "business", label: "Business" },
+  { value: "other", label: "Other" },
+];
+
+const LIABILITY_TYPES = [
+  { value: "credit_card", label: "Credit Card" },
+  { value: "mortgage", label: "Mortgage" },
+  { value: "personal_loan", label: "Personal Loan" },
+  { value: "student_loan", label: "Student Loan" },
+  { value: "business_loan", label: "Business Loan" },
+  { value: "line_of_credit", label: "Line of Credit" },
+  { value: "other", label: "Other" },
 ];
 
 const CADENCES = [
@@ -40,18 +55,42 @@ const BASELINE_CADENCES = [
   { value: "yearly", label: "Yearly" },
 ];
 
+const STEPS = [
+  {
+    roman: "I",
+    title: "Capital Repositories",
+    desc: "Define your primary liquidity containers. Every sovereign architecture begins with a clear map of available capital.",
+  },
+  {
+    roman: "II",
+    title: "Inflow Velocity",
+    desc: "Map your yield-generating transaction streams. Understanding your replenishment rate is critical for deterministic runway.",
+  },
+  {
+    roman: "III",
+    title: "Survival Baseline",
+    desc: "Determine your core structural cost of existence. We audit your maintenance load to identify systemic leakage.",
+  },
+  {
+    roman: "IV",
+    title: "Immediate Obligations",
+    desc: "Audit your outstanding liabilities. Strategic solvency requires a clinical view of all near-term commitments.",
+  },
+];
+
 export default function DayZeroOnboarding({
   onComplete,
 }: DayZeroOnboardingProps) {
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [accounts, setAccounts] = useState([
     {
       account_name: "",
       account_type: "mobile_money",
       current_balance: "",
+      institution: "",
     },
   ]);
   const [incomes, setIncomes] = useState<
@@ -60,51 +99,91 @@ export default function DayZeroOnboarding({
       income_type: string;
       amount: string;
       cadence: string;
+      execution_day: string;
+      is_recurring: boolean;
+      source: string;
     }[]
   >([]);
+  const [baselines, setBaselines] = useState([
+    {
+      title: "Core Survival Baseline",
+      amount: "",
+      cadence: "monthly",
+      category: "Maintenance",
+    },
+  ]);
   const [liabilities, setLiabilities] = useState<
     {
       liability_name: string;
       liability_type: string;
       outstanding_balance: string;
+      institution: string;
+      is_paid_in_cadences: boolean;
+      cadence: string;
+      cadence_day_date: string;
+      cadence_amount: string;
     }[]
   >([]);
-  const [baseline, setBaseline] = useState({ amount: "", cadence: "monthly" });
 
-  const addAccount = () =>
-    setAccounts([
-      ...accounts,
-      {
-        account_name: "New Account",
-        account_type: "checking",
-        current_balance: "",
-      },
-    ]);
+  const addAccount = () => {
+    if (accounts.length < 3)
+      setAccounts([
+        ...accounts,
+        {
+          account_name: "",
+          account_type: "checking",
+          current_balance: "",
+          institution: "",
+        },
+      ]);
+  };
   const removeAccount = (index: number) =>
     setAccounts(accounts.filter((_, i) => i !== index));
 
-  const addIncome = () =>
-    setIncomes([
-      ...incomes,
-      {
-        income_name: "",
-        income_type: "salary",
-        amount: "",
-        cadence: "monthly",
-      },
-    ]);
+  const addIncome = () => {
+    if (incomes.length < 3)
+      setIncomes([
+        ...incomes,
+        {
+          income_name: "",
+          income_type: "salary",
+          amount: "",
+          cadence: "monthly",
+          execution_day: "1",
+          is_recurring: true,
+          source: "",
+        },
+      ]);
+  };
   const removeIncome = (index: number) =>
     setIncomes(incomes.filter((_, i) => i !== index));
 
-  const addLiability = () =>
-    setLiabilities([
-      ...liabilities,
-      {
-        liability_name: "",
-        liability_type: "personal_loan",
-        outstanding_balance: "",
-      },
-    ]);
+  const addBaseline = () => {
+    if (baselines.length < 3)
+      setBaselines([
+        ...baselines,
+        { title: "", amount: "", cadence: "monthly", category: "Maintenance" },
+      ]);
+  };
+  const removeBaseline = (index: number) =>
+    setBaselines(baselines.filter((_, i) => i !== index));
+
+  const addLiability = () => {
+    if (liabilities.length < 2)
+      setLiabilities([
+        ...liabilities,
+        {
+          liability_name: "",
+          liability_type: "credit_card",
+          outstanding_balance: "",
+          institution: "",
+          is_paid_in_cadences: false,
+          cadence: "monthly",
+          cadence_day_date: "1",
+          cadence_amount: "",
+        },
+      ]);
+  };
   const removeLiability = (index: number) =>
     setLiabilities(liabilities.filter((_, i) => i !== index));
 
@@ -119,7 +198,11 @@ export default function DayZeroOnboarding({
         incomes.length === 0 ||
         incomes.every((i) => i.income_name && i.amount !== "")
       );
-    if (step === 3) return baseline.amount !== "";
+    if (step === 3)
+      return (
+        baselines.length > 0 &&
+        baselines.every((b) => b.title && b.amount !== "")
+      );
     if (step === 4)
       return (
         liabilities.length === 0 ||
@@ -130,513 +213,780 @@ export default function DayZeroOnboarding({
     return false;
   };
 
+  const handleNext = () => {
+    if (step < 4) {
+      setDirection(1);
+      setStep(step + 1);
+    }
+  };
+  const handlePrev = () => {
+    if (step > 1) {
+      setDirection(-1);
+      setStep(step - 1);
+    }
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (step < 4) {
-      setStep(step + 1);
+      handleNext();
       return;
     }
-
     setIsLoading(true);
-    setError(null);
     try {
       await submitDayZeroBaselineAction({
         accounts: accounts.map((a) => ({
-          ...a,
+          account_name: a.account_name,
+          account_type: a.account_type,
           current_balance: Number(a.current_balance),
+          institution: a.institution || undefined,
         })),
-        incomes: incomes.map((i) => ({ ...i, amount: Number(i.amount) })),
+        incomes: incomes.map((i) => ({
+          income_name: i.income_name,
+          income_type: i.income_type,
+          amount: Number(i.amount),
+          cadence: i.cadence,
+          execution_day:
+            i.cadence === "monthly" ||
+            i.cadence === "weekly" ||
+            i.cadence === "biweekly"
+              ? Number(i.execution_day)
+              : null,
+          is_recurring: i.is_recurring,
+          source: i.source || undefined,
+        })),
         liabilities: liabilities
           .filter((l) => Number(l.outstanding_balance) > 0)
           .map((l) => ({
-            ...l,
+            liability_name: l.liability_name,
+            liability_type: l.liability_type,
             outstanding_balance: Number(l.outstanding_balance),
+            interest_rate: 0,
+            institution: l.institution || undefined,
+            is_paid_in_cadences: l.is_paid_in_cadences,
+            cadence: l.is_paid_in_cadences ? l.cadence : null,
+            cadence_day_date: l.is_paid_in_cadences
+              ? String(l.cadence_day_date)
+              : null,
+            cadence_amount: l.is_paid_in_cadences
+              ? Number(l.cadence_amount)
+              : null,
           })),
-        baseline: {
-          amount: Number(baseline.amount),
-          cadence: baseline.cadence,
-        },
+        baselines: baselines.map((b) => ({
+          title: b.title,
+          amount: Number(b.amount),
+          cadence: b.cadence,
+          category: b.category,
+        })),
       });
-      // We don't need to call onComplete here because the page will re-render or we can handle it via the action's return
-      // But for consistency with the previous impl:
       window.location.reload();
     } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Configuration failed. System offline.",
-      );
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
   }
 
+  const activeStep = STEPS[step - 1];
+  const backgroundX = -(step - 1) * 5;
+
   return (
-    <div className="fixed inset-0 bg-background z-[100] flex items-center justify-center p-6 md:p-12 overflow-y-auto">
-      <div className="max-w-2xl w-full space-y-12 py-12">
-        {/* Branding & Header */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-foreground rounded-xl flex items-center justify-center">
-              <span className="font-black text-background text-[10px]">A</span>
-            </div>
-            <span className="text-xs font-black uppercase tracking-[0.3em] opacity-40">
-              Axiom Terminal :: Day Zero v2
+    <div className="fixed inset-0 bg-black z-[100] flex flex-col selection:bg-white selection:text-black overflow-hidden h-screen w-full font-sans text-white">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{ x: `${backgroundX}%` }}
+          transition={{ duration: 1.2, ease: [0.215, 0.61, 0.355, 1] }}
+          className="absolute inset-0 w-[150%] h-full"
+        >
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[30%] w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+          <div
+            className="absolute inset-0 opacity-15 mix-blend-screen grayscale"
+            style={{
+              backgroundImage: "url('/images/tactical-schematic.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "left center",
+            }}
+          />
+        </motion.div>
+      </div>
+
+      <nav className="absolute top-0 left-0 w-full z-50 px-12 py-10 flex justify-between items-center mix-blend-difference pointer-events-none">
+        <div className="flex items-center gap-6 group cursor-pointer pointer-events-auto">
+          <BrandMark className="w-10 h-10" />
+          <div className="flex flex-col">
+            <span className="font-mono text-[10px] tracking-[0.6em] uppercase font-bold text-white">
+              AXIOM
+            </span>
+            <span className="text-[8px] font-mono tracking-[0.4em] uppercase text-white/40">
+              Architecture
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase leading-none">
-            Financial <br /> Initialization
-          </h1>
-          <p className="text-foreground/40 text-xs font-bold uppercase tracking-widest max-w-md leading-relaxed">
-            The Axiom engine is scaling your telemetry. Provide a comprehensive
-            view of your capital structure.
-          </p>
         </div>
-
-        {/* Progress Indicator */}
-        <div className="flex gap-2 h-1">
-          {[1, 2, 3, 4].map((s) => (
-            <div
-              key={s}
-              className={`flex-1 transition-all duration-500 rounded-full ${
-                s <= step ? "bg-foreground" : "bg-foreground/10"
-              }`}
-            ></div>
-          ))}
+        <div className="flex gap-12 items-center pointer-events-auto">
+          <div className="hidden md:flex gap-8">
+            {STEPS.map((s, idx) => (
+              <div
+                key={s.roman}
+                className="flex flex-col items-center gap-2 text-white"
+              >
+                <span
+                  className={`font-mono text-[9px] tracking-widest transition-colors duration-700 ${idx + 1 === step ? "opacity-100" : "opacity-10"}`}
+                >
+                  {s.roman}
+                </span>
+                <motion.div
+                  animate={{ scaleX: idx + 1 === step ? 1 : 0 }}
+                  className="h-[1px] w-4 bg-white origin-left"
+                />
+              </div>
+            ))}
+          </div>
+          <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/20">
+            v1.0
+          </span>
         </div>
+      </nav>
 
-        {/* Form Container */}
-        <form onSubmit={handleSubmit} className="space-y-10">
-          <div className="min-h-[240px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {step === 1 && (
-              <div className="space-y-8">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                    01. Capital Repositories
-                  </label>
-                  <h2 className="text-xl font-black uppercase tracking-tight">
-                    Where is your capital held?
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  {accounts.map((acc, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col md:flex-row gap-4 p-4 bg-foreground/5 rounded-2xl relative group"
-                    >
-                      <div className="flex-1 space-y-3">
-                        <input
-                          type="text"
-                          placeholder="Account Name (e.g. M-Pesa, KCB)"
-                          value={acc.account_name}
-                          onChange={(e) => {
-                            const newAccs = [...accounts];
-                            newAccs[idx].account_name = e.target.value;
-                            setAccounts(newAccs);
-                          }}
-                          className="w-full bg-transparent border-b border-foreground/10 py-2 font-bold text-sm focus:outline-none focus:border-foreground"
-                        />
-                        <div className="flex gap-4">
-                          <select
-                            value={acc.account_type}
-                            onChange={(e) => {
-                              const newAccs = [...accounts];
-                              newAccs[idx].account_type = e.target.value;
-                              setAccounts(newAccs);
-                            }}
-                            className="bg-transparent border-b border-foreground/10 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none"
-                          >
-                            {ACCOUNT_TYPES.map((t) => (
-                              <option key={t.value} value={t.value}>
-                                {t.label}
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            type="number"
-                            placeholder="Balance"
-                            value={acc.current_balance}
-                            onChange={(e) => {
-                              const newAccs = [...accounts];
-                              newAccs[idx].current_balance = e.target.value;
-                              setAccounts(newAccs);
-                            }}
-                            className="flex-1 bg-transparent border-b border-foreground/10 py-2 font-black tabular-nums focus:outline-none focus:border-foreground"
-                          />
-                        </div>
-                      </div>
-                      {accounts.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeAccount(idx)}
-                          className="p-2 text-foreground/20 hover:text-red-500 transition-colors self-center"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                          >
-                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={addAccount}
-                  className="w-full py-4 border-2 border-dashed border-foreground/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:border-foreground/20 hover:text-foreground transition-all"
-                >
-                  + Add Another Repository
-                </button>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-8">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                    02. Inflow Velocity
-                  </label>
-                  <h2 className="text-xl font-black uppercase tracking-tight">
-                    How does capital arrive?
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  {incomes.length === 0 ? (
-                    <div className="p-8 border-2 border-dashed border-foreground/10 rounded-3xl text-center">
-                      <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">
-                        No regular inflow streams reported.
-                      </p>
-                    </div>
-                  ) : (
-                    incomes.map((inc, idx) => (
-                      <div
-                        key={idx}
-                        className="flex flex-col md:flex-row gap-4 p-4 bg-foreground/5 rounded-2xl"
-                      >
-                        <div className="flex-1 space-y-3">
-                          <div className="relative group">
-                            <input
-                              type="text"
-                              placeholder="Source (e.g. Salary, Shop Profits)"
-                              value={inc.income_name}
-                              onChange={(e) => {
-                                const newIncs = [...incomes];
-                                newIncs[idx].income_name = e.target.value;
-                                setIncomes(newIncs);
-                              }}
-                              className="w-full bg-transparent border-b border-foreground/10 py-2 font-bold text-sm focus:outline-none focus:border-foreground pr-8"
-                            />
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="3"
-                              >
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-4">
-                            <select
-                              value={inc.income_type}
-                              onChange={(e) => {
-                                const newIncs = [...incomes];
-                                newIncs[idx].income_type = e.target.value;
-                                setIncomes(newIncs);
-                              }}
-                              className="bg-transparent border-b border-foreground/10 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none"
-                            >
-                              {INCOME_TYPES.map((t) => (
-                                <option key={t.value} value={t.value}>
-                                  {t.label}
-                                </option>
-                              ))}
-                            </select>
-                            <select
-                              value={inc.cadence}
-                              onChange={(e) => {
-                                const newIncs = [...incomes];
-                                newIncs[idx].cadence = e.target.value;
-                                setIncomes(newIncs);
-                              }}
-                              className="bg-transparent border-b border-foreground/10 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none"
-                            >
-                              {CADENCES.map((c) => (
-                                <option key={c.value} value={c.value}>
-                                  {c.label}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              type="number"
-                              placeholder="Amount"
-                              value={inc.amount}
-                              onChange={(e) => {
-                                const newIncs = [...incomes];
-                                newIncs[idx].amount = e.target.value;
-                                setIncomes(newIncs);
-                              }}
-                              className="flex-1 min-w-[100px] bg-transparent border-b border-foreground/10 py-2 font-black tabular-nums focus:outline-none focus:border-foreground"
-                            />
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeIncome(idx)}
-                          className="p-2 text-foreground/20 hover:text-red-500 transition-colors self-center"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                          >
-                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={addIncome}
-                  className="w-full py-4 border-2 border-dashed border-foreground/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:border-foreground/20 hover:text-foreground transition-all"
-                >
-                  + Add Inflow Source
-                </button>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="space-y-8">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                    03. Survival Baseline
-                  </label>
-                  <h2 className="text-xl font-black uppercase tracking-tight">
-                    What is the cost of existence?
-                  </h2>
-                </div>
-                <div className="space-y-6 bg-foreground/5 p-8 rounded-3xl">
-                  <div className="relative">
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-black text-foreground/20">
-                      KSh
-                    </span>
-                    <input
-                      autoFocus
-                      type="number"
-                      required
-                      placeholder="0.00"
-                      value={baseline.amount}
-                      onChange={(e) =>
-                        setBaseline({ ...baseline, amount: e.target.value })
-                      }
-                      className="w-full bg-transparent border-b-4 border-foreground/10 py-4 pl-16 text-5xl font-black tabular-nums focus:outline-none focus:border-foreground transition-colors placeholder:text-foreground/5"
-                    />
+      <div className="relative z-10 flex-1 flex items-center justify-center px-8 md:px-12 pt-16">
+        <div className="max-w-7xl w-full h-[620px] grid lg:grid-cols-[1.1fr_1.4fr] gap-16 md:gap-24 items-stretch overflow-visible">
+          <div className="flex flex-col justify-center h-full border-r border-white/5 pr-12 text-white overflow-hidden">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={step}
+                custom={direction}
+                initial={{ opacity: 0, x: direction * 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -direction * 50 }}
+                transition={{ duration: 0.8, ease: [0.215, 0.61, 0.355, 1] }}
+                className="space-y-6"
+              >
+                <div className="space-y-2">
+                  <div className="font-cormorant italic text-8xl text-white/5 leading-none select-none">
+                    {activeStep.roman}
                   </div>
-                  <div className="flex flex-wrap items-center gap-6">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
-                      Measured on a
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {BASELINE_CADENCES.map((c) => (
-                        <button
-                          key={c.value}
-                          type="button"
-                          onClick={() =>
-                            setBaseline({ ...baseline, cadence: c.value })
-                          }
-                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                            baseline.cadence === c.value
-                              ? "bg-foreground text-background"
-                              : "bg-foreground/5 text-foreground/40 hover:bg-foreground/10"
-                          }`}
-                        >
-                          {c.label}
-                        </button>
-                      ))}
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
-                      basis.
-                    </span>
-                  </div>
+                  <h1 className="font-cormorant text-6xl text-white leading-none tracking-tight">
+                    {activeStep.title}
+                  </h1>
                 </div>
-                <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest leading-relaxed">
-                  Enter your core survival cost (Rent, Food, Utilities). This
-                  allows Axiom to calculate your true survival window.
+                <p className="text-white/40 text-lg font-light leading-relaxed">
+                  {activeStep.desc}
                 </p>
-              </div>
-            )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-            {step === 4 && (
-              <div className="space-y-8">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em]">
-                    04. Immediate Obligations
-                  </label>
-                  <h2 className="text-xl font-black uppercase tracking-tight">
-                    What does the system owe?
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  {liabilities.length === 0 ? (
-                    <div className="p-8 border-2 border-dashed border-foreground/10 rounded-3xl text-center">
-                      <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">
-                        No outstanding obligations reported.
-                      </p>
-                    </div>
-                  ) : (
-                    liabilities.map((liab, idx) => (
-                      <div
-                        key={idx}
-                        className="flex flex-col md:flex-row gap-4 p-4 bg-foreground/5 rounded-2xl"
-                      >
-                        <div className="flex-1 space-y-3">
-                          <div className="relative group">
-                            <input
-                              type="text"
-                              placeholder="Obligation (e.g. Fuliza, Loan)"
-                              value={liab.liability_name}
-                              onChange={(e) => {
-                                const newLiabs = [...liabilities];
-                                newLiabs[idx].liability_name = e.target.value;
-                                setLiabilities(newLiabs);
-                              }}
-                              className="w-full bg-transparent border-b border-foreground/10 py-2 font-bold text-sm focus:outline-none focus:border-foreground pr-8"
-                            />
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="3"
-                              >
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
+          <LuxuryCard className="h-full flex flex-col border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden">
+            <div className="flex-1 p-10 md:p-14 overflow-hidden relative rounded-t-[inherit]">
+              <form
+                onSubmit={handleSubmit}
+                className="h-full flex flex-col text-white"
+              >
+                <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div
+                    key={step}
+                    custom={direction}
+                    initial={{ opacity: 0, x: direction * 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -direction * 30 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="flex-1 flex flex-col"
+                  >
+                    {step === 1 && (
+                      <div className="flex flex-col h-full gap-6">
+                        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+                          Capital Repositories
+                        </h2>
+                        <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+                          {accounts.map((acc, idx) => (
+                            <div
+                              key={idx}
+                              className="space-y-3 pb-3 border-b border-white/5 relative shrink-0"
+                            >
+                              <div className="grid grid-cols-2 gap-6">
+                                <input
+                                  type="text"
+                                  placeholder="Repository Name"
+                                  value={acc.account_name}
+                                  onChange={(e) => {
+                                    const n = [...accounts];
+                                    n[idx].account_name = e.target.value;
+                                    setAccounts(n);
+                                  }}
+                                  className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Financial Institution"
+                                  value={acc.institution}
+                                  onChange={(e) => {
+                                    const n = [...accounts];
+                                    n[idx].institution = e.target.value;
+                                    setAccounts(n);
+                                  }}
+                                  className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-8">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Repository Type
+                                  </label>
+                                  <select
+                                    value={acc.account_type}
+                                    onChange={(e) => {
+                                      const n = [...accounts];
+                                      n[idx].account_type = e.target.value;
+                                      setAccounts(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                                  >
+                                    {ACCOUNT_TYPES.map((t) => (
+                                      <option
+                                        key={t.value}
+                                        value={t.value}
+                                        className="bg-[#080808]"
+                                      >
+                                        {t.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Current Liquidity
+                                  </label>
+                                  <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={acc.current_balance}
+                                    onChange={(e) => {
+                                      const n = [...accounts];
+                                      n[idx].current_balance = e.target.value;
+                                      setAccounts(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
+                                  />
+                                </div>
+                              </div>
+                              {accounts.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeAccount(idx)}
+                                  className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+                                >
+                                  ✕
+                                </button>
+                              )}
                             </div>
-                          </div>
-                          <input
-                            type="number"
-                            placeholder="Outstanding Balance"
-                            value={liab.outstanding_balance}
-                            onChange={(e) => {
-                              const newLiabs = [...liabilities];
-                              newLiabs[idx].outstanding_balance =
-                                e.target.value;
-                              setLiabilities(newLiabs);
-                            }}
-                            className="w-full bg-transparent border-b border-foreground/10 py-2 font-black tabular-nums focus:outline-none focus:border-foreground"
-                          />
+                          ))}
                         </div>
                         <button
                           type="button"
-                          onClick={() => removeLiability(idx)}
-                          className="p-2 text-foreground/20 hover:text-red-500 transition-colors self-center"
+                          onClick={addAccount}
+                          className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
                         >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                          >
-                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
+                          + Append Source
                         </button>
                       </div>
-                    ))
-                  )}
-                </div>
+                    )}
+
+                    {step === 2 && (
+                      <div className="flex flex-col h-full gap-6">
+                        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+                          Inflow Velocity
+                        </h2>
+                        <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+                          {incomes.map((inc, idx) => (
+                            <div
+                              key={idx}
+                              className="space-y-3 pb-3 border-b border-white/5 relative shrink-0"
+                            >
+                              <div className="grid grid-cols-2 gap-6">
+                                <input
+                                  type="text"
+                                  placeholder="Source Name"
+                                  value={inc.income_name}
+                                  onChange={(e) => {
+                                    const n = [...incomes];
+                                    n[idx].income_name = e.target.value;
+                                    setIncomes(n);
+                                  }}
+                                  className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Origin"
+                                  value={inc.source}
+                                  onChange={(e) => {
+                                    const n = [...incomes];
+                                    n[idx].source = e.target.value;
+                                    setIncomes(n);
+                                  }}
+                                  className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                                />
+                              </div>
+                              <div className="grid grid-cols-3 gap-6">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Type
+                                  </label>
+                                  <select
+                                    value={inc.income_type}
+                                    onChange={(e) => {
+                                      const n = [...incomes];
+                                      n[idx].income_type = e.target.value;
+                                      setIncomes(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                                  >
+                                    {INCOME_TYPES.map((t) => (
+                                      <option
+                                        key={t.value}
+                                        value={t.value}
+                                        className="bg-[#080808]"
+                                      >
+                                        {t.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Frequency
+                                  </label>
+                                  <select
+                                    value={inc.cadence}
+                                    onChange={(e) => {
+                                      const n = [...incomes];
+                                      n[idx].cadence = e.target.value;
+                                      setIncomes(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                                  >
+                                    {CADENCES.map((c) => (
+                                      <option
+                                        key={c.value}
+                                        value={c.value}
+                                        className="bg-[#080808]"
+                                      >
+                                        {c.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    KES
+                                  </label>
+                                  <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={inc.amount}
+                                    onChange={(e) => {
+                                      const n = [...incomes];
+                                      n[idx].amount = e.target.value;
+                                      setIncomes(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="pt-2 space-y-3">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <label className="flex items-center space-x-3 cursor-pointer group">
+                                    <input
+                                      type="checkbox"
+                                      checked={inc.is_recurring}
+                                      onChange={(e) => {
+                                        const n = [...incomes];
+                                        n[idx].is_recurring = e.target.checked;
+                                        setIncomes(n);
+                                      }}
+                                      className="w-3 h-3 rounded border-white/10 bg-transparent checked:bg-white transition-colors"
+                                    />
+                                    <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60">
+                                      Recurring
+                                    </span>
+                                  </label>
+                                  {(inc.cadence === "monthly" ||
+                                    inc.cadence === "weekly" ||
+                                    inc.cadence === "biweekly") && (
+                                    <div className="flex items-center gap-3">
+                                      <label className="text-[8px] font-mono text-white/20 uppercase">
+                                        Execution Day
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        max="31"
+                                        value={inc.execution_day || ""}
+                                        onChange={(e) => {
+                                          const n = [...incomes];
+                                          n[idx].execution_day = e.target.value;
+                                          setIncomes(n);
+                                        }}
+                                        className="w-12 bg-transparent border-b border-white/10 py-0.5 text-[10px] text-white focus:outline-none text-center"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeIncome(idx)}
+                                className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addIncome}
+                          className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
+                        >
+                          + Append Inflow
+                        </button>
+                      </div>
+                    )}
+
+                    {step === 3 && (
+                      <div className="flex flex-col h-full gap-6">
+                        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+                          Survival Baseline
+                        </h2>
+                        <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+                          {baselines.map((base, idx) => (
+                            <div
+                              key={idx}
+                              className="space-y-3 pb-3 border-b border-white/5 relative shrink-0"
+                            >
+                              <div className="grid grid-cols-2 gap-6">
+                                <input
+                                  type="text"
+                                  placeholder="Baseline Name"
+                                  value={base.title}
+                                  onChange={(e) => {
+                                    const n = [...baselines];
+                                    n[idx].title = e.target.value;
+                                    setBaselines(n);
+                                  }}
+                                  className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+                                />
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Category
+                                  </label>
+                                  <select
+                                    value={base.category}
+                                    onChange={(e) => {
+                                      const n = [...baselines];
+                                      n[idx].category = e.target.value;
+                                      setBaselines(n);
+                                    }}
+                                    className="bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none w-full"
+                                  >
+                                    {TAXONOMY_CATEGORIES.map((cat) => (
+                                      <option
+                                        key={cat.value}
+                                        value={cat.value}
+                                        className="bg-[#080808]"
+                                      >
+                                        {cat.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-12">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Frequency
+                                  </label>
+                                  <select
+                                    value={base.cadence}
+                                    onChange={(e) => {
+                                      const n = [...baselines];
+                                      n[idx].cadence = e.target.value;
+                                      setBaselines(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                                  >
+                                    {BASELINE_CADENCES.map((c) => (
+                                      <option
+                                        key={c.value}
+                                        value={c.value}
+                                        className="bg-[#080808]"
+                                      >
+                                        {c.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Amount
+                                  </label>
+                                  <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={base.amount}
+                                    onChange={(e) => {
+                                      const n = [...baselines];
+                                      n[idx].amount = e.target.value;
+                                      setBaselines(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
+                                  />
+                                </div>
+                              </div>
+                              {baselines.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeBaseline(idx)}
+                                  className="absolute top-0 right-[-2.5rem] p-2 text-white/10 hover:text-red-400"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addBaseline}
+                          className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
+                        >
+                          + Append Recurring
+                        </button>
+                      </div>
+                    )}
+
+                    {step === 4 && (
+                      <div className="flex flex-col h-full gap-6">
+                        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+                          Immediate Obligations
+                        </h2>
+                        <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+                          {liabilities.map((liab, idx) => (
+                            <div
+                              key={idx}
+                              className="space-y-3 pb-3 border-b border-white/5 relative shrink-0"
+                            >
+                              <div className="grid grid-cols-2 gap-6">
+                                <input
+                                  type="text"
+                                  placeholder="Obligation Name"
+                                  value={liab.liability_name}
+                                  onChange={(e) => {
+                                    const n = [...liabilities];
+                                    n[idx].liability_name = e.target.value;
+                                    setLiabilities(n);
+                                  }}
+                                  className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Financial Institution"
+                                  value={liab.institution}
+                                  onChange={(e) => {
+                                    const n = [...liabilities];
+                                    n[idx].institution = e.target.value;
+                                    setLiabilities(n);
+                                  }}
+                                  className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-12">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Type
+                                  </label>
+                                  <select
+                                    value={liab.liability_type}
+                                    onChange={(e) => {
+                                      const n = [...liabilities];
+                                      n[idx].liability_type = e.target.value;
+                                      setLiabilities(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-[11px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                                  >
+                                    {LIABILITY_TYPES.map((t) => (
+                                      <option
+                                        key={t.value}
+                                        value={t.value}
+                                        className="bg-[#080808]"
+                                      >
+                                        {t.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Outstanding Balance
+                                  </label>
+                                  <input
+                                    type="number"
+                                    placeholder="0"
+                                    value={liab.outstanding_balance}
+                                    onChange={(e) => {
+                                      const n = [...liabilities];
+                                      n[idx].outstanding_balance =
+                                        e.target.value;
+                                      setLiabilities(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-2xl font-light text-white focus:outline-none tabular-nums"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="pt-2 space-y-3">
+                                <label className="flex items-center space-x-3 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={liab.is_paid_in_cadences}
+                                    onChange={(e) => {
+                                      const n = [...liabilities];
+                                      n[idx].is_paid_in_cadences =
+                                        e.target.checked;
+                                      setLiabilities(n);
+                                    }}
+                                    className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                                  />
+                                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                                    Paid in Cadence
+                                  </span>
+                                </label>
+                                {liab.is_paid_in_cadences && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="grid grid-cols-3 gap-6 pt-2 pl-8 border-l border-white/5"
+                                  >
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                                        Cadence
+                                      </label>
+                                      <select
+                                        value={liab.cadence}
+                                        onChange={(e) => {
+                                          const n = [...liabilities];
+                                          n[idx].cadence = e.target.value;
+                                          setLiabilities(n);
+                                        }}
+                                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                      >
+                                        <option
+                                          value="weekly"
+                                          className="bg-black"
+                                        >
+                                          Weekly
+                                        </option>
+                                        <option
+                                          value="monthly"
+                                          className="bg-black"
+                                        >
+                                          Monthly
+                                        </option>
+                                      </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                                        Day
+                                      </label>
+                                      <input
+                                        type="text"
+                                        placeholder="15"
+                                        value={liab.cadence_day_date || ""}
+                                        onChange={(e) => {
+                                          const n = [...liabilities];
+                                          n[idx].cadence_day_date =
+                                            e.target.value;
+                                          setLiabilities(n);
+                                        }}
+                                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                                        Payment
+                                      </label>
+                                      <input
+                                        type="number"
+                                        placeholder="0"
+                                        value={liab.cadence_amount || ""}
+                                        onChange={(e) => {
+                                          const n = [...liabilities];
+                                          n[idx].cadence_amount =
+                                            e.target.value;
+                                          setLiabilities(n);
+                                        }}
+                                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                      />
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeLiability(idx)}
+                                className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addLiability}
+                          className="text-[11px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-4 px-8 border border-white/10 rounded-full self-start active:scale-95"
+                        >
+                          + Append Obligation
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </form>
+            </div>
+
+            <div className="h-32 border-t border-white/5 relative z-10 px-12 md:px-16 flex items-center shrink-0 bg-[#080808]/60 backdrop-blur-3xl rounded-b-[inherit]">
+              <div className="w-full flex items-center justify-between">
                 <button
                   type="button"
-                  onClick={addLiability}
-                  className="w-full py-4 border-2 border-dashed border-foreground/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:border-foreground/20 hover:text-foreground transition-all"
+                  onClick={handlePrev}
+                  disabled={step === 1}
+                  className="text-[11px] font-mono tracking-[0.6em] text-white/20 hover:text-white transition-all uppercase disabled:opacity-0 py-8 px-12 -ml-12 hover:bg-white/5 rounded-full"
                 >
-                  + Add Obligation
+                  ← Back
                 </button>
+                <div onClick={handleSubmit}>
+                  {step === 4 ? (
+                    <HoverButton
+                      glowColor="rgba(255,255,255,0.4)"
+                      className="px-24 py-10 rounded-full text-[11px]"
+                      disabled={isLoading || !isStepValid()}
+                    >
+                      {isLoading ? "..." : "Archive Setup"}
+                    </HoverButton>
+                  ) : (
+                    <RippleButton
+                      variant="hoverborder"
+                      className="px-24 py-10 border-none text-[11px]"
+                      disabled={isLoading || !isStepValid()}
+                    >
+                      Next Phase →
+                    </RippleButton>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-
-          {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 animate-shake">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                className="text-red-500"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 8v4M12 16h.01" />
-              </svg>
-              <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">
-                {error}
-              </p>
             </div>
-          )}
-
-          <div className="flex items-center justify-between pt-6">
-            {step > 1 ? (
-              <button
-                type="button"
-                onClick={() => setStep(step - 1)}
-                className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 hover:text-foreground transition-colors"
-              >
-                Go Back
-              </button>
-            ) : (
-              <div></div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading || !isStepValid()}
-              className="px-10 py-5 bg-foreground text-background rounded-2xl font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-foreground/20 disabled:opacity-20 disabled:scale-100"
-            >
-              {isLoading
-                ? "CALCULATING..."
-                : step === 4
-                  ? "Initialize System"
-                  : "Next Phase"}
-            </button>
-          </div>
-        </form>
-
-        {/* System Status Footer */}
-        <div className="pt-12 border-t border-foreground/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-[9px] font-black text-foreground/30 uppercase tracking-widest">
-              Analytical Precision Active
-            </span>
-          </div>
-          <p className="text-[8px] font-bold text-foreground/20 uppercase tracking-tighter max-w-xs md:text-right">
-            Verification required for system activation. Provided telemetry
-            remains encrypted.
-          </p>
+          </LuxuryCard>
         </div>
       </div>
     </div>

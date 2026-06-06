@@ -2,11 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { ACCOUNT_TYPES, type Account } from "@/lib/finance/accounts";
-import {
-  createAccountAction,
-  deleteAccountAction,
-  type DashboardSnapshot,
-} from "./actions";
+import { createAccountAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { AccountMap } from "@/lib/utils/taxonomy";
 
@@ -62,28 +58,26 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-xl font-black text-foreground tracking-tight uppercase">
+    <div className="space-y-12">
+      <div className="flex items-center justify-between">
+        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
           Accounts
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl transition-all group"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">
-            {isAdding ? "Cancel" : "+ Add account"}
-          </span>
+          {isAdding ? "✕ CANCEL" : "+ APPEND ACCOUNT"}
         </button>
       </div>
 
       {isAdding && (
-        <div className="bg-background border border-foreground/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleSourceSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
-                  Name
+        <div className="bg-white/[0.02] border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
+          <form onSubmit={handleSourceSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Account Name
                 </label>
                 <input
                   type="text"
@@ -96,12 +90,12 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                       account_name: e.target.value,
                     })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
-                  Balance (KSh)
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Current Liquidity
                 </label>
                 <input
                   type="number"
@@ -114,15 +108,15 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                       current_balance: e.target.value,
                     })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
-                  Type
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Account Type
                 </label>
                 <select
                   value={sourceForm.account_type}
@@ -132,18 +126,18 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                       account_type: e.target.value,
                     })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold appearance-none"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
                 >
                   {ACCOUNT_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
+                    <option key={t.value} value={t.value} className="bg-black">
                       {t.label}
                     </option>
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest mb-1.5 block ml-1">
-                  Institution
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Financial Institution
                 </label>
                 <input
                   type="text"
@@ -155,13 +149,13 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                       institution: e.target.value,
                     })
                   }
-                  className="w-full border border-foreground/5 bg-foreground/[0.02] rounded-xl p-3 focus:outline-none focus:border-foreground/20 transition-colors text-foreground text-sm font-bold"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
             </div>
 
             {error && (
-              <p className="text-red-500 text-[10px] font-black uppercase tracking-tight ml-1">
+              <p className="text-red-500 font-mono text-[9px] uppercase tracking-widest">
                 {error}
               </p>
             )}
@@ -169,45 +163,44 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-foreground text-background py-3 rounded-xl font-black uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
+              className="w-full bg-white text-black py-4 font-medium tracking-[0.2em] uppercase text-[10px] hover:bg-white/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "SAVING..." : "ADD ACCOUNT"}
+              {isLoading ? "INITIALIZING..." : "CONFIRM ACCOUNT"}
             </button>
           </form>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-2">
         {accounts.length === 0 ? (
-          <div className="border border-dashed border-foreground/10 rounded-2xl p-12 text-center">
-            <p className="text-foreground/40 text-[10px] uppercase tracking-widest">
-              No accounts defined.
+          <div className="py-12 text-center opacity-20">
+            <p className="text-[10px] font-mono uppercase tracking-[0.5em]">
+              No accounts active
             </p>
           </div>
         ) : (
           accounts.map((account) => (
             <div
               key={account.id}
-              className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 group hover:bg-foreground/[0.04] transition-all"
+              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/[0.01] transition-all px-2"
             >
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-foreground/40 bg-foreground/5 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                      {AccountMap[account.account_type] || account.account_type}
-                    </span>
-                    <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
-                      {account.account_name}
-                    </h3>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-lg font-black tabular-nums text-foreground">
-                      {formatCurrency(account.current_balance)}
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-1">
+                <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                  {AccountMap[account.account_type] || account.account_type}
+                </span>
+                <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                  {account.account_name}
+                </h3>
+              </div>
+              <div className="text-right">
+                <p className="font-cormorant text-xl text-white">
+                  {formatCurrency(account.current_balance)}
+                </p>
+                {account.institution && (
+                  <p className="text-[8px] font-mono text-white/10 uppercase tracking-widest mt-1">
+                    {account.institution}
+                  </p>
+                )}
               </div>
             </div>
           ))

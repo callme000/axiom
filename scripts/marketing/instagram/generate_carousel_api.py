@@ -140,13 +140,13 @@ class CarouselGeneratorAPI:
 
 def main():
     # CONFIGURATION
-    THEME = "mechanical gears, machinery, dark metal"
+    THEME = "dark abstract geometric shapes, black marble, clinical white lights, moody minimalism"
     SLIDES = [
-        "1: Your wealth isn't bleeding out from a major wound.\\nIt is evaporating from 100 micro-cuts.",
-        "2: A forgotten KSh 1,500 subscription here.\\nAn uncalculated bank fee there.\\nCasual mobile transfers every single day.",
-        "3: In the Axiom ecosystem, this is classified as Leakage.\\nDead capital leaving your system without your conscious intent or strategic permission.",
-        "4: If you have a leaky bucket, pouring more water in won't fix it.\\nStop trying to earn more before you secure what you already have.",
-        "5: Patch the system.\\nIdentify your structural leakage instantly.\\nLink in bio.",
+        "1: Your financial decisions are compromised.\\nEgo and fear are taxing your capital.",
+        "2: You buy to simulate status.\\nYou avoid auditing your accounts because of anxiety.\\nEmotion is the enemy of efficiency.",
+        "3: The elite do not operate on feelings.\\nThey operate on strict, unforgiving systems.\\nMath dictates their deployment.",
+        "4: Axiom strips the emotion out of your operations.\\nOur intelligence engine calculates your structural solvency with zero judgment.\\nJust cold, deterministic truth.",
+        "5: Stop operating on feelings.\\nEstablish your Day Zero Baseline today.\\nLink in bio.",
     ]
 
     generator = CarouselGeneratorAPI()

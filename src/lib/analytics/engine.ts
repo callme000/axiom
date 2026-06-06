@@ -61,6 +61,30 @@ import { calculateObjectiveFundingRatio } from "../finance/objectives";
  * Rule: The database is truth. This engine only interprets.
  */
 
+export const calculateLiabilityMetrics = (liabilities: Liability[]) => {
+  return liabilities.reduce(
+    (acc, l) => {
+      const balance = Number(l.outstanding_balance);
+      acc.totalBalance += balance;
+
+      if (l.is_paid_in_cadences && l.interest_rate > 0) {
+        // Interest is explicitly "per cadence" as per UI/Requirement
+        const periodicInterest = balance * (l.interest_rate / 100);
+
+        let monthlyInterest = 0;
+        if (l.cadence === "weekly") {
+          monthlyInterest = periodicInterest * (52 / 12);
+        } else if (l.cadence === "monthly") {
+          monthlyInterest = periodicInterest;
+        }
+        acc.monthlyInterestAccrual += monthlyInterest;
+      }
+      return acc;
+    },
+    { totalBalance: 0, monthlyInterestAccrual: 0 },
+  );
+};
+
 export const calculateTotal = (deployments: Deployment[]): number => {
   return deployments.reduce((sum, d) => sum + Number(d.amount), 0);
 };
@@ -70,7 +94,7 @@ export const calculateAccountTotal = (accounts: Account[]): number => {
 };
 
 export const calculateLiabilityTotal = (liabilities: Liability[]): number => {
-  return liabilities.reduce((sum, l) => sum + Number(l.outstanding_balance), 0);
+  return calculateLiabilityMetrics(liabilities).totalBalance;
 };
 
 export const calculateIncomeMetrics = (streams: IncomeStream[]) => {
@@ -149,6 +173,69 @@ export const calculateGoalMetrics = (
 export const calculateAverage = (deployments: Deployment[]): number => {
   if (deployments.length === 0) return 0;
   return calculateTotal(deployments) / deployments.length;
+};
+
+export const countPendingVerifications = (
+  income: IncomeStream[],
+  liabilities: Liability[],
+): number => {
+  const today = new Date();
+  const currentDayOfWeek = today.getDay();
+  const currentDayOfWeekName = today
+    .toLocaleString("en-US", { weekday: "long" })
+    .toLowerCase();
+  const currentDayOfMonth = today.getDate();
+  const mappedDayOfWeek = currentDayOfWeek === 0 ? 7 : currentDayOfWeek;
+
+  const pendingIncomes = income.filter((stream) => {
+    if (!stream.is_recurring || !stream.execution_day) return false;
+
+    if (stream.last_executed_at) {
+      const lastExecuted = new Date(stream.last_executed_at);
+      if (
+        lastExecuted.getDate() === today.getDate() &&
+        lastExecuted.getMonth() === today.getMonth() &&
+        lastExecuted.getFullYear() === today.getFullYear()
+      ) {
+        return false;
+      }
+    }
+
+    if (stream.cadence === "weekly") {
+      return mappedDayOfWeek === stream.execution_day;
+    }
+    if (stream.cadence === "monthly" || stream.cadence === "biweekly") {
+      return currentDayOfMonth === stream.execution_day;
+    }
+
+    return false;
+  });
+
+  const pendingLiabilities = liabilities.filter((liab) => {
+    if (!liab.is_paid_in_cadences || !liab.cadence_day_date) return false;
+
+    if (liab.last_executed_at) {
+      const lastExecuted = new Date(liab.last_executed_at);
+      if (
+        lastExecuted.getDate() === today.getDate() &&
+        lastExecuted.getMonth() === today.getMonth() &&
+        lastExecuted.getFullYear() === today.getFullYear()
+      ) {
+        return false;
+      }
+    }
+
+    if (liab.cadence === "weekly") {
+      return currentDayOfWeekName === liab.cadence_day_date.toLowerCase();
+    }
+    if (liab.cadence === "monthly") {
+      return currentDayOfMonth === parseInt(liab.cadence_day_date, 10);
+    }
+
+    return false;
+  });
+
+  return pendingIncomes.length + pendingLiabilities.length;
 };
 
 /**
@@ -334,14 +421,18 @@ export const generateSummary = (
 ): AnalyticsSummary => {
   const total = calculateTotal(deployments);
   const baselineMetrics = calculateBaselineMetrics(baseline);
+  const liabilityMetrics = calculateLiabilityMetrics(liabilities);
 
-  // Total daily burn = (Deployment Burn) + (Baseline Burn / 30)
+  // Total daily burn = (Deployment Burn) + (Baseline Burn / 30) + (Liability Interest Burn / 30)
   const deploymentBurn = calculateBurnRate(deployments);
   const baselineDailyBurn = baselineMetrics.monthlyBurn / 30;
-  const burnRate = deploymentBurn + baselineDailyBurn;
+  const liabilityInterestDailyBurn =
+    liabilityMetrics.monthlyInterestAccrual / 30;
+  const burnRate =
+    deploymentBurn + baselineDailyBurn + liabilityInterestDailyBurn;
 
   const totalAssets = calculateAccountTotal(accounts);
-  const totalLiabilities = calculateLiabilityTotal(liabilities);
+  const totalLiabilities = liabilityMetrics.totalBalance;
   const netWorth = totalAssets - totalLiabilities;
 
   const income = calculateIncomeMetrics(incomeStreams);
@@ -396,5 +487,9 @@ export const generateSummary = (
     // Operational Baseline v1
     totalStructuralMonthlyBurn: baselineMetrics.monthlyBurn,
     totalSystemicMonthlyAllocation: baselineMetrics.monthlyAllocation,
+    pendingVerificationCount: countPendingVerifications(
+      incomeStreams,
+      liabilities,
+    ),
   };
 };
