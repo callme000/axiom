@@ -13,7 +13,7 @@ export async function logKairosEvaluation(data: {
     let supabase;
     try {
       supabase = await createClient();
-    } catch (e) {
+    } catch (_e) {
       // If we're in a test environment or outside a request scope, cookies() will fail.
       // We silenty exit as telemetry is non-critical for these contexts.
       return;

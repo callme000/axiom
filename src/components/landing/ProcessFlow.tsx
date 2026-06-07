@@ -29,7 +29,7 @@ export function ProcessFlow() {
   return (
     <section className="py-40 px-6 bg-[#050505] relative overflow-hidden selection:bg-white selection:text-black">
       {/* Editorial Decorative Layer */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
       <div className="max-w-7xl mx-auto">
         <div className="text-center space-y-8 mb-32">
@@ -44,7 +44,7 @@ export function ProcessFlow() {
             </h2>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.4}>
-            <div className="w-[1px] h-24 bg-gradient-to-b from-white/20 to-transparent mx-auto" />
+            <div className="w-px h-24 bg-linear-to-b from-white/20 to-transparent mx-auto" />
           </ScrollReveal>
         </div>
 
@@ -66,7 +66,7 @@ export function ProcessFlow() {
                   </h3>
                 </div>
 
-                <div className="h-[1px] w-12 bg-white/20 group-hover:bg-black/20 group-hover:w-full transition-all duration-700" />
+                <div className="h-px w-12 bg-white/20 group-hover:bg-black/20 group-hover:w-full transition-all duration-700" />
 
                 <p className="text-white/40 group-hover:text-black/60 text-lg font-light leading-relaxed transition-colors">
                   {step.desc}
@@ -79,7 +79,7 @@ export function ProcessFlow() {
         {/* Final Manifest Quote */}
         <div className="mt-40 text-center max-w-4xl mx-auto space-y-12">
           <ScrollReveal direction="up">
-            <div className="h-[1px] w-24 bg-white/10 mx-auto" />
+            <div className="h-px w-24 bg-white/10 mx-auto" />
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.2}>
             <h3 className="font-cormorant text-4xl md:text-6xl text-white italic leading-snug">

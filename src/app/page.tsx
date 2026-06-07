@@ -86,7 +86,7 @@ export default function LandingPage() {
       <ProcessFlow />
 
       {/* FINAL CONVERSION SECTION */}
-      <section className="py-80 px-6 text-center bg-gradient-to-b from-black to-[#080808] relative">
+      <section className="py-80 px-6 text-center bg-linear-to-b from-black to-[#080808] relative">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none" />
 
         <div className="max-w-5xl mx-auto space-y-24 relative z-10">
@@ -111,7 +111,7 @@ export default function LandingPage() {
             </Link>
 
             <div className="flex flex-col items-center gap-8">
-              <div className="h-40 w-[1px] bg-gradient-to-b from-white/20 to-transparent" />
+              <div className="h-40 w-px bg-linear-to-b from-white/20 to-transparent" />
               <p className="font-mono text-[9px] tracking-[0.6em] text-white/20 uppercase">
                 Axiom Strategic Protocol // v1.0
               </p>

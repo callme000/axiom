@@ -54,7 +54,7 @@ export function RunwaySimulator() {
   return (
     <div className="w-full max-w-2xl mx-auto space-y-12 p-8 md:p-12 border border-white/10 bg-[#050505] rounded-2xl relative overflow-hidden group">
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] blur-3xl rounded-full" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/2 blur-3xl rounded-full" />
 
       <div className="space-y-8 relative z-10">
         <div className="flex justify-between items-end">
@@ -77,7 +77,7 @@ export function RunwaySimulator() {
           step="5000"
           value={liquidity}
           onChange={(e) => setLiquidity(Number(e.target.value))}
-          className="w-full h-[1px] bg-white/20 appearance-none cursor-crosshair accent-white"
+          className="w-full h-px bg-white/20 appearance-none cursor-crosshair accent-white"
         />
       </div>
 
@@ -102,7 +102,7 @@ export function RunwaySimulator() {
           step="1000"
           value={monthlyBurn}
           onChange={(e) => setMonthlyBurn(Number(e.target.value))}
-          className="w-full h-[1px] bg-white/20 appearance-none cursor-crosshair accent-white"
+          className="w-full h-px bg-white/20 appearance-none cursor-crosshair accent-white"
         />
       </div>
 
@@ -134,7 +134,7 @@ export function RunwaySimulator() {
         </div>
 
         <div
-          className={`p-6 border border-white/5 bg-white/[0.02] font-mono text-xs leading-relaxed space-y-2 animate-in fade-in slide-in-from-top-1 duration-500`}
+          className={`p-6 border border-white/5 bg-white/2 font-mono text-xs leading-relaxed space-y-2 animate-in fade-in slide-in-from-top-1 duration-500`}
         >
           <div className="flex items-center gap-2">
             <div

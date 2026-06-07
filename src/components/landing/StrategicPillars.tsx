@@ -52,7 +52,7 @@ export function StrategicPillars() {
             </ScrollReveal>
 
             <ScrollReveal direction="right" delay={0.2}>
-              <div className="h-[1px] w-24 bg-white/20" />
+              <div className="h-px w-24 bg-white/20" />
             </ScrollReveal>
 
             <ScrollReveal direction="right" delay={0.3}>
@@ -70,8 +70,8 @@ export function StrategicPillars() {
                 <div
                   className={`border-b border-white/10 transition-all duration-700 cursor-pointer group ${
                     active === idx
-                      ? "bg-white/[0.02] px-8 py-12"
-                      : "py-10 px-4 hover:bg-white/[0.01]"
+                      ? "bg-white/2 px-8 py-12"
+                      : "py-10 px-4 hover:bg-white/1"
                   }`}
                   onClick={() => setActive(active === idx ? null : idx)}
                 >
@@ -93,7 +93,7 @@ export function StrategicPillars() {
                   <div
                     className={`overflow-hidden transition-all duration-700 ease-in-out ${
                       active === idx
-                        ? "max-h-[500px] opacity-100 mt-12"
+                        ? "max-h-125 opacity-100 mt-12"
                         : "max-h-0 opacity-0"
                     }`}
                   >

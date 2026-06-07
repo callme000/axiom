@@ -42,8 +42,8 @@ export default function SignUp() {
 
         {/* Depth & Focus Overlays */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[90%] bg-white/[0.01] rounded-full blur-[140px]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-60" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[90%] bg-white/1 rounded-full blur-[140px]" />
+          <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-black opacity-60" />
         </div>
 
         <div className="relative z-10 max-w-lg px-12 text-center">
@@ -57,7 +57,7 @@ export default function SignUp() {
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.2}>
-            <div className="h-[1px] w-12 bg-white/20 mx-auto mb-8" />
+            <div className="h-px w-12 bg-white/20 mx-auto mb-8" />
             <p className="text-white/40 font-mono text-[9px] tracking-[0.6em] uppercase">
               Axiom Strategic Protocol // v1.0
             </p>
@@ -87,7 +87,7 @@ export default function SignUp() {
           </div>
 
           <ScrollReveal direction="up" delay={0.5}>
-            <div className="bg-white/[0.02] border border-white/5 p-10 md:p-14 rounded-3xl backdrop-blur-sm relative overflow-hidden group">
+            <div className="bg-white/2 border border-white/5 p-10 md:p-14 rounded-3xl backdrop-blur-sm relative overflow-hidden group">
               {/* Subtle Decorative Glow */}
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 

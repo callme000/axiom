@@ -186,7 +186,7 @@ const RippleButton: React.FC<RippleButtonProps> = ({
   };
 
   const jsRippleElements = (
-    <div className="absolute inset-0 pointer-events-none z-[5]">
+    <div className="absolute inset-0 pointer-events-none z-5">
       {jsRipples.map((ripple) => (
         <span
           key={ripple.key}
@@ -232,12 +232,10 @@ const RippleButton: React.FC<RippleButtonProps> = ({
           onClick={handleButtonClick}
           disabled={disabled}
         >
-          <span className="relative z-[10] pointer-events-none">
-            {children}
-          </span>
+          <span className="relative z-10 pointer-events-none">{children}</span>
           {jsRippleElements}
           <div
-            className="hover-variant-grid-container absolute inset-0 grid overflow-hidden pointer-events-none z-[0]"
+            className="hover-variant-grid-container absolute inset-0 grid overflow-hidden pointer-events-none z-0"
             style={{
               gridTemplateColumns: `repeat(${GRID_HOVER_NUM_COLS}, 0.25em)`,
             }}
@@ -282,12 +280,10 @@ const RippleButton: React.FC<RippleButtonProps> = ({
           onClick={handleButtonClick}
           disabled={disabled}
         >
-          <span className="relative z-[10] pointer-events-none">
-            {children}
-          </span>
+          <span className="relative z-10 pointer-events-none">{children}</span>
           {jsRippleElements}
           <div
-            className="hoverborder-variant-ripple-container absolute inset-0 grid rounded-full overflow-hidden pointer-events-none z-[0]"
+            className="hoverborder-variant-ripple-container absolute inset-0 grid rounded-full overflow-hidden pointer-events-none z-0"
             style={{
               gridTemplateColumns: `repeat(${GRID_HOVER_NUM_COLS}, 0.25em)`,
             }}
@@ -350,7 +346,7 @@ const RippleButton: React.FC<RippleButtonProps> = ({
         onClick={handleButtonClick}
         disabled={disabled}
       >
-        <span className="relative z-[1] pointer-events-none">{children}</span>
+        <span className="relative z-1 pointer-events-none">{children}</span>
         {jsRippleElements}
       </button>
     </>

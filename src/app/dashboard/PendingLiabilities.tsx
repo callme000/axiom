@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import type { Liability, Account } from "@/lib/analytics/types";
-import { resolvePendingLiabilityAction, type DashboardSnapshot } from "./actions";
+import {
+  resolvePendingLiabilityAction,
+  type DashboardSnapshot,
+} from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { LiabilityMap } from "@/lib/utils/taxonomy";
 
@@ -23,7 +26,9 @@ export function PendingLiabilities({
   >({});
 
   const today = new Date();
-  const currentDayOfWeek = today.toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
+  const currentDayOfWeek = today
+    .toLocaleString("en-US", { weekday: "long" })
+    .toLowerCase();
   const currentDayOfMonth = today.getDate();
 
   const pendingLiabilities = liabilities.filter((liab) => {
@@ -112,9 +117,11 @@ export function PendingLiabilities({
                   [liab.id]: e.target.value,
                 })
               }
-              className="bg-transparent border-b border-white/40 py-2 font-mono text-[10px] tracking-widest uppercase focus:outline-none focus:border-white transition-colors min-w-[200px]"
+              className="bg-transparent border-b border-white/40 py-2 font-mono text-[10px] tracking-widest uppercase focus:outline-none focus:border-white transition-colors min-w-50"
             >
-              <option value="" className="text-black">Source Account</option>
+              <option value="" className="text-black">
+                Source Account
+              </option>
               {accounts.map((acc) => (
                 <option key={acc.id} value={acc.id} className="text-black">
                   {acc.account_name}

@@ -105,7 +105,7 @@ export function StrategicObjectiveSection({
       </div>
 
       {isAdding && (
-        <div className="bg-white/[0.02] border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="bg-white/2 border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
@@ -224,7 +224,7 @@ export function StrategicObjectiveSection({
                   </div>
                 </div>
 
-                <div className="h-[1px] w-full bg-white/5 relative overflow-hidden">
+                <div className="h-px w-full bg-white/5 relative overflow-hidden">
                   <div
                     className="absolute inset-y-0 left-0 bg-white/60 transition-all duration-1000 ease-out"
                     style={{ width: `${Math.min(100, ratio)}%` }}

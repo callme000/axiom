@@ -32,7 +32,7 @@ export function SolvencyCalculator() {
       className="py-40 px-6 bg-[#050505] border-y border-white/5 relative overflow-hidden"
     >
       {/* Background Detail */}
-      <div className="absolute top-0 right-0 w-[40%] h-full bg-gradient-to-l from-white/[0.01] to-transparent pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[40%] h-full bg-linear-to-l from-white/1 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.2fr_1fr] gap-24 items-center">
         <ScrollReveal direction="right" delay={0.2}>
@@ -99,7 +99,7 @@ export function SolvencyCalculator() {
         {/* Results Card */}
         <ScrollReveal direction="left" delay={0.4}>
           <div className="relative group">
-            <div className="absolute -inset-4 bg-white/[0.02] blur-3xl rounded-full group-hover:bg-white/[0.04] transition-all duration-1000" />
+            <div className="absolute -inset-4 bg-white/2 blur-3xl rounded-full group-hover:bg-white/4 transition-all duration-1000" />
 
             <div className="relative bg-[#0a0a0a] border border-white/10 p-16 md:p-24 space-y-12 rounded-3xl overflow-hidden">
               {/* Roman Decoration */}

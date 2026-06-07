@@ -91,8 +91,8 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-black text-white flex flex-col md:flex-row relative selection:bg-white selection:text-black">
       {/* Background Atmosphere */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
       </div>
 
@@ -161,7 +161,7 @@ export default function DashboardLayout({
                     {user?.email?.[0].toUpperCase()}
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="text-[10px] font-mono tracking-widest text-white/80 uppercase truncate max-w-[120px]">
+                    <span className="text-[10px] font-mono tracking-widest text-white/80 uppercase truncate max-w-30">
                       {user?.email?.split("@")[0]}
                     </span>
                     <span className="text-[8px] font-mono tracking-widest text-white/20 uppercase">
@@ -205,11 +205,13 @@ export default function DashboardLayout({
       <main
         className={`flex-1 min-h-screen relative z-10 transition-all duration-1000 ${isOnboarded === true ? "md:ml-80" : "md:ml-0"}`}
       >
-        <div
-          className={`max-w-5xl mx-auto px-6 md:px-16 py-12 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
-        >
-          {children}
-        </div>
+        <SmoothScrollProvider>
+          <div
+            className={`max-w-5xl mx-auto px-6 md:px-16 py-12 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
+          >
+            {children}
+          </div>
+        </SmoothScrollProvider>
       </main>
 
       {/* MOBILE BOTTOM NAV */}

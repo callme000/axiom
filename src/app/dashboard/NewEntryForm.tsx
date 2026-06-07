@@ -78,9 +78,14 @@ export function NewEntryForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           <div className="space-y-8">
             <div className="space-y-4">
-              <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
-                Amount (KES)
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
+                  Amount (KES)
+                </label>
+                <span className="text-[8px] font-mono text-white/10 uppercase tracking-widest">
+                  Available: {formatCurrency(liquidity)}
+                </span>
+              </div>
               <input
                 type="number"
                 disabled={isActionLoading}
@@ -126,7 +131,7 @@ export function NewEntryForm({
                   className={`p-4 border transition-all text-left space-y-2 ${
                     category === cat.value
                       ? "border-white bg-white text-black"
-                      : "border-white/5 bg-white/[0.02] text-white/40 hover:border-white/20 hover:text-white"
+                      : "border-white/5 bg-white/2 text-white/40 hover:border-white/20 hover:text-white"
                   }`}
                 >
                   <span className="block text-[8px] font-mono tracking-widest uppercase">
@@ -150,11 +155,21 @@ export function NewEntryForm({
         </div>
       )}
 
-      <div className="pt-8">
+      <div className="pt-8 flex gap-4">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isActionLoading}
+            className="flex-1 border border-white/5 text-white/40 py-6 font-medium tracking-[0.3em] uppercase text-xs hover:bg-white/5 transition-all"
+          >
+            Cancel
+          </button>
+        )}
         <button
           type="submit"
           disabled={isActionLoading}
-          className="w-full bg-white text-black py-6 font-medium tracking-[0.3em] uppercase text-xs hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-white/5 disabled:opacity-50"
+          className="flex-2 bg-white text-black py-6 font-medium tracking-[0.3em] uppercase text-xs hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-white/5 disabled:opacity-50"
         >
           {isActionLoading ? "EXECUTING..." : "AUTHORIZE DEPLOYMENT"}
         </button>

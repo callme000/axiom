@@ -19,7 +19,13 @@ interface CardTransform {
   scale: number;
 }
 
-export function LuxuryCard({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function LuxuryCard({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   const [transform, setTransform] = useState<CardTransform>({
     rotateX: 0,
     rotateY: 0,
@@ -30,7 +36,9 @@ export function LuxuryCard({ children, className = "" }: { children: ReactNode; 
   const cardRef = useRef<HTMLDivElement>(null);
   const [particles, setParticles] = useState<Particle[]>([]);
   const particleId = useRef<number>(0);
-  const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [ripples, setRipples] = useState<
+    Array<{ id: number; x: number; y: number }>
+  >([]);
   const rippleId = useRef<number>(0);
 
   // 3D Transform Logic
@@ -103,7 +111,7 @@ export function LuxuryCard({ children, className = "" }: { children: ReactNode; 
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleCardClick}
-      className={`relative rounded-[3rem] backdrop-blur-3xl transition-all duration-500 transform-gpu preserve-3d border border-white/5 bg-white/[0.02] shadow-2xl ${className}`}
+      className={`relative rounded-[3rem] backdrop-blur-3xl transition-all duration-500 transform-gpu preserve-3d border border-white/5 bg-white/2 shadow-2xl ${className}`}
       style={{
         transform: transformStyle,
         animation: "luxury-float 6s ease-in-out infinite",
@@ -126,42 +134,63 @@ export function LuxuryCard({ children, className = "" }: { children: ReactNode; 
 
       {/* Ripples Overlay */}
       {ripples.map((ripple) => (
-        <span
+        <motion.span
           key={ripple.id}
+          initial={{ scale: 0, opacity: 1 }}
+          animate={{ scale: 4, opacity: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="absolute w-15 h-15 rounded-full pointer-events-none bg-white/10 z-0"
           style={{
             left: ripple.x,
             top: ripple.y,
-            animation: "luxury-ripple 0.6s ease-out",
           }}
         />
       ))}
 
       {/* Card Highlight */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none rounded-[3rem]" />
+      <div className="absolute inset-0 bg-linear-to-br from-white/3 to-transparent pointer-events-none rounded-[3rem]" />
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col">
-        {children}
-      </div>
+      <div className="relative z-10 h-full flex flex-col">{children}</div>
 
       {/* Internal Styles */}
       <style jsx global>{`
         @keyframes luxury-float {
-          0%, 100% { transform: ${transformStyle} translateY(0px); }
-          50% { transform: ${transformStyle} translateY(-8px); }
+          0%,
+          100% {
+            transform: ${transformStyle} translateY(0px);
+          }
+          50% {
+            transform: ${transformStyle} translateY(-8px);
+          }
         }
 
         @keyframes luxury-particle-float {
-          0% { transform: translateY(100%) scale(0); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translateY(-100%) scale(1); opacity: 0; }
+          0% {
+            transform: translateY(100%) scale(0);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100%) scale(1);
+            opacity: 0;
+          }
         }
 
         @keyframes luxury-ripple {
-          0% { transform: scale(0); opacity: 1; }
-          100% { transform: scale(4); opacity: 0; }
+          0% {
+            transform: scale(0);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(4);
+            opacity: 0;
+          }
         }
       `}</style>
     </div>

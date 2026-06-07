@@ -160,9 +160,9 @@ export default function Dashboard() {
         </div>
 
         <div className="max-w-xl mx-auto pt-12 space-y-4">
-          <div className="h-[1px] w-full bg-white/10 relative overflow-hidden">
+          <div className="h-px w-full bg-white/10 relative overflow-hidden">
             <div
-              className="absolute inset-y-0 left-0 bg-white/60 transition-all duration-[2000ms] ease-out"
+              className="absolute inset-y-0 left-0 bg-white/60 transition-all duration-2000 ease-out"
               style={{
                 width: `${Math.min(100, (ledger.analytics?.runwayDays ?? 0) / 3.65)}%`,
               }}
@@ -183,7 +183,7 @@ export default function Dashboard() {
           <h2 className="font-cormorant text-4xl text-white tracking-wide">
             Financial Position
           </h2>
-          <div className="flex-1 h-[1px] bg-white/5" />
+          <div className="flex-1 h-px bg-white/5" />
         </div>
 
         <PendingInflows
@@ -218,7 +218,7 @@ export default function Dashboard() {
           ].map((card) => (
             <div
               key={card.label}
-              className="bg-white/[0.02] border border-white/5 p-10 group hover:bg-white hover:text-black transition-all duration-500"
+              className="bg-white/2 border border-white/5 p-10 group hover:bg-white hover:text-black transition-all duration-500"
             >
               <span className="text-[10px] font-mono text-white/40 group-hover:text-black/40 uppercase tracking-[0.3em] mb-8 block">
                 {card.label}
@@ -236,7 +236,7 @@ export default function Dashboard() {
 
       {/* Zone 2 — ARCHITECTURE ENTRY */}
       <section id="deploy" className="max-w-4xl mx-auto w-full">
-        <div className="bg-white/[0.02] border border-white/5 p-12 md:p-20 relative overflow-hidden">
+        <div className="bg-white/2 border border-white/5 p-12 md:p-20 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <svg width="120" height="120" viewBox="0 0 24 24" fill="white">
               <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
@@ -289,7 +289,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         <div
           id="accounts"
-          className="bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-white/20"
+          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
         >
           <AccountSection
             accounts={ledger.accounts}
@@ -298,7 +298,7 @@ export default function Dashboard() {
         </div>
         <div
           id="liabilities"
-          className="bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-white/20"
+          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
         >
           <LiabilitySection
             liabilities={ledger.liabilities}
@@ -307,7 +307,7 @@ export default function Dashboard() {
         </div>
         <div
           id="income"
-          className="bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-white/20"
+          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
         >
           <IncomeSection
             incomeStreams={ledger.incomeStreams}
@@ -316,7 +316,7 @@ export default function Dashboard() {
         </div>
         <div
           id="baseline"
-          className="bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-white/20"
+          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
         >
           <BaselineSection
             baseline={ledger.baseline}
@@ -325,7 +325,7 @@ export default function Dashboard() {
         </div>
         <div
           id="objectives"
-          className="bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-white/20"
+          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
         >
           <StrategicObjectiveSection
             objectives={ledger.objectives}
@@ -334,7 +334,7 @@ export default function Dashboard() {
         </div>
         <div
           id="goals"
-          className="bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-white/20"
+          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
         >
           <GoalSection
             goals={ledger.goals}
@@ -352,7 +352,7 @@ export default function Dashboard() {
           <h2 className="font-cormorant text-4xl text-white tracking-wide">
             Kairos Intelligence
           </h2>
-          <div className="flex-1 h-[1px] bg-white/5" />
+          <div className="flex-1 h-px bg-white/5" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -422,7 +422,7 @@ export default function Dashboard() {
                             {Math.round(percentage)}%
                           </span>
                         </div>
-                        <div className="h-[1px] w-full bg-white/5 overflow-hidden">
+                        <div className="h-px w-full bg-white/5 overflow-hidden">
                           <div
                             className="h-full bg-white/60 transition-all duration-1000"
                             style={{ width: `${percentage}%` }}
@@ -445,14 +445,14 @@ export default function Dashboard() {
           <h2 className="font-cormorant text-4xl text-white tracking-wide">
             Capital Ledger
           </h2>
-          <div className="flex-1 h-[1px] bg-white/5" />
+          <div className="flex-1 h-px bg-white/5" />
         </div>
 
         <div className="space-y-4">
           {ledger.deployments.map((deployment) => (
             <div
               key={deployment.id}
-              className="group flex flex-col md:flex-row md:items-center justify-between p-8 border-b border-white/5 hover:bg-white/[0.01] transition-all"
+              className="group flex flex-col md:flex-row md:items-center justify-between p-8 border-b border-white/5 hover:bg-white/1 transition-all"
             >
               <div className="space-y-1">
                 <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">

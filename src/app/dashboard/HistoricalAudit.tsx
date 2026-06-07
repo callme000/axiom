@@ -68,7 +68,7 @@ export function HistoricalAudit() {
         {auditRecords.map((record) => (
           <div
             key={`${record.type}-${record.id}`}
-            className="group relative bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-4 flex items-center justify-between transition-colors hover:bg-foreground/[0.04]"
+            className="group relative bg-foreground/2 border border-foreground/5 rounded-2xl p-4 flex items-center justify-between transition-colors hover:bg-foreground/4"
           >
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-foreground/5 rounded-xl flex items-center justify-center grayscale opacity-40">

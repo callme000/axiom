@@ -61,9 +61,12 @@ test("alignment pressure scoring reflects structural conflict", () => {
       created_at: "",
       updated_at: "",
       interest_rate: 0,
-      minimum_payment: 0,
       due_date: null,
       currency: "KSh",
+      is_paid_in_cadences: false,
+      cadence: null,
+      cadence_day_date: null,
+      cadence_amount: null,
     },
   ];
 

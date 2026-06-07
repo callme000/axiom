@@ -1,4 +1,4 @@
-import React, { useRef, useState, MouseEvent, ReactNode } from 'react';
+import React, { useRef, useState, MouseEvent, ReactNode } from "react";
 
 interface ButtonProps {
   children: ReactNode;
@@ -14,12 +14,12 @@ interface ButtonProps {
 const HoverButton: React.FC<ButtonProps> = ({
   children,
   onClick,
-  className = '',
+  className = "",
   disabled = false,
-  glowColor = '#ffffff', // Default to white for luxury feel
-  backgroundColor = '#000000',
-  textColor = '#ffffff',
-  hoverTextColor = '#ffffff'
+  glowColor = "#ffffff", // Default to white for luxury feel
+  backgroundColor = "#000000",
+  textColor = "#ffffff",
+  hoverTextColor = "#ffffff",
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [glowPosition, setGlowPosition] = useState({ x: 50, y: 50 });
@@ -54,7 +54,7 @@ const HoverButton: React.FC<ButtonProps> = ({
         relative inline-block px-8 py-4 border border-white/10
         cursor-pointer overflow-hidden transition-all duration-500
         text-sm tracking-widest uppercase z-10 font-sans
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         ${className}
       `}
       style={{
@@ -65,14 +65,14 @@ const HoverButton: React.FC<ButtonProps> = ({
       {/* Glow effect div */}
       <div
         className={`
-          absolute w-[200px] h-[200px] rounded-full opacity-20 pointer-events-none
+          absolute w-50 h-50 rounded-full opacity-20 pointer-events-none
           transition-transform duration-700 ease-out -translate-x-1/2 -translate-y-1/2
-          ${isHovered ? 'scale-150' : 'scale-0'}
+          ${isHovered ? "scale-150" : "scale-0"}
         `}
         style={{
           left: `${glowPosition.x}px`,
           top: `${glowPosition.y}px`,
-          background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
+          background: `radial-linear(circle, ${glowColor} 0%, transparent 70%)`,
           zIndex: 0,
         }}
       />
@@ -83,4 +83,4 @@ const HoverButton: React.FC<ButtonProps> = ({
   );
 };
 
-export { HoverButton }
+export { HoverButton };

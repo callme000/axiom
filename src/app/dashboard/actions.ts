@@ -850,7 +850,6 @@ export async function submitDayZeroBaselineAction(payload: {
     revalidatePath("/dashboard");
     return buildDashboardSnapshot({ forceInsightEvaluation: true });
   } catch (error) {
-    console.error("Day Zero Onboarding failed:", error);
     throw error;
   }
 }

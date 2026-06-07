@@ -35,6 +35,7 @@ const MOCK_ANALYTICS: AnalyticsSummary = {
   averageGoalProgress: 50,
   criticalGoalCount: 0,
   fundingGap: 500,
+  pendingVerificationCount: 0,
   // Strategic Objectives v1
   strategicAlignment: {
     fundingRatios: {},

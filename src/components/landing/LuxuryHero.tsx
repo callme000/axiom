@@ -22,13 +22,13 @@ export function LuxuryHero() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={isVisible ? { opacity: 1, scale: 1.1 } : {}}
           transition={{ duration: 4, ease: "easeOut" }}
-          className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.03] rounded-full blur-[180px]"
+          className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/3 rounded-full blur-[180px]"
         />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={isVisible ? { opacity: 1, scale: 1.1 } : {}}
           transition={{ duration: 4, ease: "easeOut", delay: 0.7 }}
-          className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.03] rounded-full blur-[180px]"
+          className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/3 rounded-full blur-[180px]"
         />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none mix-blend-overlay" />
       </div>
@@ -41,40 +41,46 @@ export function LuxuryHero() {
           transition={{ duration: 1, delay: 0.3 }}
           className="inline-flex items-center gap-6 mb-12"
         >
-          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="h-px w-16 bg-linear-to-r from-transparent via-white/20 to-transparent" />
           <span className="font-mono text-[9px] tracking-[0.8em] text-white/30 uppercase">
             Axiom Strategic Wealth Architecture
           </span>
-          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          <div className="h-px w-16 bg-linear-to-r from-transparent via-white/40 to-transparent" />
         </motion.div>
 
         {/* Main Display Headline */}
-        <h1 className="font-cormorant italic text-7xl md:text-[10rem] lg:text-[12rem] text-white leading-[0.8] tracking-tighter mb-12 overflow-hidden">
-          <motion.span
-            initial={{ y: "100%" }}
-            animate={isVisible ? { y: 0 } : {}}
-            transition={{
-              duration: 1.2,
-              delay: 0.5,
-              ease: [0.215, 0.61, 0.355, 1],
-            }}
-            className="block"
-          >
-            Financial Progress,
-          </motion.span>
-          <motion.span
-            initial={{ y: "100%" }}
-            animate={isVisible ? { y: 0 } : {}}
-            transition={{
-              duration: 1.2,
-              delay: 0.7,
-              ease: [0.215, 0.61, 0.355, 1],
-            }}
-            className="block not-italic font-medium text-white/90"
-          >
-            For Your Future.
-          </motion.span>
-        </h1>
+        <AnimatePresence>
+          {isVisible && (
+            <h1 className="font-cormorant italic text-7xl md:text-[10rem] lg:text-[12rem] text-white leading-[0.8] tracking-tighter mb-12 overflow-hidden">
+              <motion.span
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-100%" }}
+                transition={{
+                  duration: 1.2,
+                  delay: 0.5,
+                  ease: [0.215, 0.61, 0.355, 1],
+                }}
+                className="block"
+              >
+                Financial Progress,
+              </motion.span>
+              <motion.span
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-100%" }}
+                transition={{
+                  duration: 1.2,
+                  delay: 0.7,
+                  ease: [0.215, 0.61, 0.355, 1],
+                }}
+                className="block not-italic font-medium text-white/90"
+              >
+                For Your Future.
+              </motion.span>
+            </h1>
+          )}
+        </AnimatePresence>
 
         {/* Narrative Body */}
         <motion.p
@@ -93,7 +99,7 @@ export function LuxuryHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, delay: 1.5 }}
-          className="flex justify-center"
+          className="flex flex-col md:flex-row justify-center gap-8"
         >
           <Link href="/signup">
             <HoverButton
@@ -103,6 +109,16 @@ export function LuxuryHero() {
               Initialize Access
             </HoverButton>
           </Link>
+          <RippleButton
+            variant="hoverborder"
+            className="px-16 py-8 rounded-full text-[10px] tracking-widest"
+            onClick={() => {
+              const el = document.getElementById("architecture");
+              el?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            View Architecture →
+          </RippleButton>
         </motion.div>
       </div>
 
@@ -113,7 +129,7 @@ export function LuxuryHero() {
         transition={{ duration: 1, delay: 2 }}
         className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-6"
       >
-        <div className="w-[1px] h-24 bg-gradient-to-b from-white/40 via-white/10 to-transparent animate-pulse" />
+        <div className="w-px h-24 bg-linear-to-b from-white/40 via-white/10 to-transparent animate-pulse" />
       </motion.div>
     </section>
   );

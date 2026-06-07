@@ -84,6 +84,7 @@ export default function DayZeroOnboarding({
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [accounts, setAccounts] = useState([
     {
@@ -106,7 +107,7 @@ export default function DayZeroOnboarding({
   >([]);
   const [baselines, setBaselines] = useState([
     {
-      title: "Core Survival Baseline",
+      title: "",
       amount: "",
       cadence: "monthly",
       category: "Maintenance",
@@ -191,23 +192,23 @@ export default function DayZeroOnboarding({
     if (step === 1)
       return (
         accounts.length > 0 &&
-        accounts.every((a) => a.account_name && a.current_balance !== "")
+        accounts.every((a) => a.account_name.trim() && a.current_balance !== "")
       );
     if (step === 2)
       return (
         incomes.length === 0 ||
-        incomes.every((i) => i.income_name && i.amount !== "")
+        incomes.every((i) => i.income_name.trim() && i.amount !== "")
       );
     if (step === 3)
       return (
         baselines.length > 0 &&
-        baselines.every((b) => b.title && b.amount !== "")
+        baselines.every((b) => b.title.trim() && b.amount !== "")
       );
     if (step === 4)
       return (
         liabilities.length === 0 ||
         liabilities.every(
-          (l) => l.liability_name && l.outstanding_balance !== "",
+          (l) => l.liability_name.trim() && l.outstanding_balance !== "",
         )
       );
     return false;
@@ -217,12 +218,14 @@ export default function DayZeroOnboarding({
     if (step < 4) {
       setDirection(1);
       setStep(step + 1);
+      setError(null);
     }
   };
   const handlePrev = () => {
     if (step > 1) {
       setDirection(-1);
       setStep(step - 1);
+      setError(null);
     }
   };
 
@@ -233,6 +236,7 @@ export default function DayZeroOnboarding({
       return;
     }
     setIsLoading(true);
+    setError(null);
     try {
       await submitDayZeroBaselineAction({
         accounts: accounts.map((a) => ({
@@ -281,7 +285,11 @@ export default function DayZeroOnboarding({
       });
       window.location.reload();
     } catch (err: unknown) {
-      console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please verify your inputs.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -291,15 +299,15 @@ export default function DayZeroOnboarding({
   const backgroundX = -(step - 1) * 5;
 
   return (
-    <div className="fixed inset-0 bg-black z-[100] flex flex-col selection:bg-white selection:text-black overflow-hidden h-screen w-full font-sans text-white">
+    <div className="fixed inset-0 bg-black z-100 flex flex-col selection:bg-white selection:text-black overflow-hidden h-screen w-full font-sans text-white">
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <motion.div
           animate={{ x: `${backgroundX}%` }}
           transition={{ duration: 1.2, ease: [0.215, 0.61, 0.355, 1] }}
           className="absolute inset-0 w-[150%] h-full"
         >
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[30%] w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[30%] w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
           <div
             className="absolute inset-0 opacity-15 mix-blend-screen grayscale"
             style={{
@@ -337,7 +345,7 @@ export default function DayZeroOnboarding({
                 </span>
                 <motion.div
                   animate={{ scaleX: idx + 1 === step ? 1 : 0 }}
-                  className="h-[1px] w-4 bg-white origin-left"
+                  className="h-px w-4 bg-white origin-left"
                 />
               </div>
             ))}
@@ -349,7 +357,7 @@ export default function DayZeroOnboarding({
       </nav>
 
       <div className="relative z-10 flex-1 flex items-center justify-center px-8 md:px-12 pt-16">
-        <div className="max-w-7xl w-full h-[620px] grid lg:grid-cols-[1.1fr_1.4fr] gap-16 md:gap-24 items-stretch overflow-visible">
+        <div className="max-w-7xl w-full h-155 grid lg:grid-cols-[1.1fr_1.4fr] gap-16 md:gap-24 items-stretch overflow-visible">
           <div className="flex flex-col justify-center h-full border-r border-white/5 pr-12 text-white overflow-hidden">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
@@ -747,7 +755,7 @@ export default function DayZeroOnboarding({
                                 <button
                                   type="button"
                                   onClick={() => removeBaseline(idx)}
-                                  className="absolute top-0 right-[-2.5rem] p-2 text-white/10 hover:text-red-400"
+                                  className="absolute top-0 -right-10 p-2 text-white/10 hover:text-red-400"
                                 >
                                   ✕
                                 </button>
@@ -955,7 +963,15 @@ export default function DayZeroOnboarding({
               </form>
             </div>
 
-            <div className="h-32 border-t border-white/5 relative z-10 px-12 md:px-16 flex items-center shrink-0 bg-[#080808]/60 backdrop-blur-3xl rounded-b-[inherit]">
+            <div className="h-32 border-t border-white/5 relative z-10 px-12 md:px-16 flex flex-col justify-center shrink-0 bg-[#080808]/60 backdrop-blur-3xl rounded-b-[inherit]">
+              {error && (
+                <div className="absolute top-0 left-0 w-full transform -translate-y-full px-12 pb-4">
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-[10px] font-mono tracking-wider flex items-center gap-3">
+                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                    {error}
+                  </div>
+                </div>
+              )}
               <div className="w-full flex items-center justify-between">
                 <button
                   type="button"

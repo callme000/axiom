@@ -112,7 +112,7 @@ export function PendingInflows({
                   [stream.id]: e.target.value,
                 })
               }
-              className="bg-transparent border-b border-black/20 py-2 font-mono text-[10px] tracking-widest uppercase focus:outline-none focus:border-black transition-colors min-w-[200px]"
+              className="bg-transparent border-b border-black/20 py-2 font-mono text-[10px] tracking-widest uppercase focus:outline-none focus:border-black transition-colors min-w-50"
             >
               <option value="">Destination Account</option>
               {accounts.map((acc) => (

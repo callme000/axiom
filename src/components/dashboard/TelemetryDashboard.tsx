@@ -33,7 +33,7 @@ export function TelemetryDashboard() {
   if (isLoading) {
     return (
       <div className="py-12 space-y-12 animate-pulse opacity-20">
-        <div className="h-[1px] bg-white/20 w-full" />
+        <div className="h-px bg-white/20 w-full" />
         <div className="grid grid-cols-4 gap-8">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-24 bg-white/10" />
@@ -119,7 +119,7 @@ export function TelemetryDashboard() {
               {telemetry?.logs.map((log) => (
                 <tr
                   key={log.id}
-                  className="group hover:bg-white/[0.01] transition-all"
+                  className="group hover:bg-white/1 transition-all"
                 >
                   <td className="py-4 text-[10px] font-mono text-white/40 tabular-nums">
                     {new Date(log.created_at).toLocaleTimeString([], {

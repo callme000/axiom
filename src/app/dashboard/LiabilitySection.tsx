@@ -88,7 +88,7 @@ export function LiabilitySection({
       </div>
 
       {isAdding && (
-        <div className="bg-white/[0.02] border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="bg-white/2 border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
@@ -296,7 +296,7 @@ export function LiabilitySection({
           liabilities.map((liability) => (
             <div
               key={liability.id}
-              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/[0.01] transition-all px-2"
+              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2"
             >
               <div className="space-y-1">
                 <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
