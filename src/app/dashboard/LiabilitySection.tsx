@@ -5,6 +5,7 @@ import { LIABILITY_TYPES, type Liability } from "@/lib/finance/liabilities";
 import { createLiabilityAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { LiabilityMap } from "@/lib/utils/taxonomy";
+import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
 
 interface LiabilitySectionProps {
   liabilities: Liability[];
@@ -18,6 +19,11 @@ export function LiabilitySection({
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const chartData = liabilities.map((l) => ({
+    name: l.liability_name,
+    value: Number(l.outstanding_balance),
+  }));
 
   const [form, setForm] = useState({
     liability_name: "",
@@ -296,6 +302,12 @@ export function LiabilitySection({
               {isLoading ? "INITIALIZING..." : "CONFIRM COMMITMENT"}
             </button>
           </form>
+        </div>
+      )}
+
+      {liabilities.length > 0 && (
+        <div className="py-6 border-b border-white/5 mb-6">
+          <DistributionPieChart data={chartData} />
         </div>
       )}
 

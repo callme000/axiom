@@ -5,6 +5,7 @@ import { ACCOUNT_TYPES, type Account } from "@/lib/finance/accounts";
 import { createAccountAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { AccountMap } from "@/lib/utils/taxonomy";
+import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
 
 interface AccountSectionProps {
   accounts: Account[];
@@ -30,6 +31,11 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
     current_balance: "",
     institution: "",
   });
+
+  const chartData = accounts.map((a) => ({
+    name: a.account_name,
+    value: Number(a.current_balance),
+  }));
 
   async function handleSourceSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -170,6 +176,12 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
               {isLoading ? "INITIALIZING..." : "CONFIRM ACCOUNT"}
             </button>
           </form>
+        </div>
+      )}
+
+      {accounts.length > 0 && (
+        <div className="py-6 border-b border-white/5 mb-6">
+          <DistributionPieChart data={chartData} />
         </div>
       )}
 

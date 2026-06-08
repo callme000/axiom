@@ -18,6 +18,11 @@ import { PendingLiabilities } from "./PendingLiabilities";
 import { PendingBaselines } from "./PendingBaselines";
 import { HistoricalAudit } from "./HistoricalAudit";
 import { GrandTrajectoryChart } from "@/components/dashboard/GrandTrajectoryChart";
+import {
+  MiniSparkline,
+  MiniBarChart,
+  MiniDonut,
+} from "@/components/dashboard/MiniCharts";
 import { AnimatedNumber } from "@/components/ui/animated-number";
 import { LuxuryCard } from "@/components/ui/luxury-card";
 import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
@@ -137,12 +142,18 @@ export default function DashboardPage() {
       value: ledger.analytics?.totalAssets || 0,
       prefix: "KES ",
       desc: "Total Capitalized Architecture",
+      chartType: "sparkline",
+      chartColor: "#8b5cf6", // Purple
+      chartData: [100, 110, 105, 120, 115, 130, 140],
     },
     {
       label: "Liquid Capital",
       value: ledger.analytics?.liquidity || 0,
       prefix: "KES ",
       desc: "Immediate Deployment Capacity",
+      chartType: "sparkline",
+      chartColor: "#3b82f6", // Blue
+      chartData: [50, 45, 60, 55, 70, 65, 80],
     },
     {
       label: "Structural Burn",
@@ -150,12 +161,18 @@ export default function DashboardPage() {
       prefix: "KES ",
       suffix: " /mo",
       desc: "Operational Maintenance Cost",
+      chartType: "bar",
+      chartColor: "#ef4444", // Red
+      chartData: [20, 22, 18, 25, 20, 24, 21],
     },
     {
       label: "Operational Runway",
       value: ledger.analytics?.runwayDays || 0,
       suffix: " DAYS",
       desc: "Time to Critical Depletion",
+      chartType: "donut",
+      chartColor: "#10b981", // Emerald
+      chartData: [],
     },
   ];
 
@@ -256,23 +273,54 @@ export default function DashboardPage() {
         {hudMetrics.map((metric, i) => (
           <LuxuryCard
             key={metric.label}
-            className="p-8 space-y-4 group hover:border-white/20 transition-all duration-500"
+            className="p-8 group hover:border-white/20 transition-all duration-500 flex flex-col justify-between"
           >
-            <p className="font-mono text-[9px] tracking-[0.4em] text-white/20 uppercase group-hover:text-white/40 transition-colors">
-              {metric.label}
-            </p>
-            <div className="space-y-1">
-              <h3 className="font-cormorant text-4xl text-white">
-                <AnimatedNumber
-                  value={metric.value}
-                  prefix={metric.prefix}
-                  suffix={metric.suffix}
-                />
-              </h3>
-              <p className="text-[9px] font-mono text-white/10 uppercase tracking-widest group-hover:text-white/20 transition-colors">
-                {metric.desc}
+            <div>
+              <p className="font-mono text-[9px] tracking-[0.4em] text-white/20 uppercase group-hover:text-white/40 transition-colors">
+                {metric.label}
               </p>
+              <div className="space-y-1 mt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-cormorant text-4xl text-white">
+                    <AnimatedNumber
+                      value={metric.value}
+                      prefix={metric.prefix}
+                      suffix={metric.suffix}
+                    />
+                  </h3>
+                </div>
+                <p className="text-[9px] font-mono text-white/10 uppercase tracking-widest group-hover:text-white/20 transition-colors">
+                  {metric.desc}
+                </p>
+              </div>
             </div>
+
+            {/* Chart Area */}
+            {metric.chartType === "sparkline" && (
+              <div className="mt-4 -mx-2">
+                <MiniSparkline
+                  data={metric.chartData}
+                  color={metric.chartColor}
+                />
+              </div>
+            )}
+            {metric.chartType === "bar" && (
+              <div className="mt-4 -mx-2">
+                <MiniBarChart
+                  data={metric.chartData}
+                  color={metric.chartColor}
+                />
+              </div>
+            )}
+            {metric.chartType === "donut" && (
+              <div className="mt-4 w-full -mx-2">
+                <MiniDonut
+                  value={metric.value}
+                  max={365}
+                  color={metric.chartColor}
+                />
+              </div>
+            )}
           </LuxuryCard>
         ))}
       </motion.section>

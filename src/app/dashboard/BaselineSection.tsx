@@ -8,6 +8,7 @@ import {
 } from "./actions";
 import { OperationalBaseline, BaselineCadence } from "@/lib/analytics/types";
 import { formatCurrency } from "@/lib/utils/formatters";
+import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
 
 interface BaselineSectionProps {
   baseline: OperationalBaseline[];
@@ -30,6 +31,11 @@ export function BaselineSection({
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const chartData = baseline.map((b) => ({
+    name: b.title,
+    value: Number(b.amount),
+  }));
 
   const [form, setForm] = useState({
     title: "",
@@ -284,6 +290,12 @@ export function BaselineSection({
               {isLoading ? "SAVING..." : "CONFIRM RECURRING"}
             </button>
           </form>
+        </div>
+      )}
+
+      {baseline.length > 0 && (
+        <div className="py-6 border-b border-white/5 mb-6">
+          <DistributionPieChart data={chartData} />
         </div>
       )}
 

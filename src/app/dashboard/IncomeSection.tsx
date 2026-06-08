@@ -11,6 +11,7 @@ import {
 import { createIncomeAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { IncomeMap } from "@/lib/utils/taxonomy";
+import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
 
 interface IncomeSectionProps {
   incomeStreams: IncomeStream[];
@@ -34,6 +35,11 @@ export function IncomeSection({
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const chartData = incomeStreams.map((s) => ({
+    name: s.income_name,
+    value: Number(s.amount),
+  }));
 
   const [entries, setEntries] = useState<FormEntry[]>([
     {
@@ -344,6 +350,12 @@ export function IncomeSection({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {incomeStreams.length > 0 && (
+        <div className="py-6 border-b border-white/5 mb-6">
+          <DistributionPieChart data={chartData} />
         </div>
       )}
 
