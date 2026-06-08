@@ -12,6 +12,7 @@ import { createIncomeAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { IncomeMap } from "@/lib/utils/taxonomy";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 interface IncomeSectionProps {
   incomeStreams: IncomeStream[];
@@ -367,34 +368,33 @@ export function IncomeSection({
             </p>
           </div>
         ) : (
-          incomeStreams.map((stream) => (
-            <div
-              key={stream.id}
-              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2"
-            >
-              <div className="space-y-1">
-                <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
-                  {IncomeMap[stream.income_type] || stream.income_type}
-                  {stream.source && ` • ${stream.source}`}
-                </span>
-                <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
-                  {stream.income_name}
-                </h3>
-              </div>
-              <div className="text-right">
-                <p className="font-cormorant text-xl text-white">
-                  {formatCurrency(stream.amount)}
-                  <span className="text-[10px] ml-2 text-white/20 font-sans tracking-widest uppercase">
-                    / {stream.cadence}
+          incomeStreams.map((stream, index) => (
+            <ScrollReveal key={stream.id} delay={index * 0.05} distance={10}>
+              <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
+                <div className="space-y-1">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                    {IncomeMap[stream.income_type] || stream.income_type}
+                    {stream.source && ` • ${stream.source}`}
                   </span>
-                </p>
-                {stream.execution_day && (
-                  <p className="text-[8px] font-mono text-white/10 uppercase tracking-widest mt-1">
-                    Executes on day {stream.execution_day}
+                  <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                    {stream.income_name}
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <p className="font-cormorant text-xl text-white">
+                    {formatCurrency(stream.amount)}
+                    <span className="text-[10px] ml-2 text-white/20 font-sans tracking-widest uppercase">
+                      / {stream.cadence}
+                    </span>
                   </p>
-                )}
+                  {stream.execution_day && (
+                    <p className="text-[8px] font-mono text-white/10 uppercase tracking-widest mt-1">
+                      Executes on day {stream.execution_day}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))
         )}
       </div>

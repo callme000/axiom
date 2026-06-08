@@ -6,6 +6,7 @@ import { createLiabilityAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { LiabilityMap } from "@/lib/utils/taxonomy";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 interface LiabilitySectionProps {
   liabilities: Liability[];
@@ -319,36 +320,35 @@ export function LiabilitySection({
             </p>
           </div>
         ) : (
-          liabilities.map((liability) => (
-            <div
-              key={liability.id}
-              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2"
-            >
-              <div className="space-y-1">
-                <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
-                  {LiabilityMap[liability.liability_type] ||
-                    liability.liability_type}
-                  {liability.is_paid_in_cadences && (
-                    <span className="ml-2 text-white/10">
-                      • {liability.cadence} ({liability.cadence_day_date})
-                    </span>
-                  )}
-                </span>
-                <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
-                  {liability.liability_name}
-                </h3>
-              </div>
-              <div className="text-right">
-                <p className="font-cormorant text-xl text-white">
-                  {formatCurrency(liability.outstanding_balance)}
-                </p>
-                {liability.interest_rate > 0 && (
-                  <p className="text-[8px] font-mono text-red-500/40 uppercase tracking-widest mt-1">
-                    {liability.interest_rate}% Per Cadence
+          liabilities.map((liability, index) => (
+            <ScrollReveal key={liability.id} delay={index * 0.05} distance={10}>
+              <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
+                <div className="space-y-1">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                    {LiabilityMap[liability.liability_type] ||
+                      liability.liability_type}
+                    {liability.is_paid_in_cadences && (
+                      <span className="ml-2 text-white/10">
+                        • {liability.cadence} ({liability.cadence_day_date})
+                      </span>
+                    )}
+                  </span>
+                  <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                    {liability.liability_name}
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <p className="font-cormorant text-xl text-white">
+                    {formatCurrency(liability.outstanding_balance)}
                   </p>
-                )}
+                  {liability.interest_rate > 0 && (
+                    <p className="text-[8px] font-mono text-red-500/40 uppercase tracking-widest mt-1">
+                      {liability.interest_rate}% Per Cadence
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))
         )}
       </div>

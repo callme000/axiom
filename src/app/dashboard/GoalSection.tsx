@@ -7,6 +7,8 @@ import {
 } from "@/lib/finance/goals";
 import { createGoalAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { motion } from "framer-motion";
 
 interface GoalSectionProps {
   goals: FinancialGoal[];
@@ -139,51 +141,57 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
             </p>
           </div>
         ) : (
-          goals.map((goal) => {
+          goals.map((goal, index) => {
             const progress = calculateGoalProgressPercentage(goal);
             return (
-              <div
-                key={goal.id}
-                className="space-y-4 group cursor-default pb-8 border-b border-white/5 last:border-0"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="space-y-1">
-                    <span
-                      className={`text-[8px] font-mono tracking-widest uppercase ${
-                        goal.priority === "critical"
-                          ? "text-red-500"
-                          : "text-white/20"
-                      }`}
-                    >
-                      {goal.priority}
-                    </span>
-                    <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">
-                      {goal.goal_name}
-                    </h3>
+              <ScrollReveal key={goal.id} delay={index * 0.1}>
+                <div className="space-y-4 group cursor-default pb-8 border-b border-white/5 last:border-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="space-y-1">
+                      <span
+                        className={`text-[8px] font-mono tracking-widest uppercase ${
+                          goal.priority === "critical"
+                            ? "text-red-500"
+                            : "text-white/20"
+                        }`}
+                      >
+                        {goal.priority}
+                      </span>
+                      <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">
+                        {goal.goal_name}
+                      </h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-cormorant text-3xl text-white tabular-nums">
+                        {Math.round(progress)}%
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-cormorant text-3xl text-white tabular-nums">
-                      {Math.round(progress)}%
+
+                  <div className="h-px w-full bg-white/5 relative overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${Math.min(100, progress)}%` }}
+                      viewport={{ once: true }}
+                      transition={{
+                        duration: 1.5,
+                        delay: 0.5 + index * 0.1,
+                        ease: "easeOut",
+                      }}
+                      className="absolute inset-y-0 left-0 bg-white/60"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-end pt-2 opacity-30 group-hover:opacity-60 transition-opacity">
+                    <p className="text-[9px] font-mono uppercase tracking-widest">
+                      {formatCurrency(goal.current_progress)}
+                    </p>
+                    <p className="text-[9px] font-mono uppercase tracking-widest">
+                      Target: {formatCurrency(goal.target_amount)}
                     </p>
                   </div>
                 </div>
-
-                <div className="h-px w-full bg-white/5 relative overflow-hidden">
-                  <div
-                    className="absolute inset-y-0 left-0 bg-white/60 transition-all duration-1000 ease-out"
-                    style={{ width: `${Math.min(100, progress)}%` }}
-                  />
-                </div>
-
-                <div className="flex justify-between items-end pt-2 opacity-30 group-hover:opacity-60 transition-opacity">
-                  <p className="text-[9px] font-mono uppercase tracking-widest">
-                    {formatCurrency(goal.current_progress)}
-                  </p>
-                  <p className="text-[9px] font-mono uppercase tracking-widest">
-                    Target: {formatCurrency(goal.target_amount)}
-                  </p>
-                </div>
-              </div>
+              </ScrollReveal>
             );
           })
         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import {
   AreaChart,
   Area,
@@ -11,6 +11,8 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
+import { ScrollReveal } from "../ui/scroll-reveal";
+import { useInView } from "framer-motion";
 
 // --- Mini Sparkline (Area) ---
 export function MiniSparkline({
@@ -95,34 +97,44 @@ export function DistributionPieChart({
   data: { name: string; value: number }[];
   colors?: string[];
 }) {
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true, margin: "-10%" });
+
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="h-40 w-full relative">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius="60%"
-            outerRadius="90%"
-            dataKey="value"
-            stroke="none"
-            isAnimationActive={true}
-            animationDuration={1500}
-            paddingAngle={2}
-            cornerRadius={4}
-          >
-            {data.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={colors[index % colors.length]}
-              />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
+    <div ref={containerRef}>
+      <ScrollReveal direction="none" duration={1.2}>
+        <div className="h-40 w-full relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius="60%"
+                outerRadius="90%"
+                dataKey="value"
+                stroke="none"
+                startAngle={90}
+                endAngle={isInView ? -270 : 90}
+                isAnimationActive={true}
+                animationDuration={1500}
+                animationEasing="ease-out"
+                paddingAngle={2}
+                cornerRadius={4}
+              >
+                {data.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={colors[index % colors.length]}
+                  />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </ScrollReveal>
     </div>
   );
 }
@@ -136,6 +148,9 @@ export function MiniDonut({
   max: number;
   color?: string;
 }) {
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true, margin: "-10%" });
+
   const safeValue = Math.min(value, max);
   const remainder = Math.max(0, max - safeValue);
   const data = [
@@ -144,7 +159,7 @@ export function MiniDonut({
   ];
 
   return (
-    <div className="h-12 w-full relative mt-2">
+    <div ref={containerRef} className="h-12 w-full relative mt-2">
       <ResponsiveContainer width="100%" height="200%">
         <PieChart>
           <Pie
@@ -152,13 +167,14 @@ export function MiniDonut({
             cx="50%"
             cy="50%"
             startAngle={180}
-            endAngle={0}
+            endAngle={isInView ? 0 : 180}
             innerRadius="70%"
             outerRadius="100%"
             dataKey="value"
             stroke="none"
             isAnimationActive={true}
             animationDuration={1500}
+            animationEasing="ease-out"
             cornerRadius={4}
           >
             <Cell key="cell-0" fill={color} />

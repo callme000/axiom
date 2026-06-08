@@ -6,6 +6,7 @@ import { createAccountAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { AccountMap } from "@/lib/utils/taxonomy";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 interface AccountSectionProps {
   accounts: Account[];
@@ -193,30 +194,29 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
             </p>
           </div>
         ) : (
-          accounts.map((account) => (
-            <div
-              key={account.id}
-              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2"
-            >
-              <div className="space-y-1">
-                <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
-                  {AccountMap[account.account_type] || account.account_type}
-                </span>
-                <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
-                  {account.account_name}
-                </h3>
-              </div>
-              <div className="text-right">
-                <p className="font-cormorant text-xl text-white">
-                  {formatCurrency(account.current_balance)}
-                </p>
-                {account.institution && (
-                  <p className="text-[8px] font-mono text-white/10 uppercase tracking-widest mt-1">
-                    {account.institution}
+          accounts.map((account, index) => (
+            <ScrollReveal key={account.id} delay={index * 0.05} distance={10}>
+              <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
+                <div className="space-y-1">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                    {AccountMap[account.account_type] || account.account_type}
+                  </span>
+                  <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                    {account.account_name}
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <p className="font-cormorant text-xl text-white">
+                    {formatCurrency(account.current_balance)}
                   </p>
-                )}
+                  {account.institution && (
+                    <p className="text-[8px] font-mono text-white/10 uppercase tracking-widest mt-1">
+                      {account.institution}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))
         )}
       </div>

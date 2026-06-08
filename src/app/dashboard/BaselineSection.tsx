@@ -9,6 +9,7 @@ import {
 import { OperationalBaseline, BaselineCadence } from "@/lib/analytics/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 interface BaselineSectionProps {
   baseline: OperationalBaseline[];
@@ -307,32 +308,31 @@ export function BaselineSection({
             </p>
           </div>
         ) : (
-          baseline.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
-                    {item.cadence}
-                  </span>
-                  {item.execution_day && (
-                    <span className="text-[8px] font-mono tracking-widest uppercase text-white/10">
-                      • Day {item.execution_day}
+          baseline.map((item, index) => (
+            <ScrollReveal key={item.id} delay={index * 0.05} distance={10}>
+              <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                      {item.cadence}
                     </span>
-                  )}
+                    {item.execution_day && (
+                      <span className="text-[8px] font-mono tracking-widest uppercase text-white/10">
+                        • Day {item.execution_day}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                    {item.title}
+                  </h3>
                 </div>
-                <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
-                  {item.title}
-                </h3>
+                <div className="text-right">
+                  <p className="font-cormorant text-xl text-white">
+                    {formatCurrency(item.amount)}
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-cormorant text-xl text-white">
-                  {formatCurrency(item.amount)}
-                </p>
-              </div>
-            </div>
+            </ScrollReveal>
           ))
         )}
       </div>
