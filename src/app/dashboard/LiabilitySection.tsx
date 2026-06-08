@@ -90,7 +90,7 @@ export function LiabilitySection({
       {isAdding && (
         <div className="bg-white/2 border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="space-y-2">
                 <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                   Commitment Name
@@ -102,6 +102,20 @@ export function LiabilitySection({
                   value={form.liability_name}
                   onChange={(e) =>
                     setForm({ ...form, liability_name: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Financial Institution
+                </label>
+                <input
+                  type="text"
+                  placeholder="Optional"
+                  value={form.institution}
+                  onChange={(e) =>
+                    setForm({ ...form, institution: e.target.value })
                   }
                   className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />

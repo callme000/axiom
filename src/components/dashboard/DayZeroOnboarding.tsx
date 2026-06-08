@@ -10,43 +10,19 @@ import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
 import { HoverButton } from "@/components/ui/hover-glow-button";
 import { LuxuryCard } from "@/components/ui/luxury-card";
 import { motion, AnimatePresence } from "framer-motion";
+import { ACCOUNT_TYPES } from "@/lib/finance/accounts";
+import {
+  INCOME_TYPES,
+  CADENCES,
+  type IncomeType,
+  type Cadence,
+} from "@/lib/finance/income";
+import { LIABILITY_TYPES } from "@/lib/finance/liabilities";
 import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
 
 interface DayZeroOnboardingProps {
   onComplete: (snapshot: DashboardSnapshot) => void;
 }
-
-const ACCOUNT_TYPES = [
-  { value: "mobile_money", label: "Mobile Money" },
-  { value: "checking", label: "Checking" },
-  { value: "savings", label: "Savings" },
-  { value: "cash", label: "Cash" },
-  { value: "crypto", label: "Crypto" },
-];
-
-const INCOME_TYPES = [
-  { value: "salary", label: "Salary" },
-  { value: "freelance", label: "Freelance" },
-  { value: "business", label: "Business" },
-  { value: "other", label: "Other" },
-];
-
-const LIABILITY_TYPES = [
-  { value: "credit_card", label: "Credit Card" },
-  { value: "mortgage", label: "Mortgage" },
-  { value: "personal_loan", label: "Personal Loan" },
-  { value: "student_loan", label: "Student Loan" },
-  { value: "business_loan", label: "Business Loan" },
-  { value: "line_of_credit", label: "Line of Credit" },
-  { value: "other", label: "Other" },
-];
-
-const CADENCES = [
-  { value: "weekly", label: "Weekly" },
-  { value: "biweekly", label: "Bi-weekly" },
-  { value: "monthly", label: "Monthly" },
-  { value: "annually", label: "Annually" },
-];
 
 const BASELINE_CADENCES = [
   { value: "daily", label: "Daily" },
@@ -58,18 +34,18 @@ const BASELINE_CADENCES = [
 const STEPS = [
   {
     roman: "I",
-    title: "Capital Repositories",
-    desc: "Define your primary liquidity containers. Every sovereign architecture begins with a clear map of available capital.",
+    title: "Accounts",
+    desc: "Every strong financial foundation begins with a clear map of your available capital. Please list the financial accounts that hold your primary source of liquidity (for example, corporate checking accounts or short-term cash reserves)",
   },
   {
     roman: "II",
-    title: "Inflow Velocity",
-    desc: "Map your yield-generating transaction streams. Understanding your replenishment rate is critical for deterministic runway.",
+    title: "Income Velocity",
+    desc: "Every strong financial foundation relies on a predictable cash flow. Please list your revenue-generating activities so we can calculate how quickly your funds are replenished (for example, recurring subscription fees, product sales, or monthly client retainers).",
   },
   {
     roman: "III",
-    title: "Survival Baseline",
-    desc: "Determine your core structural cost of existence. We audit your maintenance load to identify systemic leakage.",
+    title: "Baseline Expenses",
+    desc: "Every strong financial foundation requires full visibility into its baseline expenses. Please list your fixed operating costs so we can identify and eliminate unnecessary spending (for example, office rent, software subscriptions, or employee salaries).",
   },
   {
     roman: "IV",
@@ -249,11 +225,12 @@ export default function DayZeroOnboarding({
           income_name: i.income_name,
           income_type: i.income_type,
           amount: Number(i.amount),
-          cadence: i.cadence,
+          cadence: i.is_recurring ? i.cadence : "irregular",
           execution_day:
-            i.cadence === "monthly" ||
-            i.cadence === "weekly" ||
-            i.cadence === "biweekly"
+            i.is_recurring &&
+            (i.cadence === "monthly" ||
+              i.cadence === "weekly" ||
+              i.cadence === "biweekly")
               ? Number(i.execution_day)
               : null,
           is_recurring: i.is_recurring,
@@ -403,7 +380,7 @@ export default function DayZeroOnboarding({
                     {step === 1 && (
                       <div className="flex flex-col h-full gap-6">
                         <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
-                          Capital Repositories
+                          Account Name
                         </h2>
                         <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
                           {accounts.map((acc, idx) => (
@@ -414,7 +391,7 @@ export default function DayZeroOnboarding({
                               <div className="grid grid-cols-2 gap-6">
                                 <input
                                   type="text"
-                                  placeholder="Repository Name"
+                                  placeholder="e.g. M-Pesa, Crypto Wallet"
                                   value={acc.account_name}
                                   onChange={(e) => {
                                     const n = [...accounts];
@@ -425,7 +402,7 @@ export default function DayZeroOnboarding({
                                 />
                                 <input
                                   type="text"
-                                  placeholder="Financial Institution"
+                                  placeholder="Financial Institution (optional)"
                                   value={acc.institution}
                                   onChange={(e) => {
                                     const n = [...accounts];
@@ -438,7 +415,7 @@ export default function DayZeroOnboarding({
                               <div className="grid grid-cols-2 gap-8">
                                 <div className="space-y-1">
                                   <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
-                                    Repository Type
+                                    Account Type
                                   </label>
                                   <select
                                     value={acc.account_type}
@@ -502,7 +479,7 @@ export default function DayZeroOnboarding({
                     {step === 2 && (
                       <div className="flex flex-col h-full gap-6">
                         <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
-                          Inflow Velocity
+                          Income Velocity
                         </h2>
                         <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
                           {incomes.map((inc, idx) => (
@@ -513,7 +490,7 @@ export default function DayZeroOnboarding({
                               <div className="grid grid-cols-2 gap-6">
                                 <input
                                   type="text"
-                                  placeholder="Source Name"
+                                  placeholder="e.g. Salary"
                                   value={inc.income_name}
                                   onChange={(e) => {
                                     const n = [...incomes];
@@ -534,7 +511,7 @@ export default function DayZeroOnboarding({
                                   className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
                                 />
                               </div>
-                              <div className="grid grid-cols-3 gap-6">
+                              <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                   <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
                                     Type
@@ -561,30 +538,6 @@ export default function DayZeroOnboarding({
                                 </div>
                                 <div className="space-y-1">
                                   <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
-                                    Frequency
-                                  </label>
-                                  <select
-                                    value={inc.cadence}
-                                    onChange={(e) => {
-                                      const n = [...incomes];
-                                      n[idx].cadence = e.target.value;
-                                      setIncomes(n);
-                                    }}
-                                    className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
-                                  >
-                                    {CADENCES.map((c) => (
-                                      <option
-                                        key={c.value}
-                                        value={c.value}
-                                        className="bg-[#080808]"
-                                      >
-                                        {c.label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
                                     KES
                                   </label>
                                   <input
@@ -602,44 +555,109 @@ export default function DayZeroOnboarding({
                               </div>
 
                               <div className="pt-2 space-y-3">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <label className="flex items-center space-x-3 cursor-pointer group">
-                                    <input
-                                      type="checkbox"
-                                      checked={inc.is_recurring}
-                                      onChange={(e) => {
-                                        const n = [...incomes];
-                                        n[idx].is_recurring = e.target.checked;
-                                        setIncomes(n);
-                                      }}
-                                      className="w-3 h-3 rounded border-white/10 bg-transparent checked:bg-white transition-colors"
-                                    />
-                                    <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60">
-                                      Recurring
-                                    </span>
-                                  </label>
-                                  {(inc.cadence === "monthly" ||
-                                    inc.cadence === "weekly" ||
-                                    inc.cadence === "biweekly") && (
-                                    <div className="flex items-center gap-3">
-                                      <label className="text-[8px] font-mono text-white/20 uppercase">
-                                        Execution Day
+                                <label className="flex items-center space-x-3 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={inc.is_recurring}
+                                    onChange={(e) => {
+                                      const n = [...incomes];
+                                      n[idx].is_recurring = e.target.checked;
+                                      setIncomes(n);
+                                    }}
+                                    className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                                  />
+                                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                                    Recurring Income
+                                  </span>
+                                </label>
+                                {inc.is_recurring && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="grid grid-cols-2 gap-6 pt-2 pl-8 border-l border-white/5"
+                                  >
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                                        Frequency
                                       </label>
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        max="31"
-                                        value={inc.execution_day || ""}
+                                      <select
+                                        value={inc.cadence}
                                         onChange={(e) => {
                                           const n = [...incomes];
-                                          n[idx].execution_day = e.target.value;
+                                          n[idx].cadence = e.target.value;
                                           setIncomes(n);
                                         }}
-                                        className="w-12 bg-transparent border-b border-white/10 py-0.5 text-[10px] text-white focus:outline-none text-center"
-                                      />
+                                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                      >
+                                        {CADENCES.map((c) => (
+                                          <option
+                                            key={c.value}
+                                            value={c.value}
+                                            className="bg-black"
+                                          >
+                                            {c.label}
+                                          </option>
+                                        ))}
+                                      </select>
                                     </div>
-                                  )}
-                                </div>
+                                    {(inc.cadence === "monthly" ||
+                                      inc.cadence === "weekly" ||
+                                      inc.cadence === "biweekly") && (
+                                      <div className="space-y-1">
+                                        <label className="text-[9px] font-mono text-white/20 uppercase">
+                                          {inc.cadence === "monthly"
+                                            ? "Day"
+                                            : "Day of Week"}
+                                        </label>
+                                        {inc.cadence === "monthly" ? (
+                                          <input
+                                            type="number"
+                                            min="1"
+                                            max="31"
+                                            placeholder="15"
+                                            value={inc.execution_day || ""}
+                                            onChange={(e) => {
+                                              const n = [...incomes];
+                                              n[idx].execution_day =
+                                                e.target.value;
+                                              setIncomes(n);
+                                            }}
+                                            className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                          />
+                                        ) : (
+                                          <select
+                                            value={inc.execution_day || 1}
+                                            onChange={(e) => {
+                                              const n = [...incomes];
+                                              n[idx].execution_day =
+                                                e.target.value;
+                                              setIncomes(n);
+                                            }}
+                                            className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                          >
+                                            {[
+                                              { label: "Mon", value: 1 },
+                                              { label: "Tue", value: 2 },
+                                              { label: "Wed", value: 3 },
+                                              { label: "Thu", value: 4 },
+                                              { label: "Fri", value: 5 },
+                                              { label: "Sat", value: 6 },
+                                              { label: "Sun", value: 7 },
+                                            ].map((day) => (
+                                              <option
+                                                key={day.value}
+                                                value={day.value}
+                                                className="bg-black"
+                                              >
+                                                {day.label}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        )}
+                                      </div>
+                                    )}
+                                  </motion.div>
+                                )}
                               </div>
                               <button
                                 type="button"
@@ -656,7 +674,7 @@ export default function DayZeroOnboarding({
                           onClick={addIncome}
                           className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
                         >
-                          + Append Inflow
+                          + Append Income
                         </button>
                       </div>
                     )}
@@ -664,7 +682,7 @@ export default function DayZeroOnboarding({
                     {step === 3 && (
                       <div className="flex flex-col h-full gap-6">
                         <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
-                          Survival Baseline
+                          Expense
                         </h2>
                         <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
                           {baselines.map((base, idx) => (

@@ -1,37 +1,38 @@
 export default function DashboardLoading() {
   return (
-    <div className="max-w-6xl mx-auto p-6 pb-20 animate-pulse">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div className="space-y-3">
-          <div className="h-12 w-64 bg-foreground/10 rounded-2xl"></div>
-          <div className="h-4 w-48 bg-foreground/10 rounded-full"></div>
+    <div className="fixed inset-0 bg-black z-[100] flex items-center justify-center px-8 md:px-12 animate-pulse">
+      <div className="max-w-7xl w-full h-[600px] grid lg:grid-cols-[1.1fr_1.4fr] gap-16 md:gap-24 items-stretch">
+        {/* Left Side Skeleton - Roman Numeral & Text */}
+        <div className="flex flex-col justify-center h-full border-r border-white/5 pr-12 space-y-6">
+          <div className="h-32 w-48 bg-white/5 rounded-2xl" />{" "}
+          {/* Roman Numeral */}
+          <div className="h-16 w-64 bg-white/10 rounded-xl" /> {/* Title */}
+          <div className="space-y-3">
+            <div className="h-4 w-full bg-white/5 rounded-full" />
+            <div className="h-4 w-5/6 bg-white/5 rounded-full" />
+            <div className="h-4 w-4/6 bg-white/5 rounded-full" />
+          </div>
         </div>
-        <div className="flex gap-4">
-          <div className="h-20 w-40 bg-foreground/10 rounded-2xl"></div>
-          <div className="h-20 w-40 bg-foreground/10 rounded-2xl"></div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-4 space-y-6">
-          <div className="h-96 bg-foreground/10 rounded-[2.5rem]"></div>
-          <div className="h-48 bg-foreground/10 rounded-[2.5rem]"></div>
-        </div>
-        <div className="lg:col-span-8 space-y-10">
-          <div className="space-y-4">
-            <div className="h-8 w-48 bg-foreground/10 rounded-full"></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="h-32 bg-foreground/10 rounded-3xl"></div>
-              <div className="h-32 bg-foreground/10 rounded-3xl"></div>
+        {/* Right Side Skeleton - Luxury Card */}
+        <div className="h-full bg-white/[0.02] border border-white/10 rounded-3xl p-10 md:p-14 flex flex-col justify-between">
+          <div className="space-y-12">
+            <div className="h-8 w-48 bg-white/5 rounded-lg" />{" "}
+            {/* Form Header */}
+            <div className="space-y-10">
+              <div className="grid grid-cols-2 gap-8">
+                <div className="h-12 bg-white/5 rounded-lg border-b border-white/10" />
+                <div className="h-12 bg-white/5 rounded-lg border-b border-white/10" />
+              </div>
+              <div className="grid grid-cols-2 gap-8">
+                <div className="h-12 bg-white/5 rounded-lg border-b border-white/10" />
+                <div className="h-12 bg-white/5 rounded-lg border-b border-white/10" />
+              </div>
             </div>
           </div>
-          <div className="space-y-4">
-            <div className="h-8 w-48 bg-foreground/10 rounded-full"></div>
-            <div className="space-y-4">
-              <div className="h-24 bg-foreground/10 rounded-3xl"></div>
-              <div className="h-24 bg-foreground/10 rounded-3xl"></div>
-              <div className="h-24 bg-foreground/10 rounded-3xl"></div>
-            </div>
+
+          <div className="flex justify-center pt-12">
+            <div className="h-14 w-64 bg-white/5 rounded-full border border-white/10" />
           </div>
         </div>
       </div>

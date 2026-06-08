@@ -79,6 +79,18 @@ input[type="range"] {
     height: 32px; /* Increase hit area */
 }
 
+/* Hide number input spinners (up/down arrows) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 input[type="range"]::-webkit-slider-runnable-track {
     background: rgba(255, 255, 255, 0.1);
     height: 2px;

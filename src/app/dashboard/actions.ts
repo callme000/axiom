@@ -779,6 +779,7 @@ export async function submitDayZeroBaselineAction(payload: {
     income_type: string;
     amount: number;
     cadence: string;
+    execution_day?: number | null;
     is_recurring?: boolean;
     source?: string;
   }[];
