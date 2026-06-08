@@ -4,8 +4,9 @@ import {
   projectRunway,
   calculateBurnRate,
   calculateIncomeMetrics,
+  countPendingVerifications,
 } from "./engine";
-import type { Deployment, IncomeStream } from "./types";
+import type { Deployment, IncomeStream, OperationalBaseline } from "./types";
 
 test("projectRunway handles dimensional math correctly", () => {
   // Scenario: 1000 balance, 10 daily burn, 0 income
@@ -120,4 +121,55 @@ test("calculateMaxIncomeConcentration: balanced split", () => {
 test("calculateMaxIncomeConcentration: zero income", () => {
   const metrics = calculateIncomeMetrics([]);
   assert.equal(metrics.maxRatio, 0);
+});
+
+test("countPendingVerifications includes baseline logic", () => {
+  const today = new Date();
+  const currentDayOfMonth = today.getDate();
+  const currentDayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
+
+  const baseline: Partial<OperationalBaseline>[] = [
+    {
+      id: "b1",
+      title: "Daily Coffee",
+      cadence: "daily",
+      is_recurring: true,
+      last_executed_at: null,
+    },
+    {
+      id: "b2",
+      title: "Weekly Server",
+      cadence: "weekly",
+      is_recurring: true,
+      execution_day: currentDayOfWeek,
+      last_executed_at: null,
+    },
+    {
+      id: "b3",
+      title: "Monthly Rent",
+      cadence: "monthly",
+      is_recurring: true,
+      execution_day: currentDayOfMonth,
+      last_executed_at: null,
+    },
+  ];
+
+  assert.equal(
+    countPendingVerifications([], [], baseline as OperationalBaseline[]),
+    3,
+  );
+
+  // If already executed today, should be 0
+  const executedTodayBaseline = baseline.map((b) => ({
+    ...b,
+    last_executed_at: today.toISOString(),
+  }));
+  assert.equal(
+    countPendingVerifications(
+      [],
+      [],
+      executedTodayBaseline as OperationalBaseline[],
+    ),
+    0,
+  );
 });

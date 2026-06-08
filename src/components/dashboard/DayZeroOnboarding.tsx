@@ -49,8 +49,8 @@ const STEPS = [
   },
   {
     roman: "IV",
-    title: "Immediate Obligations",
-    desc: "Audit your outstanding liabilities. Strategic solvency requires a clinical view of all near-term commitments.",
+    title: "Financial Commitments",
+    desc: "Every strong financial foundation requires a clear view of what you owe. Please list your current debts and upcoming financial obligations so we can protect your long-term solvency (for example, short-term loans, credit card balances, or vendor invoices).",
   },
 ];
 
@@ -86,6 +86,8 @@ export default function DayZeroOnboarding({
       title: "",
       amount: "",
       cadence: "monthly",
+      execution_day: "1",
+      is_recurring: true,
       category: "Maintenance",
     },
   ]);
@@ -94,6 +96,7 @@ export default function DayZeroOnboarding({
       liability_name: string;
       liability_type: string;
       outstanding_balance: string;
+      interest_rate: string;
       institution: string;
       is_paid_in_cadences: boolean;
       cadence: string;
@@ -139,7 +142,14 @@ export default function DayZeroOnboarding({
     if (baselines.length < 3)
       setBaselines([
         ...baselines,
-        { title: "", amount: "", cadence: "monthly", category: "Maintenance" },
+        {
+          title: "",
+          amount: "",
+          cadence: "monthly",
+          execution_day: "1",
+          is_recurring: true,
+          category: "Maintenance",
+        },
       ]);
   };
   const removeBaseline = (index: number) =>
@@ -153,6 +163,7 @@ export default function DayZeroOnboarding({
           liability_name: "",
           liability_type: "credit_card",
           outstanding_balance: "",
+          interest_rate: "0",
           institution: "",
           is_paid_in_cadences: false,
           cadence: "monthly",
@@ -242,7 +253,7 @@ export default function DayZeroOnboarding({
             liability_name: l.liability_name,
             liability_type: l.liability_type,
             outstanding_balance: Number(l.outstanding_balance),
-            interest_rate: 0,
+            interest_rate: Number(l.interest_rate) || 0,
             institution: l.institution || undefined,
             is_paid_in_cadences: l.is_paid_in_cadences,
             cadence: l.is_paid_in_cadences ? l.cadence : null,
@@ -256,7 +267,15 @@ export default function DayZeroOnboarding({
         baselines: baselines.map((b) => ({
           title: b.title,
           amount: Number(b.amount),
-          cadence: b.cadence,
+          cadence: b.is_recurring ? b.cadence : "monthly",
+          execution_day:
+            b.is_recurring &&
+            (b.cadence === "monthly" ||
+              b.cadence === "weekly" ||
+              b.cadence === "biweekly")
+              ? Number(b.execution_day)
+              : null,
+          is_recurring: b.is_recurring,
           category: b.category,
         })),
       });
@@ -730,30 +749,6 @@ export default function DayZeroOnboarding({
                               <div className="grid grid-cols-2 gap-12">
                                 <div className="space-y-1">
                                   <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
-                                    Frequency
-                                  </label>
-                                  <select
-                                    value={base.cadence}
-                                    onChange={(e) => {
-                                      const n = [...baselines];
-                                      n[idx].cadence = e.target.value;
-                                      setBaselines(n);
-                                    }}
-                                    className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
-                                  >
-                                    {BASELINE_CADENCES.map((c) => (
-                                      <option
-                                        key={c.value}
-                                        value={c.value}
-                                        className="bg-[#080808]"
-                                      >
-                                        {c.label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
                                     Amount
                                   </label>
                                   <input
@@ -769,11 +764,126 @@ export default function DayZeroOnboarding({
                                   />
                                 </div>
                               </div>
+
+                              <div className="pt-2 space-y-3">
+                                <label className="flex items-center space-x-3 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={base.is_recurring}
+                                    onChange={(e) => {
+                                      const n = [...baselines];
+                                      n[idx].is_recurring = e.target.checked;
+                                      setBaselines(n);
+                                    }}
+                                    className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                                  />
+                                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                                    Recurring Expense
+                                  </span>
+                                </label>
+                                {base.is_recurring && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="grid grid-cols-2 gap-6 pt-2 pl-8 border-l border-white/5"
+                                  >
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                                        Frequency
+                                      </label>
+                                      <select
+                                        value={base.cadence}
+                                        onChange={(e) => {
+                                          const n = [...baselines];
+                                          n[idx].cadence = e.target.value;
+                                          setBaselines(n);
+                                        }}
+                                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                      >
+                                        {BASELINE_CADENCES.map((c) => (
+                                          <option
+                                            key={c.value}
+                                            value={c.value}
+                                            className="bg-black"
+                                          >
+                                            {c.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+
+                                    {base.cadence === "daily" && (
+                                      <div className="flex items-center pt-2">
+                                        <p className="text-[8px] font-mono text-white/20 uppercase leading-tight">
+                                          Prompted everyday to verify.
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {(base.cadence === "monthly" ||
+                                      base.cadence === "weekly" ||
+                                      base.cadence === "biweekly") && (
+                                      <div className="space-y-1">
+                                        <label className="text-[9px] font-mono text-white/20 uppercase">
+                                          {base.cadence === "monthly"
+                                            ? "Day"
+                                            : "Day of Week"}
+                                        </label>
+                                        {base.cadence === "monthly" ? (
+                                          <input
+                                            type="number"
+                                            min="1"
+                                            max="31"
+                                            placeholder="15"
+                                            value={base.execution_day || ""}
+                                            onChange={(e) => {
+                                              const n = [...baselines];
+                                              n[idx].execution_day =
+                                                e.target.value;
+                                              setBaselines(n);
+                                            }}
+                                            className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                          />
+                                        ) : (
+                                          <select
+                                            value={base.execution_day || 1}
+                                            onChange={(e) => {
+                                              const n = [...baselines];
+                                              n[idx].execution_day =
+                                                e.target.value;
+                                              setBaselines(n);
+                                            }}
+                                            className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                          >
+                                            {[
+                                              { label: "Mon", value: 1 },
+                                              { label: "Tue", value: 2 },
+                                              { label: "Wed", value: 3 },
+                                              { label: "Thu", value: 4 },
+                                              { label: "Fri", value: 5 },
+                                              { label: "Sat", value: 6 },
+                                              { label: "Sun", value: 7 },
+                                            ].map((day) => (
+                                              <option
+                                                key={day.value}
+                                                value={day.value}
+                                                className="bg-black"
+                                              >
+                                                {day.label}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        )}
+                                      </div>
+                                    )}
+                                  </motion.div>
+                                )}
+                              </div>
                               {baselines.length > 1 && (
                                 <button
                                   type="button"
                                   onClick={() => removeBaseline(idx)}
-                                  className="absolute top-0 -right-10 p-2 text-white/10 hover:text-red-400"
+                                  className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
                                 >
                                   ✕
                                 </button>
@@ -794,7 +904,7 @@ export default function DayZeroOnboarding({
                     {step === 4 && (
                       <div className="flex flex-col h-full gap-6">
                         <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
-                          Immediate Obligations
+                          Financial Commitment
                         </h2>
                         <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
                           {liabilities.map((liab, idx) => (
@@ -826,7 +936,7 @@ export default function DayZeroOnboarding({
                                   className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
                                 />
                               </div>
-                              <div className="grid grid-cols-2 gap-12">
+                              <div className="grid grid-cols-3 gap-6">
                                 <div className="space-y-1">
                                   <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
                                     Type
@@ -853,7 +963,7 @@ export default function DayZeroOnboarding({
                                 </div>
                                 <div className="space-y-1">
                                   <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
-                                    Outstanding Balance
+                                    Balance
                                   </label>
                                   <input
                                     type="number"
@@ -865,7 +975,24 @@ export default function DayZeroOnboarding({
                                         e.target.value;
                                       setLiabilities(n);
                                     }}
-                                    className="w-full bg-transparent border-b border-white/10 py-1 text-2xl font-light text-white focus:outline-none tabular-nums"
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                                    Interest %
+                                  </label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    placeholder="0"
+                                    value={liab.interest_rate}
+                                    onChange={(e) => {
+                                      const n = [...liabilities];
+                                      n[idx].interest_rate = e.target.value;
+                                      setLiabilities(n);
+                                    }}
+                                    className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
                                   />
                                 </div>
                               </div>
@@ -922,20 +1049,57 @@ export default function DayZeroOnboarding({
                                     </div>
                                     <div className="space-y-1">
                                       <label className="text-[9px] font-mono text-white/20 uppercase">
-                                        Day
+                                        {liab.cadence === "weekly"
+                                          ? "Day of Week"
+                                          : "Day of Month"}
                                       </label>
-                                      <input
-                                        type="text"
-                                        placeholder="15"
-                                        value={liab.cadence_day_date || ""}
-                                        onChange={(e) => {
-                                          const n = [...liabilities];
-                                          n[idx].cadence_day_date =
-                                            e.target.value;
-                                          setLiabilities(n);
-                                        }}
-                                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
-                                      />
+                                      {liab.cadence === "monthly" ? (
+                                        <input
+                                          type="number"
+                                          min="1"
+                                          max="31"
+                                          placeholder="15"
+                                          value={liab.cadence_day_date || ""}
+                                          onChange={(e) => {
+                                            const n = [...liabilities];
+                                            n[idx].cadence_day_date =
+                                              e.target.value;
+                                            setLiabilities(n);
+                                          }}
+                                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                        />
+                                      ) : (
+                                        <select
+                                          value={
+                                            liab.cadence_day_date || "Monday"
+                                          }
+                                          onChange={(e) => {
+                                            const n = [...liabilities];
+                                            n[idx].cadence_day_date =
+                                              e.target.value;
+                                            setLiabilities(n);
+                                          }}
+                                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                                        >
+                                          {[
+                                            "Monday",
+                                            "Tuesday",
+                                            "Wednesday",
+                                            "Thursday",
+                                            "Friday",
+                                            "Saturday",
+                                            "Sunday",
+                                          ].map((day) => (
+                                            <option
+                                              key={day}
+                                              value={day}
+                                              className="bg-black"
+                                            >
+                                              {day}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      )}
                                     </div>
                                     <div className="space-y-1">
                                       <label className="text-[9px] font-mono text-white/20 uppercase">

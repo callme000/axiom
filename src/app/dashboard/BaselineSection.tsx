@@ -36,6 +36,8 @@ export function BaselineSection({
     amount: "",
     category: "Maintenance",
     cadence: "monthly" as BaselineCadence,
+    execution_day: 1,
+    is_recurring: true,
     baseline_type: "expense" as "expense" | "allocation",
     notes: "",
   });
@@ -49,7 +51,15 @@ export function BaselineSection({
         title: form.title,
         amount: Number(form.amount),
         category: form.category,
-        cadence: form.cadence,
+        cadence: form.is_recurring ? form.cadence : "monthly", // Default or special irregular? Plan says use is_recurring logic.
+        execution_day:
+          form.is_recurring &&
+          (form.cadence === "monthly" ||
+            form.cadence === "weekly" ||
+            form.cadence === "biweekly")
+            ? Number(form.execution_day)
+            : null,
+        is_recurring: form.is_recurring,
         baseline_type: form.baseline_type,
         is_active: true,
         notes: form.notes || undefined,
@@ -59,6 +69,8 @@ export function BaselineSection({
         amount: "",
         category: "Maintenance",
         cadence: "monthly",
+        execution_day: 1,
+        is_recurring: true,
         baseline_type: "expense",
         notes: "",
       });
@@ -119,7 +131,7 @@ export function BaselineSection({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                   Category
@@ -142,26 +154,119 @@ export function BaselineSection({
                   ))}
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
-                  Frequency
+
+              <div className="space-y-4">
+                <label className="flex items-center space-x-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={form.is_recurring}
+                    onChange={(e) =>
+                      setForm({ ...form, is_recurring: e.target.checked })
+                    }
+                    className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                  />
+                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                    Recurring Expense
+                  </span>
                 </label>
-                <select
-                  value={form.cadence}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      cadence: e.target.value as BaselineCadence,
-                    })
-                  }
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
-                >
-                  {CADENCES.map((c) => (
-                    <option key={c.value} value={c.value} className="bg-black">
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
+
+                {form.is_recurring && (
+                  <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-top-2 border-l border-white/5 pl-6 ml-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                          Frequency
+                        </label>
+                        <select
+                          value={form.cadence}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              cadence: e.target.value as BaselineCadence,
+                            })
+                          }
+                          className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                        >
+                          {CADENCES.map((c) => (
+                            <option
+                              key={c.value}
+                              value={c.value}
+                              className="bg-black"
+                            >
+                              {c.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {form.cadence === "daily" && (
+                        <div className="flex items-center pt-4">
+                          <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest leading-relaxed">
+                            <span className="text-white/60">Note:</span> You
+                            will be prompted everyday to verify this baseline.
+                          </p>
+                        </div>
+                      )}
+
+                      {(form.cadence === "monthly" ||
+                        form.cadence === "weekly" ||
+                        form.cadence === "biweekly") && (
+                        <div className="space-y-2">
+                          <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                            {form.cadence === "monthly"
+                              ? "Day of Month (1-31)"
+                              : "Day of Week"}
+                          </label>
+                          {form.cadence === "monthly" ? (
+                            <input
+                              type="number"
+                              min="1"
+                              max="31"
+                              required
+                              value={form.execution_day || ""}
+                              onChange={(e) =>
+                                setForm({
+                                  ...form,
+                                  execution_day: Number(e.target.value),
+                                })
+                              }
+                              className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                            />
+                          ) : (
+                            <select
+                              value={form.execution_day || 1}
+                              onChange={(e) =>
+                                setForm({
+                                  ...form,
+                                  execution_day: Number(e.target.value),
+                                })
+                              }
+                              className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                            >
+                              {[
+                                { label: "Monday", value: 1 },
+                                { label: "Tuesday", value: 2 },
+                                { label: "Wednesday", value: 3 },
+                                { label: "Thursday", value: 4 },
+                                { label: "Friday", value: 5 },
+                                { label: "Saturday", value: 6 },
+                                { label: "Sunday", value: 7 },
+                              ].map((day) => (
+                                <option
+                                  key={day.value}
+                                  value={day.value}
+                                  className="bg-black"
+                                >
+                                  {day.label}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -196,9 +301,16 @@ export function BaselineSection({
               className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2"
             >
               <div className="space-y-1">
-                <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
-                  {item.cadence}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                    {item.cadence}
+                  </span>
+                  {item.execution_day && (
+                    <span className="text-[8px] font-mono tracking-widest uppercase text-white/10">
+                      • Day {item.execution_day}
+                    </span>
+                  )}
+                </div>
                 <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
                   {item.title}
                 </h3>

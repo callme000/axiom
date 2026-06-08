@@ -14,6 +14,7 @@ import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
 import { BaselineSection } from "./BaselineSection";
 import { PendingInflows } from "./PendingInflows";
 import { PendingLiabilities } from "./PendingLiabilities";
+import { PendingBaselines } from "./PendingBaselines";
 import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
 import DayZeroOnboarding from "@/components/dashboard/DayZeroOnboarding";
 import { NewEntryForm } from "./NewEntryForm";
@@ -214,6 +215,11 @@ export default function Dashboard() {
 
         <PendingLiabilities
           liabilities={ledger.liabilities}
+          accounts={ledger.accounts}
+          onSnapshot={applyDashboardSnapshot}
+        />
+        <PendingBaselines
+          baseline={ledger.baseline}
           accounts={ledger.accounts}
           onSnapshot={applyDashboardSnapshot}
         />

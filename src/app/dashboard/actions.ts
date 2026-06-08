@@ -626,6 +626,61 @@ export async function resolvePendingLiabilityAction(payload: {
   }
 }
 
+export async function resolvePendingBaselineAction(payload: {
+  baselineId: string;
+  accountId: string;
+  amount: number;
+  title: string;
+}) {
+  const { userId, supabase } = await requireAuth();
+
+  try {
+    // 1. Get current account balance
+    const { data: account, error: accError } = await supabase
+      .from("accounts")
+      .select("current_balance")
+      .eq("id", payload.accountId)
+      .eq("user_id", userId)
+      .single();
+
+    if (accError || !account) throw new Error("Source account not found.");
+
+    // 2. Deduct from account
+    const newBalance = Number(account.current_balance) - payload.amount;
+    await updateAccount(supabase, payload.accountId, userId, {
+      current_balance: newBalance,
+    });
+
+    // 3. Log Deployment (Maintenance Expense)
+    await createDeployment(
+      supabase,
+      payload.title,
+      payload.amount,
+      userId,
+      "Maintenance",
+      0,
+      undefined,
+      payload.accountId,
+    );
+
+    // 4. Update the baseline last_executed_at
+    await updateOperationalBaseline(supabase, payload.baselineId, userId, {
+      last_executed_at: new Date().toISOString(),
+    });
+
+    // 5. Update global liquidity
+    const settings = await getUserSettings(supabase, userId);
+    const newLiquidity = Number(settings.total_liquidity) - payload.amount;
+    await updateLiquidity(supabase, userId, newLiquidity);
+
+    revalidatePath("/dashboard");
+    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+  } catch (error) {
+    console.error("Failed to resolve pending baseline:", error);
+    throw error;
+  }
+}
+
 export async function createGoalAction(input: CreateGoalActionInput) {
   const { userId, supabase } = await requireAuth();
 
@@ -799,6 +854,8 @@ export async function submitDayZeroBaselineAction(payload: {
     title?: string;
     amount: number;
     cadence: string;
+    execution_day?: number | null;
+    is_recurring?: boolean;
     category?: string;
   }[];
 }) {
@@ -836,6 +893,8 @@ export async function submitDayZeroBaselineAction(payload: {
         amount: item.amount,
         category: item.category || "Maintenance",
         cadence: item.cadence as BaselineCadence,
+        execution_day: item.execution_day,
+        is_recurring: item.is_recurring ?? true,
         baseline_type: "expense",
         is_active: true,
       });

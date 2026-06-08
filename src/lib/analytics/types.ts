@@ -39,6 +39,9 @@ export interface OperationalBaseline {
   amount: number;
   category: string;
   cadence: BaselineCadence;
+  execution_day?: number | null;
+  last_executed_at?: string | null;
+  is_recurring: boolean;
   baseline_type: BaselineType;
   is_active: boolean;
   notes?: string | null;

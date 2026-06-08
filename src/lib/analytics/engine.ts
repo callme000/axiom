@@ -38,7 +38,7 @@ export const normalizeToMonthly = (amount: number, cadence: string): number => {
 export const calculateBaselineMetrics = (baseline: OperationalBaseline[]) => {
   return baseline.reduce(
     (acc, item) => {
-      if (!item.is_active) return acc;
+      if (!item.is_active || !item.is_recurring) return acc;
       const monthlyAmount = normalizeToMonthly(item.amount, item.cadence);
 
       if (item.baseline_type === "expense") {
@@ -51,6 +51,7 @@ export const calculateBaselineMetrics = (baseline: OperationalBaseline[]) => {
     { monthlyBurn: 0, monthlyAllocation: 0 },
   );
 };
+
 import { summarizeMetadataQuality } from "../finance/metadataQuality";
 import { calculateMonthlyInflow } from "../finance/income";
 import { calculateGoalProgressPercentage } from "../finance/goals";
@@ -178,6 +179,7 @@ export const calculateAverage = (deployments: Deployment[]): number => {
 export const countPendingVerifications = (
   income: IncomeStream[],
   liabilities: Liability[],
+  baseline: OperationalBaseline[] = [],
 ): number => {
   const today = new Date();
   const currentDayOfWeek = today.getDay();
@@ -235,7 +237,36 @@ export const countPendingVerifications = (
     return false;
   });
 
-  return pendingIncomes.length + pendingLiabilities.length;
+  const pendingBaselines = baseline.filter((b) => {
+    if (!b.is_recurring) return false;
+
+    if (b.last_executed_at) {
+      const lastExecuted = new Date(b.last_executed_at);
+      if (
+        lastExecuted.getDate() === today.getDate() &&
+        lastExecuted.getMonth() === today.getMonth() &&
+        lastExecuted.getFullYear() === today.getFullYear()
+      ) {
+        return false;
+      }
+    }
+
+    if (b.cadence === "daily") return true;
+
+    if (b.execution_day) {
+      if (b.cadence === "weekly") {
+        return mappedDayOfWeek === b.execution_day;
+      }
+      if (b.cadence === "monthly" || b.cadence === "biweekly") {
+        return currentDayOfMonth === b.execution_day;
+      }
+    }
+
+    return false;
+  });
+  return (
+    pendingIncomes.length + pendingLiabilities.length + pendingBaselines.length
+  );
 };
 
 /**
@@ -490,6 +521,7 @@ export const generateSummary = (
     pendingVerificationCount: countPendingVerifications(
       incomeStreams,
       liabilities,
+      baseline,
     ),
   };
 };
