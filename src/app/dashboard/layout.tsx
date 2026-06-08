@@ -99,48 +99,51 @@ export default function DashboardLayout({
       {isOnboarded === true && (
         <>
           {/* SIDEBAR */}
-          <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-80 bg-black border-r border-white/5 z-50 p-12 animate-in fade-in slide-in-from-left-4 duration-1000">
-            <div className="flex flex-col h-full justify-between">
+          <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-80 bg-black/40 backdrop-blur-3xl border-r border-white/5 z-50 p-12 animate-in fade-in slide-in-from-left-4 duration-1000 overflow-hidden">
+            {/* Ambient Sidebar Glow */}
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.03),transparent_70%)] pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col h-full justify-between">
               <div className="space-y-24">
                 {/* Logo */}
-                <Link href="/" className="group">
+                <Link href="/" className="group mb-8 block">
                   <div className="flex items-center gap-4">
-                    <BrandMark />
-                    <div className="flex flex-col">
-                      <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-bold text-white">
-                        AXIOM
-                      </span>
-                      <span className="text-[7px] font-mono tracking-[0.2em] uppercase text-white/30">
-                        Intelligence Layer
-                      </span>
-                    </div>
+                    <BrandMark className="w-10 h-10 group-hover:scale-105 transition-transform duration-700" />
+                    <span className="font-cormorant text-2xl tracking-widest uppercase text-white group-hover:text-white/80 transition-colors">
+                      AXIOM
+                    </span>
                   </div>
                 </Link>
 
                 {/* Navigation */}
-                <nav className="space-y-12">
-                  <p className="text-[10px] font-mono tracking-[0.5em] text-white/20 uppercase mb-8">
-                    Client Portal
-                  </p>
+                <nav className="space-y-6">
                   {navItems.map((item) => (
                     <button
                       key={item.id}
                       onClick={() => scrollToSection(item.id)}
-                      className={`w-full group text-left transition-all ${
+                      className={`w-full group text-left transition-all duration-500 py-3 ${
                         activeSection === item.id
                           ? "opacity-100"
                           : "opacity-30 hover:opacity-100"
                       }`}
                     >
-                      <div className="flex items-center gap-6">
-                        <span className="font-cormorant italic text-2xl text-white/60">
+                      <div className="flex items-center gap-6 relative">
+                        {/* Active Line Indicator */}
+                        <div
+                          className={`absolute -left-6 top-1/2 -translate-y-1/2 w-1 h-0 bg-white transition-all duration-500 ${
+                            activeSection === item.id
+                              ? "h-full"
+                              : "group-hover:h-1/2 opacity-30"
+                          }`}
+                        />
+                        <span className="font-cormorant italic text-2xl text-white/60 w-8">
                           {item.roman}.
                         </span>
                         <span
-                          className={`font-cormorant text-2xl tracking-wide transition-all ${
+                          className={`font-cormorant text-3xl tracking-wide transition-all duration-500 ${
                             activeSection === item.id
-                              ? "translate-x-2"
-                              : "group-hover:translate-x-2"
+                              ? "translate-x-2 text-white"
+                              : "group-hover:translate-x-2 text-white/80"
                           }`}
                         >
                           {item.label}
@@ -157,11 +160,11 @@ export default function DashboardLayout({
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-4 w-full group"
                 >
-                  <div className="w-10 h-10 border border-white/10 flex items-center justify-center font-mono text-xs text-white/60 group-hover:bg-white group-hover:text-black transition-all">
+                  <div className="w-10 h-10 border border-white/10 bg-white/5 flex items-center justify-center font-mono text-xs text-white group-hover:bg-white group-hover:text-black transition-all duration-500 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
                     {user?.email?.[0].toUpperCase()}
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="text-[10px] font-mono tracking-widest text-white/80 uppercase truncate max-w-30">
+                    <span className="text-[10px] font-mono tracking-widest text-white/80 uppercase truncate max-w-30 group-hover:text-white transition-colors">
                       {user?.email?.split("@")[0]}
                     </span>
                     <span className="text-[8px] font-mono tracking-widest text-white/20 uppercase">
@@ -171,10 +174,10 @@ export default function DashboardLayout({
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute bottom-full left-0 mb-4 w-full bg-black border border-white/10 p-4 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div className="absolute bottom-full left-0 mb-4 w-full bg-black/90 backdrop-blur-xl border border-white/10 p-2 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left font-mono text-[9px] tracking-widest text-red-500 hover:text-red-400 uppercase py-2"
+                      className="w-full text-left font-mono text-[9px] tracking-widest text-red-500 hover:text-red-400 uppercase p-4 hover:bg-white/5 transition-colors"
                     >
                       Terminate Session
                     </button>

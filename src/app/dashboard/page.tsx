@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   getDashboardSnapshotAction,
   createDeploymentAction,
@@ -12,11 +12,15 @@ import { IncomeSection } from "./IncomeSection";
 import { GoalSection } from "./GoalSection";
 import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
 import { BaselineSection } from "./BaselineSection";
+import { motion } from "framer-motion";
 import { PendingInflows } from "./PendingInflows";
 import { PendingLiabilities } from "./PendingLiabilities";
 import { PendingBaselines } from "./PendingBaselines";
+import { HistoricalAudit } from "./HistoricalAudit";
+import { GrandTrajectoryChart } from "@/components/dashboard/GrandTrajectoryChart";
+import { AnimatedNumber } from "@/components/ui/animated-number";
+import { LuxuryCard } from "@/components/ui/luxury-card";
 import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
-import DayZeroOnboarding from "@/components/dashboard/DayZeroOnboarding";
 import { NewEntryForm } from "./NewEntryForm";
 import type {
   AnalyticsSummary,
@@ -28,8 +32,8 @@ import type {
   StrategicObjective,
   OperationalBaseline,
 } from "@/lib/analytics/types";
+import type { KairosInsight } from "@/lib/ai/kairos";
 import { formatCurrency } from "@/lib/utils/formatters";
-import { DeploymentMap } from "@/lib/utils/taxonomy";
 
 interface LedgerState {
   deployments: Deployment[];
@@ -42,15 +46,7 @@ interface LedgerState {
   analytics: AnalyticsSummary | null;
 }
 
-type KairosInsight = DashboardSnapshot["kairosInsight"];
-
-const EMPTY_ADVANCED_CONTEXT = {
-  associatedAccount: "",
-  expectedReturnHorizon: "",
-  tags: "",
-};
-
-export default function Dashboard() {
+export default function DashboardPage() {
   const [ledger, setLedger] = useState<LedgerState>({
     deployments: [],
     accounts: [],
@@ -61,57 +57,41 @@ export default function Dashboard() {
     baseline: [],
     analytics: null,
   });
-  const [liquidity, setLiquidity] = useState<number>(0);
+
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [kairosInsight, setKairosInsight] = useState<KairosInsight | null>(
     null,
   );
-
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isActionLoading, setIsActionLoading] = useState(false);
-  const [isIntelligenceSyncing, setIsIntelligenceSyncing] = useState(false);
-
-  const isExecuting = useRef(false);
-  const fetchCount = useRef(0);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   const applyDashboardSnapshot = useCallback((snapshot: DashboardSnapshot) => {
-    if (!snapshot.authenticated) return;
-    setLiquidity(snapshot.liquidity);
     setLedger({
-      deployments: snapshot.deployments as Deployment[],
+      deployments: snapshot.deployments,
       accounts: snapshot.accounts,
       liabilities: snapshot.liabilities,
       incomeStreams: snapshot.incomeStreams,
       goals: snapshot.goals,
       objectives: snapshot.objectives,
       baseline: snapshot.baseline,
-      analytics: snapshot.analytics as AnalyticsSummary | null,
+      analytics: snapshot.analytics,
     });
     setKairosInsight(snapshot.kairosInsight);
   }, []);
 
   const fetchDashboardData = useCallback(async () => {
-    const requestId = ++fetchCount.current;
     try {
       const snapshot = await getDashboardSnapshotAction();
-      if (requestId !== fetchCount.current) return;
       applyDashboardSnapshot(snapshot);
-    } catch {
-      // Fail silently
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
     } finally {
-      if (requestId === fetchCount.current) setIsInitialLoading(false);
+      setIsInitialLoading(false);
     }
   }, [applyDashboardSnapshot]);
 
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      if (!mounted) return;
-      await fetchDashboardData();
-    };
-    void load();
-    return () => {
-      mounted = false;
-    };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchDashboardData();
   }, [fetchDashboardData]);
 
   if (isInitialLoading) {
@@ -150,363 +130,327 @@ export default function Dashboard() {
     );
   }
 
-  if (ledger.accounts.length === 0 && ledger.baseline.length === 0) {
-    return <DayZeroOnboarding onComplete={applyDashboardSnapshot} />;
-  }
+  // 1. HUD / MACRO KPI ROW
+  const hudMetrics = [
+    {
+      label: "Sovereign Wealth",
+      value: ledger.analytics?.totalAssets || 0,
+      prefix: "KES ",
+      desc: "Total Capitalized Architecture",
+    },
+    {
+      label: "Liquid Capital",
+      value: ledger.analytics?.liquidity || 0,
+      prefix: "KES ",
+      desc: "Immediate Deployment Capacity",
+    },
+    {
+      label: "Structural Burn",
+      value: ledger.analytics?.totalStructuralMonthlyBurn || 0,
+      prefix: "KES ",
+      suffix: " /mo",
+      desc: "Operational Maintenance Cost",
+    },
+    {
+      label: "Operational Runway",
+      value: ledger.analytics?.runwayDays || 0,
+      suffix: " DAYS",
+      desc: "Time to Critical Depletion",
+    },
+  ];
+
+  // 2. DETERMINISTIC TRAJECTORY PROJECTION (12-Month)
+  const generateTrajectory = () => {
+    const assets = ledger.analytics?.totalAssets || 0;
+    const monthlyIncome = ledger.analytics?.totalMonthlyIncome || 0;
+    const monthlyBurn = ledger.analytics?.totalStructuralMonthlyBurn || 0;
+    const monthlyNet = monthlyIncome - monthlyBurn;
+
+    const months = [
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
+    ];
+    const currentMonthIndex = new Date().getMonth();
+
+    return months.map((name, i) => {
+      // Simple linear projection based on current monthly net flow
+      // We start from current month and project forward
+      const monthDiff =
+        i >= currentMonthIndex
+          ? i - currentMonthIndex
+          : 12 - (currentMonthIndex - i);
+      const projectedValue = Math.max(0, assets + monthlyNet * monthDiff);
+
+      return {
+        name,
+        value: projectedValue,
+      };
+    });
+  };
+
+  const trajectoryData = generateTrajectory();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" as const },
+    },
+  };
 
   return (
-    <div className="space-y-32">
-      {/* Zone 0 — PSYCHOLOGICAL ANCHOR (SOLVENCY) */}
-      <section className="text-center space-y-8 animate-in fade-in duration-1000">
-        <div className="inline-flex items-center gap-4 px-6 py-2 border border-white/10 backdrop-blur-sm rounded-full mb-4">
-          <div className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse"></div>
-          <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-white/40">
-            Structural Solvency Window
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center">
-          <div className="font-cormorant italic text-2xl text-white/40 mb-2">
-            Remaining Capital Life
-          </div>
-          <h1 className="font-cormorant text-8xl md:text-[10rem] text-white tracking-tighter tabular-nums leading-none">
-            {ledger.analytics?.runwayDays !== null &&
-            ledger.analytics?.runwayDays !== undefined
-              ? Math.round(ledger.analytics.runwayDays)
-              : "∞"}
-            <span className="text-2xl font-sans font-light text-white/20 ml-4 tracking-widest uppercase">
-              Days
-            </span>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="max-w-7xl mx-auto p-6 md:p-12 pb-32 space-y-24"
+    >
+      {/* HEADER SECTION */}
+      <motion.header
+        variants={itemVariants}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-12"
+      >
+        <div className="space-y-4">
+          <p className="font-mono text-[10px] tracking-[0.6em] text-white/20 uppercase">
+            Strategic Command Center // v1.0
+          </p>
+          <h1 className="font-cormorant text-6xl text-white tracking-tight leading-none">
+            Welcome, <span className="italic">Architect.</span>
           </h1>
         </div>
-
-        <div className="max-w-xl mx-auto pt-12 space-y-4">
-          <div className="h-px w-full bg-white/10 relative overflow-hidden">
-            <div
-              className="absolute inset-y-0 left-0 bg-white/60 transition-all duration-2000 ease-out"
-              style={{
-                width: `${Math.min(100, (ledger.analytics?.runwayDays ?? 0) / 3.65)}%`,
-              }}
-            ></div>
-          </div>
-          <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
-            Deterministic survival projection :: v1.0
-          </p>
+        <div className="flex gap-4">
+          <button
+            onClick={fetchDashboardData}
+            className="px-6 py-3 border border-white/10 rounded-full font-mono text-[9px] tracking-widest uppercase hover:bg-white/5 transition-all active:scale-95"
+          >
+            Refresh Intel
+          </button>
         </div>
-      </section>
+      </motion.header>
 
-      {/* Zone 1 — FINANCIAL POSITION */}
-      <section id="overview" className="space-y-16">
+      {/* ZONE 1: THE HUD (Macro KPIs) */}
+      <motion.section
+        id="overview"
+        variants={itemVariants}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+      >
+        {hudMetrics.map((metric, i) => (
+          <LuxuryCard
+            key={metric.label}
+            className="p-8 space-y-4 group hover:border-white/20 transition-all duration-500"
+          >
+            <p className="font-mono text-[9px] tracking-[0.4em] text-white/20 uppercase group-hover:text-white/40 transition-colors">
+              {metric.label}
+            </p>
+            <div className="space-y-1">
+              <h3 className="font-cormorant text-4xl text-white">
+                <AnimatedNumber
+                  value={metric.value}
+                  prefix={metric.prefix}
+                  suffix={metric.suffix}
+                />
+              </h3>
+              <p className="text-[9px] font-mono text-white/10 uppercase tracking-widest group-hover:text-white/20 transition-colors">
+                {metric.desc}
+              </p>
+            </div>
+          </LuxuryCard>
+        ))}
+      </motion.section>
+
+      {/* ZONE 2: ARCHITECTURE DEPLOYMENT (NewEntryForm) */}
+      <motion.section id="deploy" variants={itemVariants} className="w-full">
+        <LuxuryCard className="p-8 md:p-16 border-white/10">
+          <div className="flex flex-col md:flex-row gap-12 items-start">
+            <div className="space-y-4 md:w-1/3">
+              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                <div className="w-2 h-2 rounded-full bg-white/40" />
+              </div>
+              <h2 className="font-cormorant text-4xl text-white">
+                Architecture Deployment
+              </h2>
+              <p className="font-mono text-[10px] tracking-widest text-white/30 uppercase leading-relaxed">
+                Log deployments, allocate capital, and dictate the flow of
+                resources through your system.
+              </p>
+            </div>
+            <div className="md:w-2/3 w-full">
+              <NewEntryForm
+                accounts={ledger.accounts}
+                liquidity={ledger.analytics?.liquidity || 0}
+                isActionLoading={isExecuting}
+                onSubmit={async (data) => {
+                  if (isExecuting) return;
+                  setIsExecuting(true);
+                  try {
+                    const snapshot = await createDeploymentAction({
+                      title: data.title,
+                      amount: data.amount,
+                      category: data.category,
+                      accountId: data.accountId,
+                    });
+                    applyDashboardSnapshot(snapshot);
+                  } finally {
+                    setIsExecuting(false);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </LuxuryCard>
+      </motion.section>
+
+      {/* ZONE 3: GRAND TRAJECTORY */}
+      <motion.section
+        id="intelligence"
+        variants={itemVariants}
+        className="space-y-12"
+      >
         <div className="flex items-center gap-6">
           <span className="font-cormorant italic text-3xl text-white/20">
             I.
           </span>
           <h2 className="font-cormorant text-4xl text-white tracking-wide">
-            Financial Position
+            Trajectory Modeling
           </h2>
           <div className="flex-1 h-px bg-white/5" />
         </div>
+        <GrandTrajectoryChart data={trajectoryData} />
+      </motion.section>
 
-        <PendingInflows
-          incomeStreams={ledger.incomeStreams}
-          accounts={ledger.accounts}
-          onSnapshot={applyDashboardSnapshot}
-        />
-
-        <PendingLiabilities
-          liabilities={ledger.liabilities}
-          accounts={ledger.accounts}
-          onSnapshot={applyDashboardSnapshot}
-        />
-        <PendingBaselines
-          baseline={ledger.baseline}
-          accounts={ledger.accounts}
-          onSnapshot={applyDashboardSnapshot}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              label: "Net Worth",
-              value: formatCurrency(ledger.analytics?.netWorth || 0),
-              sub: "Total Equity",
-            },
-            {
-              label: "Total Capital",
-              value: formatCurrency(liquidity),
-              sub: "Liquid Assets",
-            },
-            {
-              label: "Monthly Income",
-              value: formatCurrency(ledger.analytics?.totalMonthlyIncome || 0),
-              sub: "Replenishment",
-            },
-          ].map((card) => (
-            <div
-              key={card.label}
-              className="bg-white/2 border border-white/5 p-10 group hover:bg-white hover:text-black transition-all duration-500"
-            >
-              <span className="text-[10px] font-mono text-white/40 group-hover:text-black/40 uppercase tracking-[0.3em] mb-8 block">
-                {card.label}
+      {/* ZONE 4: TACTICAL & STRATEGIC GRID */}
+      <motion.div
+        id="ledger"
+        variants={itemVariants}
+        className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-12 lg:gap-24"
+      >
+        {/* LEFT COLUMN: TACTICAL ENGINE */}
+        <section className="space-y-12 lg:space-y-24">
+          {/* PENDING ACTIONS */}
+          <div className="space-y-12">
+            <div className="flex items-center gap-6">
+              <span className="font-cormorant italic text-3xl text-white/20">
+                II.
               </span>
-              <span className="font-cormorant text-4xl md:text-5xl block mb-4 transition-transform group-hover:translate-x-2">
-                {card.value}
-              </span>
-              <p className="text-[9px] font-mono text-white/20 group-hover:text-black/20 uppercase tracking-widest">
-                {card.sub}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Zone 2 — ARCHITECTURE ENTRY */}
-      <section id="deploy" className="max-w-4xl mx-auto w-full">
-        <div className="bg-white/2 border border-white/5 p-12 md:p-20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <svg width="120" height="120" viewBox="0 0 24 24" fill="white">
-              <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
-            </svg>
-          </div>
-
-          <div className="flex items-center gap-8 mb-16">
-            <span className="font-cormorant italic text-3xl text-white/20">
-              II.
-            </span>
-            <div className="space-y-2">
-              <h2 className="font-cormorant text-5xl text-white leading-none">
-                Architecture Deployment
+              <h2 className="font-cormorant text-4xl text-white tracking-wide">
+                Tactical Response
               </h2>
-              <p className="text-white/30 text-[10px] font-mono uppercase tracking-[0.4em]">
-                Strategic Capital Allocation
-              </p>
+              <div className="flex-1 h-px bg-white/5" />
+            </div>
+            <div className="space-y-6">
+              <PendingInflows
+                incomeStreams={ledger.incomeStreams}
+                accounts={ledger.accounts}
+                onSnapshot={applyDashboardSnapshot}
+              />
+              <PendingLiabilities
+                liabilities={ledger.liabilities}
+                accounts={ledger.accounts}
+                onSnapshot={applyDashboardSnapshot}
+              />
+              <PendingBaselines
+                baseline={ledger.baseline}
+                accounts={ledger.accounts}
+                onSnapshot={applyDashboardSnapshot}
+              />
             </div>
           </div>
 
-          <NewEntryForm
-            accounts={ledger.accounts}
-            liquidity={liquidity}
-            isActionLoading={isActionLoading}
-            onSubmit={async (data) => {
-              if (isExecuting.current) return;
-              setIsActionLoading(true);
-              isExecuting.current = true;
-              setIsIntelligenceSyncing(true);
-              try {
-                const snapshot = await createDeploymentAction({
-                  title: data.title,
-                  amount: data.amount,
-                  category: data.category,
-                  accountId: data.accountId,
-                  advancedContext: EMPTY_ADVANCED_CONTEXT,
-                });
-                applyDashboardSnapshot(snapshot);
-              } finally {
-                setIsActionLoading(false);
-                isExecuting.current = false;
-                setIsIntelligenceSyncing(false);
-              }
-            }}
-          />
-        </div>
-      </section>
-
-      {/* Subsections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div
-          id="accounts"
-          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
-        >
-          <AccountSection
-            accounts={ledger.accounts}
-            onSnapshot={applyDashboardSnapshot}
-          />
-        </div>
-        <div
-          id="liabilities"
-          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
-        >
-          <LiabilitySection
-            liabilities={ledger.liabilities}
-            onSnapshot={applyDashboardSnapshot}
-          />
-        </div>
-        <div
-          id="income"
-          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
-        >
-          <IncomeSection
-            incomeStreams={ledger.incomeStreams}
-            onSnapshot={applyDashboardSnapshot}
-          />
-        </div>
-        <div
-          id="baseline"
-          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
-        >
-          <BaselineSection
-            baseline={ledger.baseline}
-            onSnapshot={applyDashboardSnapshot}
-          />
-        </div>
-        <div
-          id="objectives"
-          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
-        >
-          <StrategicObjectiveSection
-            objectives={ledger.objectives}
-            onSnapshot={applyDashboardSnapshot}
-          />
-        </div>
-        <div
-          id="goals"
-          className="bg-white/2 border border-white/5 p-10 transition-all hover:border-white/20"
-        >
-          <GoalSection
-            goals={ledger.goals}
-            onSnapshot={applyDashboardSnapshot}
-          />
-        </div>
-      </div>
-
-      {/* Zone 3 — INTELLIGENCE */}
-      <section id="intelligence" className="space-y-16">
-        <div className="flex items-center gap-6">
-          <span className="font-cormorant italic text-3xl text-white/20">
-            III.
-          </span>
-          <h2 className="font-cormorant text-4xl text-white tracking-wide">
-            Kairos Intelligence
-          </h2>
-          <div className="flex-1 h-px bg-white/5" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <div
-            className={`lg:col-span-8 bg-white p-12 md:p-20 text-black flex flex-col justify-between transition-all duration-700 ${isIntelligenceSyncing ? "opacity-50 grayscale" : "opacity-100"}`}
-          >
-            <div>
-              <div className="flex items-center justify-between border-b border-black/10 pb-8 mb-12">
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-2 h-2 rounded-full ${kairosInsight?.severity === "critical" ? "bg-red-600 animate-pulse" : "bg-black/20"}`}
-                  ></div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-black/40">
-                    {kairosInsight?.category?.replace("_", " ") ||
-                      "SESSION MONITOR"}
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono tracking-widest uppercase font-bold">
-                  {kairosInsight?.severity.toUpperCase() || "NORMAL"}
-                </span>
-              </div>
-
-              <div className="space-y-8">
-                {kairosInsight ? (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                    <p className="font-cormorant text-4xl md:text-5xl leading-tight">
-                      {kairosInsight.message}
-                    </p>
-                    {kairosInsight.supportingSignals?.map((signal, idx) => (
-                      <p
-                        key={idx}
-                        className="mt-8 text-black/50 text-lg font-light italic leading-relaxed pl-8 border-l border-black/10"
-                      >
-                        {signal}
-                      </p>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4 opacity-10">
-                    <div className="h-4 bg-black rounded w-full" />
-                    <div className="h-4 bg-black rounded w-3/4" />
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="space-y-8 lg:space-y-12">
+            <LuxuryCard className="p-6 md:p-10">
+              <IncomeSection
+                incomeStreams={ledger.incomeStreams}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </LuxuryCard>
+            <LuxuryCard className="p-6 md:p-10">
+              <BaselineSection
+                baseline={ledger.baseline}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </LuxuryCard>
           </div>
 
-          <div className="lg:col-span-4 space-y-12">
-            <h3 className="font-cormorant italic text-3xl text-white/60">
-              Capital Allocation
-            </h3>
-            <div className="space-y-8">
-              {ledger.analytics &&
-                Object.entries(ledger.analytics.categoryBreakdown)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([cat, amt]) => {
-                    const percentage =
-                      (amt / ledger.analytics!.totalDeployed) * 100;
-                    return (
-                      <div key={cat} className="space-y-4 group cursor-default">
-                        <div className="flex justify-between items-end">
-                          <span className="text-[10px] font-mono tracking-widest text-white/40 uppercase">
-                            {DeploymentMap[cat as keyof typeof DeploymentMap] ||
-                              cat}
-                          </span>
-                          <span className="font-cormorant text-xl text-white group-hover:text-white transition-colors">
-                            {Math.round(percentage)}%
-                          </span>
-                        </div>
-                        <div className="h-px w-full bg-white/5 overflow-hidden">
-                          <div
-                            className="h-full bg-white/60 transition-all duration-1000"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+          <LuxuryCard className="p-6 md:p-10">
+            <LiabilitySection
+              liabilities={ledger.liabilities}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </LuxuryCard>
+
+          <LuxuryCard className="p-6 md:p-10">
+            <AccountSection
+              accounts={ledger.accounts}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </LuxuryCard>
+        </section>
+
+        {/* RIGHT COLUMN: STRATEGIC ENGINE */}
+        <section className="space-y-12 lg:space-y-24">
+          <div className="space-y-12">
+            <div className="flex items-center gap-6">
+              <span className="font-cormorant italic text-3xl text-white/20">
+                III.
+              </span>
+              <h2 className="font-cormorant text-4xl text-white tracking-wide">
+                Strategic Alignment
+              </h2>
+              <div className="flex-1 h-px bg-white/5" />
             </div>
+            <LuxuryCard className="p-6 md:p-10">
+              <StrategicObjectiveSection
+                objectives={ledger.objectives}
+                onSnapshot={applyDashboardSnapshot}
+              />
+            </LuxuryCard>
           </div>
-        </div>
-      </section>
 
-      {/* Zone 4 — LEDGER */}
-      <section id="ledger" className="space-y-16">
-        <div className="flex items-center gap-6">
-          <span className="font-cormorant italic text-3xl text-white/20">
-            IV.
-          </span>
-          <h2 className="font-cormorant text-4xl text-white tracking-wide">
-            Capital Ledger
-          </h2>
-          <div className="flex-1 h-px bg-white/5" />
-        </div>
+          <LuxuryCard className="p-6 md:p-10">
+            <GoalSection
+              goals={ledger.goals}
+              onSnapshot={applyDashboardSnapshot}
+            />
+          </LuxuryCard>
 
-        <div className="space-y-4">
-          {ledger.deployments.map((deployment) => (
-            <div
-              key={deployment.id}
-              className="group flex flex-col md:flex-row md:items-center justify-between p-8 border-b border-white/5 hover:bg-white/1 transition-all"
-            >
-              <div className="space-y-1">
-                <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">
-                  {deployment.title}
-                </h3>
-                <p className="text-[9px] font-mono tracking-[0.4em] text-white/20 uppercase">
-                  {DeploymentMap[
-                    deployment.category as keyof typeof DeploymentMap
-                  ] || deployment.category}
-                </p>
-              </div>
-              <div className="text-left md:text-right mt-4 md:mt-0">
-                <p className="font-cormorant text-2xl text-white">
-                  {formatCurrency(deployment.amount)}
-                </p>
-                <p className="text-[9px] font-mono text-white/10 uppercase tracking-widest">
-                  {new Date(deployment.created_at).toLocaleDateString()}
-                </p>
-              </div>
+          <LuxuryCard className="p-6 md:p-10">
+            <HistoricalAudit deployments={ledger.deployments} />
+          </LuxuryCard>
+
+          {/* OBSERVABILITY */}
+          <section className="opacity-20 hover:opacity-100 transition-opacity duration-1000">
+            <div className="flex items-center gap-6 mb-12">
+              <span className="font-cormorant italic text-3xl text-white/20">
+                IV.
+              </span>
+              <h2 className="font-cormorant text-4xl text-white tracking-wide">
+                System Telemetry
+              </h2>
+              <div className="flex-1 h-px bg-white/5" />
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* OBSERVABILITY */}
-      <section className="pt-32 opacity-20">
-        <TelemetryDashboard />
-      </section>
-    </div>
+            <TelemetryDashboard />
+          </section>
+        </section>
+      </motion.div>
+    </motion.div>
   );
 }

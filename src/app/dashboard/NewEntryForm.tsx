@@ -70,7 +70,7 @@ export function NewEntryForm({
             placeholder="Objective of this deployment?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent border-b border-white/10 py-6 font-cormorant text-4xl text-white placeholder:text-white/5 focus:outline-none focus:border-white transition-all"
+            className="w-full bg-transparent border-b border-white/10 py-6 font-cormorant text-4xl text-white placeholder:text-white/20 focus:outline-none focus:border-white transition-all"
             required
           />
         </div>
@@ -92,7 +92,7 @@ export function NewEntryForm({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-transparent border-b border-white/10 py-4 font-cormorant text-3xl text-white placeholder:text-white/5 focus:outline-none focus:border-white transition-all tabular-nums"
+                className="w-full bg-transparent border-b border-white/10 py-4 font-cormorant text-3xl text-white placeholder:text-white/20 focus:outline-none focus:border-white transition-all tabular-nums"
                 required
               />
             </div>

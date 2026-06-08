@@ -1,135 +1,93 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { fetchHistoricalAuditAction } from "./actions";
-import { AuditRecord } from "@/lib/db/audit";
+import React from "react";
+import { Deployment } from "@/lib/analytics/types";
 import { formatCurrency } from "@/lib/utils/formatters";
+import { DeploymentMap } from "@/lib/utils/taxonomy";
 
-export function HistoricalAudit() {
-  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface HistoricalAuditProps {
+  deployments: Deployment[];
+}
 
-  useEffect(() => {
-    async function loadAudit() {
-      try {
-        const records = await fetchHistoricalAuditAction();
-        setAuditRecords(records);
-      } catch (err) {
-        console.error("Failed to fetch audit history:", err);
-        setError("Forensic layer synchronization failure.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadAudit();
-  }, []);
-
-  if (isLoading) {
+export function HistoricalAudit({ deployments }: HistoricalAuditProps) {
+  if (!deployments || deployments.length === 0) {
     return (
-      <div className="p-6 text-center animate-pulse">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20">
-          Synchronizing Forensic Layer...
+      <div className="p-8 text-center border border-white/5 rounded-3xl opacity-20">
+        <p className="text-[10px] font-mono uppercase tracking-[0.4em]">
+          No deployment history found
         </p>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500/40">
-          {error}
-        </p>
-      </div>
-    );
-  }
-
-  if (auditRecords.length === 0) {
-    return (
-      <div className="p-8 text-center border-2 border-dashed border-foreground/5 rounded-3xl">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20">
-          No audit history found
-        </p>
-      </div>
-    );
-  }
+  // Sort by date descending
+  const sortedDeployments = [...deployments].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 opacity-20">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">
-          Historical Audit Trail
+    <div className="space-y-12">
+      <div className="flex items-center gap-6">
+        <h3 className="font-cormorant italic text-3xl text-white/40">
+          Historical Audit
         </h3>
-        <div className="h-0.5 flex-1 bg-foreground/10"></div>
+        <div className="flex-1 h-px bg-white/5" />
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
-        {auditRecords.map((record) => (
+      <div className="space-y-4 max-h-[600px] overflow-y-auto scrollbar-hide pr-2">
+        {sortedDeployments.map((record) => (
           <div
-            key={`${record.type}-${record.id}`}
-            className="group relative bg-foreground/2 border border-foreground/5 rounded-2xl p-4 flex items-center justify-between transition-colors hover:bg-foreground/4"
+            key={record.id}
+            className="group relative bg-white/[0.02] border border-white/5 rounded-2xl p-6 flex items-center justify-between transition-all hover:bg-white/[0.04] hover:border-white/10"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-foreground/5 rounded-xl flex items-center justify-center grayscale opacity-40">
+            <div className="flex items-center gap-6">
+              <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <svg
-                  width="18"
-                  height="18"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  className="text-foreground"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  className="opacity-40 group-hover:opacity-80 transition-opacity"
                 >
-                  {record.type === "deployment" && (
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  )}
-                  {record.type === "income" && (
-                    <path d="M12 20V10M18 20V4M6 20v-4" />
-                  )}
-                  {record.type === "liability" && (
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  )}
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <h4 className="font-bold text-sm text-foreground/40 line-through decoration-foreground/20">
-                    {record.name}
-                  </h4>
-                  <span className="text-[8px] font-black px-2 py-0.5 bg-foreground/5 rounded-full uppercase tracking-tighter text-foreground/30">
-                    {record.type}
+              <div className="space-y-1">
+                <h4 className="font-cormorant text-xl text-white/80 group-hover:text-white transition-colors">
+                  {record.title}
+                </h4>
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px] font-mono bg-white/5 px-2 py-0.5 rounded-full text-white/40 uppercase tracking-widest">
+                    {DeploymentMap[
+                      record.category as keyof typeof DeploymentMap
+                    ] || record.category}
                   </span>
-                </div>
-                <div className="text-[9px] font-bold text-foreground/30 uppercase tracking-tighter">
-                  Deleted:{" "}
-                  {new Date(record.deleted_at).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">
+                    {new Date(record.created_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="text-right">
-              <p className="font-black text-sm tabular-nums text-foreground/30 line-through decoration-foreground/10">
+              <p className="font-cormorant text-2xl text-white">
                 {formatCurrency(record.amount)}
-                {record.cadence && (
-                  <span className="text-[9px] ml-1 uppercase">
-                    / {record.cadence}
-                  </span>
-                )}
               </p>
-              <p className="text-[8px] font-black text-foreground/20 uppercase tracking-widest mt-0.5">
-                Archived
+              <p className="text-[8px] font-mono text-white/10 uppercase tracking-[0.3em] mt-1">
+                Verified Asset
               </p>
             </div>
           </div>
         ))}
       </div>
 
-      <p className="text-center text-[9px] font-black text-foreground/10 uppercase tracking-[0.2em] mt-4">
-        Forensic view only :: Data immutable
+      <p className="text-center text-[8px] font-mono text-white/10 uppercase tracking-[0.5em]">
+        Forensic layer immutable // Protocol v1.0
       </p>
     </div>
   );
