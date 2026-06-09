@@ -4,6 +4,9 @@ import { useState } from "react";
 import {
   calculateObjectiveFundingRatio,
   type StrategicObjective,
+  OBJECTIVE_TYPES,
+  OBJECTIVE_PRIORITIES,
+  OBJECTIVE_STATUSES,
 } from "@/lib/finance/objectives";
 import {
   createStrategicObjectiveAction,
@@ -127,16 +130,62 @@ export function StrategicObjectiveSection({
               </div>
               <div className="space-y-2">
                 <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
-                  Target Date
+                  Objective Type
                 </label>
-                <input
-                  type="date"
-                  value={form.target_date}
+                <select
+                  value={form.objective_type}
                   onChange={(e) =>
-                    setForm({ ...form, target_date: e.target.value })
+                    setForm({ ...form, objective_type: e.target.value })
                   }
                   className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
-                />
+                >
+                  {OBJECTIVE_TYPES.map((type) => (
+                    <option
+                      key={type.value}
+                      value={type.value}
+                      className="bg-black"
+                    >
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Priority Level
+                </label>
+                <select
+                  value={form.priority_level}
+                  onChange={(e) =>
+                    setForm({ ...form, priority_level: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                >
+                  {OBJECTIVE_PRIORITIES.map((p) => (
+                    <option key={p.value} value={p.value} className="bg-black">
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Status
+                </label>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                >
+                  {OBJECTIVE_STATUSES.map((s) => (
+                    <option key={s.value} value={s.value} className="bg-black">
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -167,6 +216,34 @@ export function StrategicObjectiveSection({
                   onChange={(e) =>
                     setForm({ ...form, current_amount: e.target.value })
                   }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Target Date
+                </label>
+                <input
+                  type="date"
+                  value={form.target_date}
+                  onChange={(e) =>
+                    setForm({ ...form, target_date: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Strategic Notes
+                </label>
+                <input
+                  type="text"
+                  placeholder="Add context..."
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>

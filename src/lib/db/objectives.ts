@@ -35,6 +35,8 @@ export async function createStrategicObjective(
     current_amount: data.current_amount,
     priority_level: data.priority_level,
     status: data.status,
+    target_date: data.target_date,
+    notes: data.notes,
   });
 
   const { data: objective, error } = await supabase
@@ -45,10 +47,10 @@ export async function createStrategicObjective(
       objective_type: validated.objective_type,
       target_amount: validated.target_amount,
       current_amount: validated.current_amount,
-      target_date: data.target_date,
+      target_date: validated.target_date,
       priority_level: validated.priority_level,
       status: validated.status,
-      notes: data.notes,
+      notes: validated.notes,
     })
     .select()
     .single();

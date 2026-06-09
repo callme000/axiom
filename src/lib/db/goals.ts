@@ -34,6 +34,8 @@ export async function createGoal(
     current_progress: data.current_progress,
     priority: data.priority,
     status: data.status,
+    target_date: data.target_date,
+    notes: data.notes,
   });
 
   const { data: goal, error } = await supabase
@@ -44,10 +46,10 @@ export async function createGoal(
       goal_type: validated.goal_type,
       target_amount: validated.target_amount,
       current_progress: validated.current_progress,
-      target_date: data.target_date,
+      target_date: validated.target_date,
       priority: validated.priority,
       status: validated.status,
-      notes: data.notes,
+      notes: validated.notes,
     })
     .select()
     .single();

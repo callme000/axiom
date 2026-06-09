@@ -4,6 +4,9 @@ import { useState } from "react";
 import {
   calculateGoalProgressPercentage,
   type FinancialGoal,
+  GOAL_TYPES,
+  GOAL_PRIORITIES,
+  GOAL_STATUSES,
 } from "@/lib/finance/goals";
 import { createGoalAction, type DashboardSnapshot } from "./actions";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -27,6 +30,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
     current_progress: "",
     priority: "medium",
     status: "active",
+    target_date: "",
     notes: "",
   });
 
@@ -44,6 +48,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
           : 0,
         priority: form.priority,
         status: form.status,
+        target_date: form.target_date || null,
         notes: form.notes || undefined,
       });
       setForm({
@@ -53,6 +58,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
         current_progress: "",
         priority: "medium",
         status: "active",
+        target_date: "",
         notes: "",
       });
       setIsAdding(false);
@@ -91,7 +97,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Emergency Fund"
+                  placeholder="e.g. Dream House"
                   value={form.goal_name}
                   onChange={(e) =>
                     setForm({ ...form, goal_name: e.target.value })
@@ -99,6 +105,68 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Milestone Type
+                </label>
+                <select
+                  value={form.goal_type}
+                  onChange={(e) =>
+                    setForm({ ...form, goal_type: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                >
+                  {GOAL_TYPES.map((type) => (
+                    <option
+                      key={type.value}
+                      value={type.value}
+                      className="bg-black"
+                    >
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Priority
+                </label>
+                <select
+                  value={form.priority}
+                  onChange={(e) =>
+                    setForm({ ...form, priority: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                >
+                  {GOAL_PRIORITIES.map((p) => (
+                    <option key={p.value} value={p.value} className="bg-black">
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Status
+                </label>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                >
+                  {GOAL_STATUSES.map((s) => (
+                    <option key={s.value} value={s.value} className="bg-black">
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
                 <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
                   Target Amount
@@ -111,6 +179,48 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   onChange={(e) =>
                     setForm({ ...form, target_amount: e.target.value })
                   }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Current Progress
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={form.current_progress}
+                  onChange={(e) =>
+                    setForm({ ...form, current_progress: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Target Date
+                </label>
+                <input
+                  type="date"
+                  value={form.target_date}
+                  onChange={(e) =>
+                    setForm({ ...form, target_date: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white/60 font-mono text-[10px] tracking-widest uppercase focus:outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                  Milestone Notes
+                </label>
+                <input
+                  type="text"
+                  placeholder="Add context..."
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
                 />
               </div>

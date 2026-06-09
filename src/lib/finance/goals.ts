@@ -66,6 +66,8 @@ export function validateGoal(data: {
   current_progress?: number;
   priority: string;
   status: string;
+  target_date?: string | null;
+  notes?: string | null;
 }) {
   if (!data.goal_name || data.goal_name.trim().length === 0) {
     throw new Error("Goal name is required.");
@@ -75,12 +77,15 @@ export function validateGoal(data: {
     throw new Error(`Invalid goal type: ${data.goal_type}`);
   }
 
-  if (isNaN(data.target_amount) || data.target_amount <= 0) {
+  const targetAmount = Number(data.target_amount);
+  const currentProgress = Number(data.current_progress || 0);
+
+  if (isNaN(targetAmount) || targetAmount <= 0) {
     throw new Error("Target amount must be a positive number.");
   }
 
-  if (data.current_progress !== undefined && isNaN(data.current_progress)) {
-    throw new Error("Current progress must be a number.");
+  if (isNaN(currentProgress) || currentProgress < 0) {
+    throw new Error("Current progress must be a non-negative number.");
   }
 
   if (!isValidPriority(data.priority)) {
@@ -91,13 +96,27 @@ export function validateGoal(data: {
     throw new Error(`Invalid status: ${data.status}`);
   }
 
+  // Date Validation
+  let normalizedDate: string | null = null;
+  if (data.target_date) {
+    const d = new Date(data.target_date);
+    if (isNaN(d.getTime())) {
+      throw new Error("Invalid target date format.");
+    }
+    normalizedDate = d.toISOString().split("T")[0];
+  }
+
+  const finalNotes = data.notes?.trim() || null;
+
   return {
     goal_name: data.goal_name.trim(),
     goal_type: data.goal_type as GoalType,
-    target_amount: data.target_amount,
-    current_progress: data.current_progress || 0,
+    target_amount: targetAmount,
+    current_progress: currentProgress,
     priority: data.priority as GoalPriority,
     status: data.status as GoalStatus,
+    target_date: normalizedDate,
+    notes: finalNotes === "" ? null : finalNotes,
   };
 }
 
