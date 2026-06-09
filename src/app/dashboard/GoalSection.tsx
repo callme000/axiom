@@ -8,7 +8,8 @@ import {
   GOAL_PRIORITIES,
   GOAL_STATUSES,
 } from "@/lib/finance/goals";
-import { createGoalAction, type DashboardSnapshot } from "./actions";
+import { createGoalAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";

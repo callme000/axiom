@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import type { Liability, Account } from "@/lib/analytics/types";
-import {
-  resolvePendingLiabilityAction,
-  type DashboardSnapshot,
-} from "./actions";
+import { resolvePendingLiabilityAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { LiabilityMap } from "@/lib/utils/taxonomy";
 

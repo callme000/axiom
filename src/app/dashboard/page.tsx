@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  getDashboardSnapshotAction,
-  createDeploymentAction,
-  type DashboardSnapshot,
-} from "./actions";
+import { getDashboardSnapshotAction, createDeploymentAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { AccountSection } from "./AccountSection";
 import { LiabilitySection } from "./LiabilitySection";
 import { IncomeSection } from "./IncomeSection";

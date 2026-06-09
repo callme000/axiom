@@ -2,7 +2,8 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { ACCOUNT_TYPES, type Account } from "@/lib/finance/accounts";
-import { createAccountAction, type DashboardSnapshot } from "./actions";
+import { createAccountAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { AccountMap } from "@/lib/utils/taxonomy";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";

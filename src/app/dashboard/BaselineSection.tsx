@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
-import {
-  createOperationalBaselineAction,
-  type DashboardSnapshot,
-} from "./actions";
+import { createOperationalBaselineAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { OperationalBaseline, BaselineCadence } from "@/lib/analytics/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";

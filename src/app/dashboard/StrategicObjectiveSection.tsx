@@ -11,8 +11,8 @@ import {
 import {
   createStrategicObjectiveAction,
   updateStrategicObjectiveAction,
-  type DashboardSnapshot,
 } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";

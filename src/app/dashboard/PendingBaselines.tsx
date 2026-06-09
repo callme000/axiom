@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import type { OperationalBaseline, Account } from "@/lib/analytics/types";
-import {
-  resolvePendingBaselineAction,
-  type DashboardSnapshot,
-} from "./actions";
+import { resolvePendingBaselineAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 interface PendingBaselinesProps {

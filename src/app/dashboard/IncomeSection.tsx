@@ -8,7 +8,8 @@ import {
   type IncomeType,
   type Cadence,
 } from "@/lib/finance/income";
-import { createIncomeAction, type DashboardSnapshot } from "./actions";
+import { createIncomeAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { IncomeMap } from "@/lib/utils/taxonomy";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";

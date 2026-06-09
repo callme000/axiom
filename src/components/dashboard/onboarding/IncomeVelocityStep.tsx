@@ -1,0 +1,196 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { INCOME_TYPES, CADENCES } from "@/lib/finance/income";
+
+export interface OnboardingIncome {
+  income_name: string;
+  income_type: string;
+  amount: string;
+  cadence: string;
+  execution_day: string;
+  is_recurring: boolean;
+  source: string;
+}
+
+interface IncomeVelocityStepProps {
+  incomes: OnboardingIncome[];
+  onChange: (incomes: OnboardingIncome[]) => void;
+}
+
+export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProps) {
+  const addIncome = () => {
+    if (incomes.length < 3) {
+      onChange([
+        ...incomes,
+        {
+          income_name: "",
+          income_type: "salary",
+          amount: "",
+          cadence: "monthly",
+          execution_day: "1",
+          is_recurring: true,
+          source: "",
+        },
+      ]);
+    }
+  };
+
+  const removeIncome = (index: number) => {
+    onChange(incomes.filter((_, i) => i !== index));
+  };
+
+  const updateIncome = (index: number, updates: Partial<OnboardingIncome>) => {
+    const next = [...incomes];
+    next[index] = { ...next[index], ...updates };
+    onChange(next);
+  };
+
+  return (
+    <div className="flex flex-col h-full gap-6">
+      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">Income Velocity</h2>
+      <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+        {incomes.map((inc, idx) => (
+          <div key={idx} className="space-y-3 pb-3 border-b border-white/5 relative shrink-0">
+            <div className="grid grid-cols-2 gap-6">
+              <input
+                type="text"
+                placeholder="e.g. Salary"
+                value={inc.income_name}
+                onChange={(e) => updateIncome(idx, { income_name: e.target.value })}
+                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+              />
+              <input
+                type="text"
+                placeholder="Origin"
+                value={inc.source}
+                onChange={(e) => updateIncome(idx, { source: e.target.value })}
+                className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                  Type
+                </label>
+                <select
+                  value={inc.income_type}
+                  onChange={(e) => updateIncome(idx, { income_type: e.target.value })}
+                  className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                >
+                  {INCOME_TYPES.map((t) => (
+                    <option key={t.value} value={t.value} className="bg-[#080808]">
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                  KES
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={inc.amount}
+                  onChange={(e) => updateIncome(idx, { amount: e.target.value })}
+                  className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2 space-y-3">
+              <label className="flex items-center space-x-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={inc.is_recurring}
+                  onChange={(e) => updateIncome(idx, { is_recurring: e.target.checked })}
+                  className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                />
+                <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                  Recurring Income
+                </span>
+              </label>
+              {inc.is_recurring && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="grid grid-cols-2 gap-6 pt-2 pl-8 border-l border-white/5"
+                >
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono text-white/20 uppercase">Frequency</label>
+                    <select
+                      value={inc.cadence}
+                      onChange={(e) => updateIncome(idx, { cadence: e.target.value })}
+                      className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                    >
+                      {CADENCES.map((c) => (
+                        <option key={c.value} value={c.value} className="bg-black">
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {(inc.cadence === "monthly" ||
+                    inc.cadence === "weekly" ||
+                    inc.cadence === "biweekly") && (
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                        {inc.cadence === "monthly" ? "Day" : "Day of Week"}
+                      </label>
+                      {inc.cadence === "monthly" ? (
+                        <input
+                          type="number"
+                          min="1"
+                          max="31"
+                          placeholder="15"
+                          value={inc.execution_day}
+                          onChange={(e) => updateIncome(idx, { execution_day: e.target.value })}
+                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                        />
+                      ) : (
+                        <select
+                          value={inc.execution_day || 1}
+                          onChange={(e) => updateIncome(idx, { execution_day: e.target.value })}
+                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                        >
+                          {[
+                            { label: "Mon", value: 1 },
+                            { label: "Tue", value: 2 },
+                            { label: "Wed", value: 3 },
+                            { label: "Thu", value: 4 },
+                            { label: "Fri", value: 5 },
+                            { label: "Sat", value: 6 },
+                            { label: "Sun", value: 7 },
+                          ].map((day) => (
+                            <option key={day.value} value={day.value} className="bg-black">
+                              {day.label}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => removeIncome(idx)}
+              className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={addIncome}
+        className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
+      >
+        + Append Income
+      </button>
+    </div>
+  );
+}

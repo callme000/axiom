@@ -56,6 +56,7 @@ import { summarizeMetadataQuality } from "../finance/metadataQuality";
 import { calculateMonthlyInflow } from "../finance/income";
 import { calculateGoalProgressPercentage } from "../finance/goals";
 import { calculateObjectiveFundingRatio } from "../finance/objectives";
+import { LiquidityService } from "../finance/liquidity";
 
 /**
  * Pure, deterministic engine for financial intelligence.
@@ -91,7 +92,7 @@ export const calculateTotal = (deployments: Deployment[]): number => {
 };
 
 export const calculateAccountTotal = (accounts: Account[]): number => {
-  return accounts.reduce((sum, a) => sum + Number(a.current_balance), 0);
+  return LiquidityService.calculateTotal(accounts);
 };
 
 export const calculateLiabilityTotal = (liabilities: Liability[]): number => {

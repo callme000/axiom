@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { LIABILITY_TYPES, type Liability } from "@/lib/finance/liabilities";
-import { createLiabilityAction, type DashboardSnapshot } from "./actions";
+import { createLiabilityAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { LiabilityMap } from "@/lib/utils/taxonomy";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";

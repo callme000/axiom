@@ -3,73 +3,43 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
-  getDeployments,
   createDeployment,
   updateDeployment,
   deleteDeployment,
 } from "@/lib/db/deployments";
+import { createAccount, updateAccount, deleteAccount } from "@/lib/db/accounts";
 import {
-  getAccounts,
-  createAccount,
-  updateAccount,
-  deleteAccount,
-} from "@/lib/db/accounts";
-import {
-  getLiabilities,
   createLiability,
   updateLiability,
   deleteLiability,
 } from "@/lib/db/liabilities";
 import {
-  getIncomeStreams,
-  createIncomeStream,
   createIncomeStreams,
   updateIncomeStream,
   deleteIncomeStream,
 } from "@/lib/db/income";
-import { getGoals, createGoal, updateGoal, deleteGoal } from "@/lib/db/goals";
+import { createGoal, updateGoal, deleteGoal } from "@/lib/db/goals";
 import {
-  getStrategicObjectives,
   createStrategicObjective,
   updateStrategicObjective,
   deleteStrategicObjective,
 } from "@/lib/db/objectives";
 import {
-  getOperationalBaseline,
   createOperationalBaseline,
   updateOperationalBaseline,
   deleteOperationalBaseline,
 } from "@/lib/db/baseline";
-import { getUserSettings, updateLiquidity } from "@/lib/db/settings";
-import { getInsights, saveInsight } from "@/lib/db/insights";
+import { updateLiquidity } from "@/lib/db/settings";
+import { LiquidityService } from "@/lib/finance/liquidity";
 import { getDeletedLedgerRecords } from "@/lib/db/audit";
-import { generateKairosAIInsight, type KairosInsight } from "@/lib/ai/kairos";
-import { generateSummary, type AnalyticsSummary } from "@/lib/analytics";
+import { saveInsight } from "@/lib/db/insights";
+import { SnapshotService } from "@/lib/services/snapshot";
+import type { DashboardSnapshot } from "@/lib/dashboard/types";
 import type {
-  Deployment,
-  Account,
-  Liability,
-  IncomeStream,
-  FinancialGoal,
-  StrategicObjective,
   OperationalBaseline,
   BaselineCadence,
 } from "@/lib/analytics/types";
 import type { DeploymentAdvancedContextInput } from "@/lib/finance/deploymentContext";
-
-export interface DashboardSnapshot {
-  authenticated: boolean;
-  deployments: Deployment[];
-  accounts: Account[];
-  liabilities: Liability[];
-  incomeStreams: IncomeStream[];
-  goals: FinancialGoal[];
-  objectives: StrategicObjective[];
-  baseline: OperationalBaseline[];
-  analytics: AnalyticsSummary | null;
-  liquidity: number;
-  kairosInsight: KairosInsight | null;
-}
 
 export interface CreateDeploymentActionInput {
   title: string;
@@ -141,22 +111,6 @@ export interface CreateObjectiveActionInput {
   notes?: string;
 }
 
-function unauthenticatedSnapshot(): DashboardSnapshot {
-  return {
-    authenticated: false,
-    deployments: [],
-    accounts: [],
-    liabilities: [],
-    incomeStreams: [],
-    goals: [],
-    objectives: [],
-    baseline: [],
-    analytics: null,
-    liquidity: 0,
-    kairosInsight: null,
-  };
-}
-
 const requireAuth = async () => {
   const supabase = await createClient();
   const {
@@ -167,137 +121,16 @@ const requireAuth = async () => {
   return { userId: user.id, supabase };
 };
 
-function normalizeSavedInsight(row: Record<string, unknown>): KairosInsight {
-  const metadata =
-    row.metadata && typeof row.metadata === "object"
-      ? (row.metadata as Record<string, unknown>)
-      : {};
-
-  return {
-    type: row.type as KairosInsight["type"],
-    severity: (metadata.severity as KairosInsight["severity"]) || "observation",
-    category: row.category as KairosInsight["category"],
-    message: String(row.message || ""),
-    supportingSignals: Array.isArray(metadata.supporting_signals)
-      ? (metadata.supporting_signals as string[])
-      : metadata.supporting_signal
-        ? [String(metadata.supporting_signal)]
-        : [],
-    timestamp: String(
-      metadata.timestamp || row.created_at || new Date().toISOString(),
-    ),
-    runway: metadata.runway !== undefined ? Number(metadata.runway) : null,
-    capitalEfficiency:
-      metadata.capital_efficiency !== undefined
-        ? Number(metadata.capital_efficiency)
-        : 100,
-    isSilent: Boolean(metadata.is_silent),
-    metadataQuality:
-      metadata.metadata_quality && typeof metadata.metadata_quality === "object"
-        ? (metadata.metadata_quality as KairosInsight["metadataQuality"])
-        : undefined,
-    is_new_signal: false,
-  };
-}
-
-async function buildDashboardSnapshot(
-  options: { forceInsightEvaluation?: boolean } = {},
-): Promise<DashboardSnapshot> {
+export async function getDashboardSnapshotAction() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return unauthenticatedSnapshot();
+  if (!user) return SnapshotService.unauthenticated();
 
-  console.log("ACTIVE SESSION USER ID:", user.id);
-
-  const [
-    deploymentsData,
-    accountsData,
-    liabilitiesData,
-    incomeStreamsData,
-    goalsData,
-    objectivesData,
-    baselineData,
-    settings,
-  ] = await Promise.all([
-    getDeployments(supabase),
-    getAccounts(supabase),
-    getLiabilities(supabase),
-    getIncomeStreams(supabase),
-    getGoals(supabase),
-    getStrategicObjectives(supabase),
-    getOperationalBaseline(supabase),
-    getUserSettings(supabase, user.id),
-  ]);
-
-  const deployments = (deploymentsData || []) as Deployment[];
-  const accounts = (accountsData || []) as Account[];
-  const liabilities = (liabilitiesData || []) as Liability[];
-  const incomeStreams = (incomeStreamsData || []) as IncomeStream[];
-  const goals = (goalsData || []) as FinancialGoal[];
-  const objectives = (objectivesData || []) as StrategicObjective[];
-  const baseline = (baselineData || []) as OperationalBaseline[];
-  const liquidity = Number(settings.total_liquidity);
-  const analytics = generateSummary(
-    deployments,
-    liquidity,
-    accounts,
-    liabilities,
-    incomeStreams,
-    goals,
-    objectives,
-    baseline,
-  );
-  const savedInsights = await getInsights(supabase, 1);
-  const previousInsight =
-    savedInsights && savedInsights.length > 0
-      ? normalizeSavedInsight(savedInsights[0] as Record<string, unknown>)
-      : null;
-
-  let kairosInsight: KairosInsight | null = null;
-
-  if (!options.forceInsightEvaluation && previousInsight) {
-    // OPTIMIZATION SHORTCUT: Reuse cached strategic signal
-    kairosInsight = previousInsight;
-  } else {
-    // FRESH EVALUATION: Process authoritative telemetry
-    kairosInsight = await generateKairosAIInsight({
-      deployments,
-      liquidity,
-      previousInsight,
-      objectives,
-      accounts,
-      liabilities,
-      incomeStreams,
-      goals,
-      baseline,
-    });
-
-    // Only save if it's actually a material change
-    if (kairosInsight.is_new_signal) {
-      await saveInsight(supabase, kairosInsight, user.id);
-    }
-  }
-
-  return {
-    authenticated: true,
-    deployments,
-    accounts,
-    liabilities,
-    incomeStreams,
-    goals,
-    objectives,
-    baseline,
-    analytics,
-    liquidity,
-    kairosInsight,
-  };
-}
-
-export async function getDashboardSnapshotAction() {
-  return buildDashboardSnapshot();
+  const { snapshot } = await SnapshotService.getSnapshot(supabase, user.id);
+  return snapshot;
 }
 
 export async function checkOnboardingStatusAction() {
@@ -337,15 +170,23 @@ export async function createDeploymentAction(
       input.accountId,
     );
 
-    // 2. Update global liquidity setting if this was a liquidity deployment
+    // 2. Synchronize global liquidity (The database trigger handles account balance deduction)
     if (input.accountId) {
-      const settings = await getUserSettings(supabase, userId);
-      const newLiquidity = Number(settings.total_liquidity) - input.amount;
-      await updateLiquidity(supabase, userId, newLiquidity);
+      await LiquidityService.sync(supabase, userId);
     }
 
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to create deployment:", error);
     throw error;
@@ -365,7 +206,17 @@ export async function updateDeploymentAction(
       category: input.category,
     });
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update deployment:", error);
     throw error;
@@ -378,7 +229,17 @@ export async function deleteDeploymentAction(id: string) {
   try {
     await deleteDeployment(supabase, id, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to delete deployment:", error);
     throw error;
@@ -391,7 +252,17 @@ export async function updateLiquidityAction(amount: number) {
   try {
     await updateLiquidity(supabase, userId, amount);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update liquidity:", error);
     throw error;
@@ -403,8 +274,19 @@ export async function createAccountAction(input: CreateAccountActionInput) {
 
   try {
     await createAccount(supabase, userId, input);
+    await LiquidityService.sync(supabase, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to create account:", error);
     throw error;
@@ -419,8 +301,19 @@ export async function updateAccountAction(
 
   try {
     await updateAccount(supabase, id, userId, input);
+    await LiquidityService.sync(supabase, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update account:", error);
     throw error;
@@ -432,8 +325,19 @@ export async function deleteAccountAction(id: string) {
 
   try {
     await deleteAccount(supabase, id, userId);
+    await LiquidityService.sync(supabase, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to delete account:", error);
     throw error;
@@ -446,7 +350,17 @@ export async function createLiabilityAction(input: CreateLiabilityActionInput) {
   try {
     await createLiability(supabase, userId, input);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to create liability:", error);
     throw error;
@@ -462,7 +376,17 @@ export async function updateLiabilityAction(
   try {
     await updateLiability(supabase, id, userId, input);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update liability:", error);
     throw error;
@@ -475,7 +399,17 @@ export async function deleteLiabilityAction(id: string) {
   try {
     await deleteLiability(supabase, id, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to delete liability:", error);
     throw error;
@@ -488,7 +422,17 @@ export async function createIncomeAction(inputs: CreateIncomeActionInput[]) {
   try {
     await createIncomeStreams(supabase, userId, inputs);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to create income streams:", error);
     throw error;
@@ -504,7 +448,17 @@ export async function updateIncomeAction(
   try {
     await updateIncomeStream(supabase, id, userId, input);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update income stream:", error);
     throw error;
@@ -517,7 +471,17 @@ export async function deleteIncomeAction(id: string) {
   try {
     await deleteIncomeStream(supabase, id, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to delete income stream:", error);
     throw error;
@@ -553,13 +517,21 @@ export async function resolvePendingInflowAction(payload: {
       last_executed_at: new Date().toISOString(),
     });
 
-    // 4. Update global liquidity if this account is part of it
-    const settings = await getUserSettings(supabase, userId);
-    const newLiquidity = Number(settings.total_liquidity) + payload.amount;
-    await updateLiquidity(supabase, userId, newLiquidity);
+    // 4. Synchronize global liquidity
+    await LiquidityService.sync(supabase, userId);
 
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to resolve pending income:", error);
     throw error;
@@ -613,13 +585,21 @@ export async function resolvePendingLiabilityAction(payload: {
       }),
     ]);
 
-    // 3. Update global liquidity
-    const settings = await getUserSettings(supabase, userId);
-    const newLiquidity = Number(settings.total_liquidity) - payload.amount;
-    await updateLiquidity(supabase, userId, newLiquidity);
+    // 3. Synchronize global liquidity
+    await LiquidityService.sync(supabase, userId);
 
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to resolve pending liability:", error);
     throw error;
@@ -668,13 +648,21 @@ export async function resolvePendingBaselineAction(payload: {
       last_executed_at: new Date().toISOString(),
     });
 
-    // 5. Update global liquidity
-    const settings = await getUserSettings(supabase, userId);
-    const newLiquidity = Number(settings.total_liquidity) - payload.amount;
-    await updateLiquidity(supabase, userId, newLiquidity);
+    // 5. Synchronize global liquidity
+    await LiquidityService.sync(supabase, userId);
 
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to resolve pending baseline:", error);
     throw error;
@@ -687,7 +675,17 @@ export async function createGoalAction(input: CreateGoalActionInput) {
   try {
     await createGoal(supabase, userId, input);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to create goal:", error);
     throw error;
@@ -703,7 +701,17 @@ export async function updateGoalAction(
   try {
     await updateGoal(supabase, id, userId, input);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update goal:", error);
     throw error;
@@ -716,7 +724,17 @@ export async function deleteGoalAction(id: string) {
   try {
     await deleteGoal(supabase, id, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to delete goal:", error);
     throw error;
@@ -731,7 +749,17 @@ export async function createStrategicObjectiveAction(
   try {
     await createStrategicObjective(supabase, userId, input);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to create strategic objective:", error);
     throw error;
@@ -749,7 +777,17 @@ export async function updateStrategicObjectiveAction(
   try {
     await updateStrategicObjective(supabase, id, userId, input);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update strategic objective:", error);
     throw error;
@@ -764,7 +802,17 @@ export async function deleteStrategicObjectiveAction(id: string) {
   try {
     await deleteStrategicObjective(supabase, id, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to delete strategic objective:", error);
     throw error;
@@ -784,7 +832,17 @@ export async function createOperationalBaselineAction(
   try {
     await createOperationalBaseline(supabase, userId, data);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to create operational baseline:", error);
     throw error;
@@ -802,7 +860,17 @@ export async function updateOperationalBaselineAction(
   try {
     await updateOperationalBaseline(supabase, id, userId, updates);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to update operational baseline:", error);
     throw error;
@@ -815,48 +883,57 @@ export async function deleteOperationalBaselineAction(id: string) {
   try {
     await deleteOperationalBaseline(supabase, id, userId);
     revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
     console.error("Failed to delete operational baseline:", error);
     throw error;
   }
 }
 
-export async function submitDayZeroBaselineAction(payload: {
+export async function submitDayZeroOnboardingAction(payload: {
   accounts: {
     account_name: string;
     account_type: string;
-    current_balance: number;
+    current_balance: string;
     institution?: string;
   }[];
   incomes: {
     income_name: string;
     income_type: string;
-    amount: number;
+    amount: string;
     cadence: string;
-    execution_day?: number | null;
-    is_recurring?: boolean;
+    execution_day: string;
+    is_recurring: boolean;
     source?: string;
   }[];
   liabilities: {
     liability_name: string;
     liability_type: string;
-    outstanding_balance: number;
-    interest_rate?: number;
-    minimum_payment?: number;
+    outstanding_balance: string;
+    interest_rate: string;
     institution?: string;
-    is_paid_in_cadences?: boolean;
-    cadence?: string | null;
-    cadence_day_date?: string | null;
-    cadence_amount?: number | null;
+    is_paid_in_cadences: boolean;
+    cadence: string;
+    cadence_day_date: string;
+    cadence_amount: string;
   }[];
   baselines: {
-    title?: string;
-    amount: number;
+    title: string;
+    amount: string;
     cadence: string;
-    execution_day?: number | null;
-    is_recurring?: boolean;
-    category?: string;
+    execution_day: string;
+    is_recurring: boolean;
+    category: string;
   }[];
 }) {
   const { userId, supabase } = await requireAuth();
@@ -864,7 +941,10 @@ export async function submitDayZeroBaselineAction(payload: {
   try {
     // 1. Insert Accounts
     for (const acc of payload.accounts) {
-      await createAccount(supabase, userId, acc);
+      await createAccount(supabase, userId, {
+        ...acc,
+        current_balance: Number(acc.current_balance),
+      });
     }
 
     // 2. Insert Incomes (if any)
@@ -873,16 +953,42 @@ export async function submitDayZeroBaselineAction(payload: {
         supabase,
         userId,
         payload.incomes.map((inc) => ({
-          ...inc,
-          is_recurring: inc.is_recurring ?? true,
+          income_name: inc.income_name,
+          income_type: inc.income_type,
+          amount: Number(inc.amount),
+          cadence: inc.is_recurring ? inc.cadence : "irregular",
+          execution_day:
+            inc.is_recurring &&
+            (inc.cadence === "monthly" ||
+              inc.cadence === "weekly" ||
+              inc.cadence === "biweekly")
+              ? Number(inc.execution_day)
+              : null,
+          is_recurring: inc.is_recurring,
+          source: inc.source || undefined,
         })),
       );
     }
 
     // 3. Insert Liabilities (if any)
     for (const liab of payload.liabilities) {
-      if (liab.outstanding_balance > 0) {
-        await createLiability(supabase, userId, liab);
+      const balance = Number(liab.outstanding_balance);
+      if (balance > 0) {
+        await createLiability(supabase, userId, {
+          liability_name: liab.liability_name,
+          liability_type: liab.liability_type,
+          outstanding_balance: balance,
+          interest_rate: Number(liab.interest_rate) || 0,
+          institution: liab.institution || undefined,
+          is_paid_in_cadences: liab.is_paid_in_cadences,
+          cadence: liab.is_paid_in_cadences ? liab.cadence : null,
+          cadence_day_date: liab.is_paid_in_cadences
+            ? String(liab.cadence_day_date)
+            : null,
+          cadence_amount: liab.is_paid_in_cadences
+            ? Number(liab.cadence_amount)
+            : null,
+        });
       }
     }
 
@@ -890,29 +996,46 @@ export async function submitDayZeroBaselineAction(payload: {
     for (const item of payload.baselines) {
       await createOperationalBaseline(supabase, userId, {
         title: item.title || "Core Survival Baseline",
-        amount: item.amount,
+        amount: Number(item.amount),
         category: item.category || "Maintenance",
-        cadence: item.cadence as BaselineCadence,
-        execution_day: item.execution_day,
-        is_recurring: item.is_recurring ?? true,
+        cadence: (item.is_recurring
+          ? item.cadence
+          : "monthly") as BaselineCadence,
+        execution_day:
+          item.is_recurring &&
+          (item.cadence === "monthly" ||
+            item.cadence === "weekly" ||
+            item.cadence === "biweekly")
+            ? Number(item.execution_day)
+            : null,
+        is_recurring: item.is_recurring,
         baseline_type: "expense",
         is_active: true,
       });
     }
 
-    // 5. Update initial liquidity pool to match sum of all accounts
-    const totalLiquidity = payload.accounts.reduce(
-      (sum, acc) => sum + acc.current_balance,
-      0,
-    );
-    await updateLiquidity(supabase, userId, totalLiquidity);
+    // 5. Synchronize initial liquidity pool with account balances
+    await LiquidityService.sync(supabase, userId);
 
-    revalidatePath("/dashboard");
-    return buildDashboardSnapshot({ forceInsightEvaluation: true });
+    revalidatePath("/dashboard", "layout");
+    const { snapshot, volatileState } = await SnapshotService.getSnapshot(
+      supabase,
+      userId,
+      { forceInsightEvaluation: true },
+    );
+
+    if (volatileState.requiresPersistence && snapshot.kairosInsight) {
+      await saveInsight(supabase, snapshot.kairosInsight, userId);
+    }
+
+    return snapshot;
   } catch (error) {
+    console.error("[Onboarding] Submission failed:", error);
     throw error;
   }
 }
+
+export const submitDayZeroBaselineAction = submitDayZeroOnboardingAction;
 
 export async function fetchHistoricalAuditAction() {
   const { userId, supabase } = await requireAuth();

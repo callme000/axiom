@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { IncomeStream, Account } from "@/lib/analytics/types";
-import { resolvePendingInflowAction, type DashboardSnapshot } from "./actions";
+import { resolvePendingInflowAction } from "./actions";
+import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { IncomeMap } from "@/lib/utils/taxonomy";
 
