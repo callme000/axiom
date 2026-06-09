@@ -14,7 +14,7 @@ import { PendingInflows } from "./PendingInflows";
 import { PendingLiabilities } from "./PendingLiabilities";
 import { PendingBaselines } from "./PendingBaselines";
 import { HistoricalAudit } from "./HistoricalAudit";
-import { GrandTrajectoryChart } from "@/components/dashboard/GrandTrajectoryChart";
+import { KairosNarrative } from "@/components/dashboard/KairosNarrative";
 import {
   MiniSparkline,
   MiniBarChart,
@@ -173,47 +173,6 @@ export default function DashboardPage() {
     },
   ];
 
-  // 2. DETERMINISTIC TRAJECTORY PROJECTION (12-Month)
-  const generateTrajectory = () => {
-    const assets = ledger.analytics?.totalAssets || 0;
-    const monthlyIncome = ledger.analytics?.totalMonthlyIncome || 0;
-    const monthlyBurn = ledger.analytics?.totalStructuralMonthlyBurn || 0;
-    const monthlyNet = monthlyIncome - monthlyBurn;
-
-    const months = [
-      "JAN",
-      "FEB",
-      "MAR",
-      "APR",
-      "MAY",
-      "JUN",
-      "JUL",
-      "AUG",
-      "SEP",
-      "OCT",
-      "NOV",
-      "DEC",
-    ];
-    const currentMonthIndex = new Date().getMonth();
-
-    return months.map((name, i) => {
-      // Simple linear projection based on current monthly net flow
-      // We start from current month and project forward
-      const monthDiff =
-        i >= currentMonthIndex
-          ? i - currentMonthIndex
-          : 12 - (currentMonthIndex - i);
-      const projectedValue = Math.max(0, assets + monthlyNet * monthDiff);
-
-      return {
-        name,
-        value: projectedValue,
-      };
-    });
-  };
-
-  const trajectoryData = generateTrajectory();
-
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -364,7 +323,7 @@ export default function DashboardPage() {
         </LuxuryCard>
       </motion.section>
 
-      {/* ZONE 3: GRAND TRAJECTORY */}
+      {/* ZONE 3: KAIROS INTELLIGENCE */}
       <motion.section
         id="intelligence"
         variants={itemVariants}
@@ -375,11 +334,11 @@ export default function DashboardPage() {
             I.
           </span>
           <h2 className="font-cormorant text-4xl text-white tracking-wide">
-            Trajectory Modeling
+            Kairos Intelligence
           </h2>
           <div className="flex-1 h-px bg-white/5" />
         </div>
-        <GrandTrajectoryChart data={trajectoryData} />
+        <KairosNarrative insight={kairosInsight} />
       </motion.section>
 
       {/* ZONE 4: TACTICAL & STRATEGIC GRID */}
