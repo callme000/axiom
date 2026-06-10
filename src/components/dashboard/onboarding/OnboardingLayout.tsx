@@ -65,7 +65,7 @@ export function OnboardingSidebar({
   direction: number;
 }) {
   return (
-    <div className="flex flex-col justify-center h-full md:border-r border-white/5 md:pr-12 text-white overflow-hidden">
+    <div className="flex flex-col justify-center h-full md:border-r border-white/5 md:pr-12 text-white overflow-hidden pt-4 md:pt-0">
       <motion.div
         key={title}
         initial={{ opacity: 0, x: direction * 50 }}

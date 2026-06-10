@@ -186,8 +186,8 @@ export default function DayZeroOnboarding({
 
       <OnboardingHeader step={step} totalSteps={STEPS.length} />
 
-      <div className="relative z-10 flex-1 flex items-center justify-center px-4 md:px-12 pt-24 md:pt-16 pb-12 overflow-y-auto">
-        <div className="max-w-7xl w-full md:h-155 grid grid-cols-1 lg:grid-cols-[1.1fr_1.4fr] gap-8 md:gap-24 items-stretch overflow-visible">
+      <div className="relative z-10 flex-1 flex items-start md:items-center justify-center px-4 md:px-12 pt-32 md:pt-16 pb-12 overflow-y-auto">
+        <div className="max-w-7xl w-full md:h-155 grid grid-cols-1 lg:grid-cols-[1.1fr_1.4fr] gap-12 md:gap-24 items-stretch overflow-visible">
           <OnboardingSidebar
             roman={activeStepConfig.roman}
             title={activeStepConfig.title}
