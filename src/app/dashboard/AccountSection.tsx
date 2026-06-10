@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils/formatters";
 import { AccountMap } from "@/lib/utils/taxonomy";
 import { DistributionPieChart } from "@/components/dashboard/MiniCharts";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { Wallet } from "lucide-react";
 
 interface AccountSectionProps {
   accounts: Account[];
@@ -70,17 +71,19 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
   return (
     <div className="space-y-12">
       <div className="flex items-center justify-between">
-        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
-          Accounts
-        </h2>
+        <div className="flex items-center gap-4">
+          <Wallet strokeWidth={1.2} size={20} className="text-truth" />
+          <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
+            Accounts
+          </h2>
+        </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/40 hover:text-foreground transition-colors"
         >
           {isAdding ? "✕ CANCEL" : "+ APPEND ACCOUNT"}
         </button>
       </div>
-
       {isAdding && (
         <div className="bg-white/2 border border-white/5 p-8 animate-in fade-in slide-in-from-top-4 duration-500">
           <form onSubmit={handleSourceSubmit} className="space-y-8">

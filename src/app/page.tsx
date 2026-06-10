@@ -79,8 +79,9 @@ export default function LandingPage() {
             <RippleButton
               variant="hoverborder"
               hoverBorderEffectColor="var(--truth)"
-              className="text-[10px]"
+              className="text-[10px] flex items-center gap-2"
             >
+              <Zap size={12} strokeWidth={1.5} className="text-truth" />
               Initialize
             </RippleButton>
           </Link>

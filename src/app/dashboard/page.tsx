@@ -24,6 +24,18 @@ import { AnimatedNumber } from "@/components/ui/animated-number";
 import { LuxuryCard } from "@/components/ui/luxury-card";
 import { TelemetryDashboard } from "@/components/dashboard/TelemetryDashboard";
 import { NewEntryForm } from "./NewEntryForm";
+import { 
+  ShieldCheck, 
+  Waves, 
+  Flame, 
+  Timer, 
+  Cpu, 
+  Brain, 
+  Zap, 
+  Hexagon, 
+  Activity,
+  RefreshCw
+} from "lucide-react";
 import type {
   AnalyticsSummary,
   Deployment,
@@ -136,6 +148,7 @@ export default function DashboardPage() {
   const hudMetrics = [
     {
       label: "Sovereign Wealth",
+      icon: ShieldCheck,
       value: ledger.analytics?.totalAssets || 0,
       prefix: "KES ",
       desc: "Total Capitalized Architecture",
@@ -145,6 +158,7 @@ export default function DashboardPage() {
     },
     {
       label: "Liquid Capital",
+      icon: Waves,
       value: ledger.analytics?.liquidity || 0,
       prefix: "KES ",
       desc: "Immediate Deployment Capacity",
@@ -154,6 +168,7 @@ export default function DashboardPage() {
     },
     {
       label: "Structural Burn",
+      icon: Flame,
       value: ledger.analytics?.totalStructuralMonthlyBurn || 0,
       prefix: "KES ",
       suffix: " /mo",
@@ -164,6 +179,7 @@ export default function DashboardPage() {
     },
     {
       label: "Operational Runway",
+      icon: Timer,
       value: ledger.analytics?.runwayDays || 0,
       suffix: " DAYS",
       desc: "Time to Critical Depletion",
@@ -200,21 +216,22 @@ export default function DashboardPage() {
       {/* HEADER SECTION */}
       <motion.header
         variants={itemVariants}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8 md:pb-12"
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-8 md:pb-12"
       >
         <div className="space-y-2 md:space-y-4">
-          <p className="font-mono text-[10px] tracking-[0.6em] text-white/20 uppercase">
+          <p className="font-mono text-[10px] tracking-[0.6em] text-truth uppercase animate-pulse">
             Strategic Command Center // v1.0
           </p>
-          <h1 className="font-cormorant text-4xl md:text-6xl text-white tracking-tight leading-none">
+          <h1 className="font-cormorant text-4xl md:text-6xl text-foreground tracking-tight leading-none">
             Welcome, <span className="italic">Architect.</span>
           </h1>
         </div>
         <div className="flex gap-4">
           <button
             onClick={fetchDashboardData}
-            className="px-6 py-3 border border-white/10 rounded-full font-mono text-[9px] tracking-widest uppercase hover:bg-white/5 transition-all active:scale-95 w-full md:w-auto"
+            className="group px-6 py-3 border border-border rounded-full font-mono text-[9px] tracking-widest uppercase hover:bg-card transition-all active:scale-95 w-full md:w-auto flex items-center justify-center gap-3 text-muted-foreground hover:text-foreground"
           >
+            <RefreshCw size={12} className="group-hover:rotate-180 transition-transform duration-700" />
             Refresh Intel
           </button>
         </div>
@@ -229,15 +246,18 @@ export default function DashboardPage() {
         {hudMetrics.map((metric, i) => (
           <LuxuryCard
             key={metric.label}
-            className="p-6 md:p-8 group hover:border-white/20 transition-all duration-500 flex flex-col justify-between"
+            className="p-6 md:p-8 group hover:border-truth/20 transition-all duration-500 flex flex-col justify-between overflow-hidden"
           >
-            <div>
-              <p className="font-mono text-[9px] tracking-[0.4em] text-white/20 uppercase group-hover:text-white/40 transition-colors">
-                {metric.label}
-              </p>
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                <p className="font-mono text-[9px] tracking-[0.4em] text-muted-foreground/40 uppercase group-hover:text-muted-foreground transition-colors">
+                  {metric.label}
+                </p>
+                <metric.icon strokeWidth={1} size={18} className="text-muted-foreground/20 group-hover:text-truth transition-colors" />
+              </div>
               <div className="space-y-1 mt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-cormorant text-3xl md:text-4xl text-white">
+                  <h3 className="font-cormorant text-3xl md:text-4xl text-foreground">
                     <AnimatedNumber
                       value={metric.value}
                       prefix={metric.prefix}
@@ -245,7 +265,7 @@ export default function DashboardPage() {
                     />
                   </h3>
                 </div>
-                <p className="text-[9px] font-mono text-white/10 uppercase tracking-widest group-hover:text-white/20 transition-colors">
+                <p className="text-[9px] font-mono text-muted-foreground/20 uppercase tracking-widest group-hover:text-muted-foreground/40 transition-colors">
                   {metric.desc}
                 </p>
               </div>
@@ -253,7 +273,7 @@ export default function DashboardPage() {
 
             {/* Chart Area */}
             {metric.chartType === "sparkline" && (
-              <div className="mt-4 -mx-2">
+              <div className="mt-4 -mx-2 opacity-60 group-hover:opacity-100 transition-opacity">
                 <MiniSparkline
                   data={metric.chartData}
                   color={metric.chartColor}
@@ -261,7 +281,7 @@ export default function DashboardPage() {
               </div>
             )}
             {metric.chartType === "bar" && (
-              <div className="mt-4 -mx-2">
+              <div className="mt-4 -mx-2 opacity-60 group-hover:opacity-100 transition-opacity">
                 <MiniBarChart
                   data={metric.chartData}
                   color={metric.chartColor}
@@ -269,7 +289,7 @@ export default function DashboardPage() {
               </div>
             )}
             {metric.chartType === "donut" && (
-              <div className="mt-4 w-full -mx-2">
+              <div className="mt-4 w-full -mx-2 opacity-60 group-hover:opacity-100 transition-opacity">
                 <MiniDonut
                   value={metric.value}
                   max={365}
@@ -283,16 +303,16 @@ export default function DashboardPage() {
 
       {/* ZONE 2: ARCHITECTURE DEPLOYMENT (NewEntryForm) */}
       <motion.section id="deploy" variants={itemVariants} className="w-full">
-        <LuxuryCard className="p-6 md:p-16 border-white/10">
+        <LuxuryCard className="p-6 md:p-16 border-border">
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
             <div className="space-y-4 md:w-1/3">
-              <div className="hidden md:flex w-8 h-8 rounded-full bg-white/5 items-center justify-center mb-6">
-                <div className="w-2 h-2 rounded-full bg-white/40" />
+              <div className="flex w-12 h-12 rounded-2xl bg-truth/5 items-center justify-center mb-6 border border-truth/10 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                <Cpu strokeWidth={1.2} size={24} className="text-truth animate-pulse" />
               </div>
-              <h2 className="font-cormorant text-3xl md:text-4xl text-white">
+              <h2 className="font-cormorant text-3xl md:text-4xl text-foreground">
                 Architecture Deployment
               </h2>
-              <p className="font-mono text-[10px] tracking-widest text-white/30 uppercase leading-relaxed">
+              <p className="font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase leading-relaxed">
                 Log deployments, allocate capital, and dictate the flow of
                 resources through your system.
               </p>
@@ -330,13 +350,16 @@ export default function DashboardPage() {
         className="space-y-8 md:space-y-12"
       >
         <div className="flex items-center gap-4 md:gap-6">
-          <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
-            I.
-          </span>
-          <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
+          <div className="flex items-center gap-4">
+            <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+              I.
+            </span>
+            <Brain strokeWidth={1} size={24} className="text-truth" />
+          </div>
+          <h2 className="font-cormorant text-3xl md:text-4xl text-foreground tracking-wide whitespace-nowrap">
             Kairos Intelligence
           </h2>
-          <div className="flex-1 h-px bg-white/5" />
+          <div className="flex-1 h-px bg-border" />
         </div>
         <KairosNarrative insight={kairosInsight} />
       </motion.section>
@@ -352,13 +375,16 @@ export default function DashboardPage() {
           {/* PENDING ACTIONS */}
           <div className="space-y-8 md:space-y-12">
             <div className="flex items-center gap-4 md:gap-6">
-              <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
-                II.
-              </span>
-              <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
+              <div className="flex items-center gap-4">
+                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+                  II.
+                </span>
+                <Zap strokeWidth={1} size={24} className="text-warning" />
+              </div>
+              <h2 className="font-cormorant text-3xl md:text-4xl text-foreground tracking-wide whitespace-nowrap">
                 Tactical Response
               </h2>
-              <div className="flex-1 h-px bg-white/5" />
+              <div className="flex-1 h-px bg-border" />
             </div>
             <div className="space-y-4 md:space-y-6">
               <PendingInflows
@@ -413,13 +439,16 @@ export default function DashboardPage() {
         <section className="space-y-12 lg:space-y-24">
           <div className="space-y-8 md:space-y-12">
             <div className="flex items-center gap-4 md:gap-6">
-              <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
-                III.
-              </span>
-              <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
+              <div className="flex items-center gap-4">
+                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+                  III.
+                </span>
+                <Hexagon strokeWidth={1} size={24} className="text-truth" />
+              </div>
+              <h2 className="font-cormorant text-3xl md:text-4xl text-foreground tracking-wide whitespace-nowrap">
                 Strategic Alignment
               </h2>
-              <div className="flex-1 h-px bg-white/5" />
+              <div className="flex-1 h-px bg-border" />
             </div>
             <LuxuryCard className="p-4 md:p-10">
               <StrategicObjectiveSection
@@ -443,13 +472,16 @@ export default function DashboardPage() {
           {/* OBSERVABILITY */}
           <section className="opacity-20 hover:opacity-100 transition-opacity duration-1000">
             <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12">
-              <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
-                IV.
-              </span>
-              <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
+              <div className="flex items-center gap-4">
+                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+                  IV.
+                </span>
+                <Activity strokeWidth={1} size={24} className="text-truth" />
+              </div>
+              <h2 className="font-cormorant text-3xl md:text-4xl text-foreground tracking-wide whitespace-nowrap">
                 System Telemetry
               </h2>
-              <div className="flex-1 h-px bg-white/5" />
+              <div className="flex-1 h-px bg-border" />
             </div>
             <TelemetryDashboard />
           </section>
