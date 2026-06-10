@@ -12,6 +12,7 @@ import { ProcessFlow } from "@/components/landing/ProcessFlow";
 import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
 import { HoverButton } from "@/components/ui/hover-glow-button";
 import { BrandMark } from "@/components/ui/brand-mark";
+import { Zap } from "lucide-react";
 
 export default function LandingPage() {
   const router = useRouter();
