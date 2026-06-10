@@ -23,28 +23,25 @@ export function MiniSparkline({
   color?: string;
 }) {
   const chartData = data.map((val, i) => ({ value: val, index: i }));
+  // Unique ID for the gradient to prevent collisions
+  const gradientId = `gradient-${color.replace(/[^a-zA-Z0-9]/g, "")}`;
+
   return (
-    <div className="h-12 w-full mt-4">
+    <div className="h-12 w-full mt-4" style={{ color }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData}>
           <defs>
-            <linearGradient
-              id={`gradient-${color}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={color} stopOpacity={0} />
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="currentColor" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
             </linearGradient>
           </defs>
           <Area
             type="monotone"
             dataKey="value"
-            stroke={color}
+            stroke="currentColor"
             strokeWidth={2}
-            fill={`url(#gradient-${color})`}
+            fill={`url(#${gradientId})`}
             isAnimationActive={true}
             animationDuration={1500}
           />
@@ -64,12 +61,12 @@ export function MiniBarChart({
 }) {
   const chartData = data.map((val, i) => ({ value: val, index: i }));
   return (
-    <div className="h-12 w-full mt-4">
+    <div className="h-12 w-full mt-4" style={{ color }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} barSize={4}>
           <Bar
             dataKey="value"
-            fill={color}
+            fill="currentColor"
             radius={[2, 2, 2, 2]}
             isAnimationActive={true}
             animationDuration={1500}
@@ -159,7 +156,11 @@ export function MiniDonut({
   ];
 
   return (
-    <div ref={containerRef} className="h-12 w-full relative mt-2">
+    <div
+      ref={containerRef}
+      className="h-12 w-full relative mt-2"
+      style={{ color }}
+    >
       <ResponsiveContainer width="100%" height="200%">
         <PieChart>
           <Pie
@@ -177,11 +178,12 @@ export function MiniDonut({
             animationEasing="ease-out"
             cornerRadius={4}
           >
-            <Cell key="cell-0" fill={color} />
-            <Cell key="cell-1" fill="rgba(255,255,255,0.05)" />
+            <Cell key="cell-0" fill="currentColor" />
+            <Cell key="cell-1" fill="var(--muted)" />
           </Pie>
         </PieChart>
       </ResponsiveContainer>
+
       <div className="absolute bottom-0 left-0 w-full flex items-end justify-center pointer-events-none pb-1">
         <span className="font-mono text-[9px] text-white/40 tracking-widest uppercase">
           {Math.round((safeValue / max) * 100)}% Capacity

@@ -34,9 +34,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-foreground selection:text-background">
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground relative">
+        {/* Global Texture Overlays */}
+        <div className="fixed inset-0 pointer-events-none z-50 bg-noise mix-blend-overlay opacity-[0.03]" />
+        <div className="fixed inset-0 pointer-events-none z-0 bg-grid-white opacity-[0.02]" />
+        
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>

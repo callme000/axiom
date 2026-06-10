@@ -19,7 +19,7 @@ interface RippleButtonProps {
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   disabled?: boolean;
-  variant?: "default" | "hover" | "ghost" | "hoverborder";
+  variant?: "default" | "primary" | "hover" | "ghost" | "hoverborder";
   rippleColor?: string; // User override for the JS click ripple color
   rippleDuration?: number; // Duration for the JS click ripple (all variants)
 
@@ -333,11 +333,25 @@ const RippleButton: React.FC<RippleButtonProps> = ({
     );
   }
 
-  // Default variant
-  const baseClasses =
-    "relative border-none overflow-hidden isolate transition-all duration-500 cursor-pointer px-10 py-3 bg-white hover:bg-neutral-200 text-black rounded-full font-medium tracking-widest uppercase text-[10px]";
+  // Default / Primary variant base styles
+  const getBaseClasses = () => {
+    const common =
+      "relative border-none overflow-hidden isolate transition-all duration-500 cursor-pointer px-10 py-3 rounded-full font-medium tracking-widest uppercase text-[10px]";
+
+    if (variant === "primary") {
+      return `${common} bg-truth text-white hover:bg-truth/90 shadow-[0_0_20px_rgba(59,130,246,0.3)]`;
+    }
+
+    if (variant === "default") {
+      return `${common} bg-primary text-primary-foreground hover:opacity-90`;
+    }
+
+    return common;
+  };
+
   const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "";
-  const buttonClasses = `${baseClasses} ${disabledClasses} ${className}`;
+  const buttonClasses = `${getBaseClasses()} ${disabledClasses} ${className}`;
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: JS_RIPPLE_KEYFRAMES }} />

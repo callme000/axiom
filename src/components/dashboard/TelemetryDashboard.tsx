@@ -56,7 +56,7 @@ export function TelemetryDashboard() {
   return (
     <div className="space-y-24">
       {/* PERFORMANCE SUMMARY */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-white/5">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-border">
         {[
           { label: "Evaluation Cycles", value: telemetry?.totalCycles || 0 },
           {
@@ -72,11 +72,11 @@ export function TelemetryDashboard() {
             value: Object.keys(telemetry?.ruleHits || {}).length,
           },
         ].map((stat) => (
-          <div key={stat.label} className="bg-black p-8 group">
-            <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em] block mb-4 group-hover:text-white/40 transition-colors">
+          <div key={stat.label} className="bg-background p-8 group">
+            <span className="text-[8px] font-mono text-muted-foreground uppercase tracking-[0.3em] block mb-4 group-hover:text-foreground transition-colors">
               {stat.label}
             </span>
-            <span className="font-cormorant text-3xl text-white">
+            <span className="font-cormorant text-3xl text-foreground">
               {stat.value}
             </span>
           </div>
@@ -85,13 +85,13 @@ export function TelemetryDashboard() {
 
       {/* FORENSIC LOG TABLE */}
       <div className="space-y-8">
-        <div className="flex items-center justify-between border-b border-white/5 pb-4">
-          <h3 className="font-cormorant italic text-xl text-white/40">
+        <div className="flex items-center justify-between border-b border-border pb-4">
+          <h3 className="font-cormorant italic text-xl text-muted-foreground">
             Evaluation Audit Trail
           </h3>
           <button
             onClick={() => loadTelemetry(true)}
-            className="text-[8px] font-mono text-white/20 hover:text-white uppercase tracking-widest transition-colors"
+            className="text-[8px] font-mono text-muted-foreground hover:text-foreground uppercase tracking-widest transition-colors"
           >
             Refresh Logs
           </button>
@@ -100,28 +100,28 @@ export function TelemetryDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal">
+              <tr className="border-b border-border">
+                <th className="py-4 text-[9px] font-mono text-muted-foreground uppercase tracking-widest font-normal">
                   Timestamp
                 </th>
-                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal">
+                <th className="py-4 text-[9px] font-mono text-muted-foreground uppercase tracking-widest font-normal">
                   Heuristic ID
                 </th>
-                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal">
+                <th className="py-4 text-[9px] font-mono text-muted-foreground uppercase tracking-widest font-normal">
                   Severity
                 </th>
-                <th className="py-4 text-[9px] font-mono text-white/20 uppercase tracking-widest font-normal text-right">
+                <th className="py-4 text-[9px] font-mono text-muted-foreground uppercase tracking-widest font-normal text-right">
                   Compute
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-border">
               {telemetry?.logs.map((log) => (
                 <tr
                   key={log.id}
-                  className="group hover:bg-white/1 transition-all"
+                  className="group hover:bg-muted/30 transition-all"
                 >
-                  <td className="py-4 text-[10px] font-mono text-white/40 tabular-nums">
+                  <td className="py-4 text-[10px] font-mono text-muted-foreground tabular-nums">
                     {new Date(log.created_at).toLocaleTimeString([], {
                       hour12: false,
                       hour: "2-digit",
@@ -129,23 +129,24 @@ export function TelemetryDashboard() {
                       second: "2-digit",
                     })}
                   </td>
-                  <td className="py-4 text-[11px] text-white/80 font-light group-hover:translate-x-1 transition-transform">
+                  <td className="py-4 text-[11px] text-foreground font-light group-hover:translate-x-1 transition-transform">
                     {log.rule_id}
                   </td>
                   <td className="py-4">
                     <span
                       className={`text-[8px] font-mono uppercase tracking-widest ${
                         log.severity === "critical"
-                          ? "text-red-500"
-                          : log.severity === "high"
-                            ? "text-orange-500"
-                            : "text-white/20"
+                          ? "text-leakage"
+                          : log.severity === "high" ||
+                              log.severity === "warning"
+                            ? "text-warning"
+                            : "text-muted-foreground/40"
                       }`}
                     >
                       {log.severity}
                     </span>
                   </td>
-                  <td className="py-4 text-[10px] font-mono text-white/40 text-right tabular-nums">
+                  <td className="py-4 text-[10px] font-mono text-muted-foreground text-right tabular-nums">
                     {log.evaluation_time_ms?.toFixed(2)}ms
                   </td>
                 </tr>
@@ -154,7 +155,7 @@ export function TelemetryDashboard() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="py-12 text-center text-[10px] font-mono text-white/10 uppercase tracking-widest"
+                    className="py-12 text-center text-[10px] font-mono text-muted-foreground/20 uppercase tracking-widest"
                   >
                     No forensic data available.
                   </td>

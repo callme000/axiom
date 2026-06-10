@@ -140,7 +140,7 @@ export default function DashboardPage() {
       prefix: "KES ",
       desc: "Total Capitalized Architecture",
       chartType: "sparkline",
-      chartColor: "#8b5cf6", // Purple
+      chartColor: "var(--truth)",
       chartData: [100, 110, 105, 120, 115, 130, 140],
     },
     {
@@ -149,7 +149,7 @@ export default function DashboardPage() {
       prefix: "KES ",
       desc: "Immediate Deployment Capacity",
       chartType: "sparkline",
-      chartColor: "#3b82f6", // Blue
+      chartColor: "var(--truth)",
       chartData: [50, 45, 60, 55, 70, 65, 80],
     },
     {
@@ -159,7 +159,7 @@ export default function DashboardPage() {
       suffix: " /mo",
       desc: "Operational Maintenance Cost",
       chartType: "bar",
-      chartColor: "#ef4444", // Red
+      chartColor: "var(--leakage)",
       chartData: [20, 22, 18, 25, 20, 24, 21],
     },
     {
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       suffix: " DAYS",
       desc: "Time to Critical Depletion",
       chartType: "donut",
-      chartColor: "#10b981", // Emerald
+      chartColor: "var(--opportunity)",
       chartData: [],
     },
   ];

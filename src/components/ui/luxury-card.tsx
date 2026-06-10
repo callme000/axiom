@@ -111,7 +111,7 @@ export function LuxuryCard({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleCardClick}
-      className={`relative rounded-[3rem] backdrop-blur-3xl transition-all duration-500 transform-gpu preserve-3d border border-white/5 bg-white/2 shadow-2xl ${className}`}
+      className={`relative rounded-[3rem] backdrop-blur-3xl transition-all duration-500 transform-gpu preserve-3d border border-border bg-card/60 shadow-2xl ${className}`}
       style={{
         transform: transformStyle,
         animation: "luxury-float 6s ease-in-out infinite",
@@ -122,7 +122,7 @@ export function LuxuryCard({
         {particles.map((particle) => (
           <div
             key={particle.id}
-            className="absolute w-0.5 h-0.5 rounded-full bg-white/20"
+            className="absolute w-0.5 h-0.5 rounded-full bg-foreground/10"
             style={{
               left: `${particle.left}%`,
               opacity: particle.opacity,
@@ -139,7 +139,7 @@ export function LuxuryCard({
           initial={{ scale: 0, opacity: 1 }}
           animate={{ scale: 4, opacity: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="absolute w-15 h-15 rounded-full pointer-events-none bg-white/10 z-0"
+          className="absolute w-15 h-15 rounded-full pointer-events-none bg-foreground/5 z-0"
           style={{
             left: ripple.x,
             top: ripple.y,
@@ -148,7 +148,7 @@ export function LuxuryCard({
       ))}
 
       {/* Card Highlight */}
-      <div className="absolute inset-0 bg-linear-to-br from-white/3 to-transparent pointer-events-none rounded-[3rem]" />
+      <div className="absolute inset-0 bg-linear-to-br from-foreground/5 to-transparent pointer-events-none rounded-[3rem]" />
 
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col">{children}</div>
