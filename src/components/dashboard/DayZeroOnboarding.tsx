@@ -7,6 +7,7 @@ import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
 import { HoverButton } from "@/components/ui/hover-glow-button";
 import { LuxuryCard } from "@/components/ui/luxury-card";
 import { motion, AnimatePresence } from "framer-motion";
+import { Wallet, TrendingUp, Flame, ShieldAlert } from "lucide-react";
 
 import {
   OnboardingHeader,
@@ -36,21 +37,29 @@ interface DayZeroOnboardingProps {
 const STEPS = [
   {
     roman: "I",
+    icon: Wallet,
+    color: "var(--truth)",
     title: "Accounts",
     desc: "Every strong financial foundation begins with a clear map of your available capital. Please list the financial accounts that hold your primary source of liquidity (for example, corporate checking accounts or short-term cash reserves)",
   },
   {
     roman: "II",
+    icon: TrendingUp,
+    color: "var(--opportunity)",
     title: "Income Velocity",
     desc: "Every strong financial foundation relies on a predictable cash flow. Please list your revenue-generating activities so we can calculate how quickly your funds are replenished (for example, recurring subscription fees, product sales, or monthly client retainers).",
   },
   {
     roman: "III",
+    icon: Flame,
+    color: "var(--leakage)",
     title: "Baseline Expenses",
     desc: "Every strong financial foundation requires full visibility into its baseline expenses. Please list your fixed operating costs so we can identify and eliminate unnecessary spending (for example, office rent, software subscriptions, or employee salaries).",
   },
   {
     roman: "IV",
+    icon: ShieldAlert,
+    color: "var(--warning)",
     title: "Financial Commitments",
     desc: "Every strong financial foundation requires a clear view of what you owe. Please list your current debts and upcoming financial obligations so we can protect your long-term solvency (for example, short-term loans, credit card balances, or vendor invoices).",
   },
@@ -163,7 +172,7 @@ export default function DayZeroOnboarding({
   const backgroundX = -(step - 1) * 5;
 
   return (
-    <div className="fixed inset-0 bg-black z-100 flex flex-col selection:bg-white selection:text-black overflow-hidden h-screen w-full font-sans text-white">
+    <div className="fixed inset-0 bg-background z-[100] flex flex-col selection:bg-primary selection:text-primary-foreground overflow-hidden h-screen w-full font-sans text-foreground">
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <motion.div
@@ -171,8 +180,10 @@ export default function DayZeroOnboarding({
           transition={{ duration: 1.2, ease: [0.215, 0.61, 0.355, 1] }}
           className="absolute inset-0 w-[150%] h-full"
         >
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[30%] w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
+          <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-glow-truth animate-pulse-glow" />
+          <div className="absolute bottom-[-10%] right-[30%] w-[40%] h-[40%] bg-glow-opportunity animate-pulse-glow [animation-delay:1s]" />
+          <div className="fixed inset-0 pointer-events-none z-0 bg-grid-white opacity-[0.02]" />
+          <div className="fixed inset-0 pointer-events-none z-50 bg-noise mix-blend-overlay opacity-[0.03]" />
           <div
             className="absolute inset-0 opacity-15 mix-blend-screen grayscale"
             style={{
@@ -190,16 +201,18 @@ export default function DayZeroOnboarding({
         <div className="max-w-7xl w-full md:h-155 grid grid-cols-1 lg:grid-cols-[1.1fr_1.4fr] gap-12 md:gap-24 items-stretch overflow-visible">
           <OnboardingSidebar
             roman={activeStepConfig.roman}
+            icon={activeStepConfig.icon}
+            iconColor={activeStepConfig.color}
             title={activeStepConfig.title}
             desc={activeStepConfig.desc}
             direction={direction}
           />
 
-          <LuxuryCard className="flex flex-col border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden min-h-[500px] md:min-h-0">
+          <LuxuryCard className="flex flex-col border border-border shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden min-h-[500px] md:min-h-0">
             <div className="flex-1 p-6 md:p-14 overflow-hidden relative rounded-t-[inherit]">
               <form
                 onSubmit={handleSubmit}
-                className="h-full flex flex-col text-white"
+                className="h-full flex flex-col text-foreground"
               >
                 <AnimatePresence mode="wait" custom={direction}>
                   <motion.div
@@ -240,11 +253,11 @@ export default function DayZeroOnboarding({
               </form>
             </div>
 
-            <div className="h-24 md:h-32 border-t border-white/5 relative z-10 px-6 md:px-16 flex flex-col justify-center shrink-0 bg-[#080808]/60 backdrop-blur-3xl rounded-b-[inherit]">
+            <div className="h-24 md:h-32 border-t border-border relative z-10 px-6 md:px-16 flex flex-col justify-center shrink-0 bg-card/60 backdrop-blur-3xl rounded-b-[inherit]">
               {error && (
                 <div className="absolute top-0 left-0 w-full transform -translate-y-full px-6 md:px-12 pb-4">
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-[9px] md:text-[10px] font-mono tracking-wider flex items-center gap-3">
-                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-destructive/80 text-[9px] md:text-[10px] font-mono tracking-wider flex items-center gap-3">
+                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
                     {error}
                   </div>
                 </div>
@@ -254,15 +267,15 @@ export default function DayZeroOnboarding({
                   type="button"
                   onClick={handlePrev}
                   disabled={step === 1}
-                  className="text-[10px] md:text-[11px] font-mono tracking-[0.4em] md:tracking-[0.6em] text-white/20 hover:text-white transition-all uppercase disabled:opacity-0 py-4 md:py-8 px-4 md:px-12 -ml-4 md:-ml-12 hover:bg-white/5 rounded-full"
+                  className="text-[10px] md:text-[11px] font-mono tracking-[0.4em] md:tracking-[0.6em] text-muted-foreground/60 hover:text-foreground transition-all uppercase disabled:opacity-0 py-4 md:py-8 px-4 md:px-12 -ml-4 md:-ml-12 hover:bg-muted/50 rounded-full"
                 >
                   ← Back
                 </button>
                 <div onClick={handleSubmit}>
                   {step === 4 ? (
                     <HoverButton
-                      glowColor="rgba(255,255,255,0.4)"
-                      className="px-12 md:px-24 py-4 md:py-10 rounded-full text-[10px] md:text-[11px]"
+                      glowColor="var(--truth)"
+                      className="px-12 md:px-24 py-4 md:py-10 rounded-full text-[10px] md:text-[11px] border-border hover:border-truth/50 transition-colors"
                       disabled={isLoading || !isStepValid()}
                     >
                       {isLoading ? "..." : "Archive Setup"}
@@ -270,7 +283,8 @@ export default function DayZeroOnboarding({
                   ) : (
                     <RippleButton
                       variant="hoverborder"
-                      className="px-12 md:px-24 py-4 md:py-10 border-none text-[10px] md:text-[11px]"
+                      hoverBorderEffectColor="var(--truth)"
+                      className="px-12 md:px-24 py-4 md:py-10 border border-border text-[10px] md:text-[11px]"
                       disabled={isLoading || !isStepValid()}
                     >
                       Next Phase →

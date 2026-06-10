@@ -58,7 +58,7 @@ export function LiabilitiesStep({
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+      <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
         Financial Commitments
       </h2>
       <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
@@ -75,7 +75,7 @@ export function LiabilitiesStep({
                 onChange={(e) =>
                   updateLiability(idx, { liability_name: e.target.value })
                 }
-                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-xl md:text-2xl text-white focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 font-cormorant text-xl md:text-2xl text-foreground focus:outline-none placeholder:text-white/5"
               />
               <input
                 type="text"
@@ -84,12 +84,12 @@ export function LiabilitiesStep({
                 onChange={(e) =>
                   updateLiability(idx, { institution: e.target.value })
                 }
-                className="bg-transparent border-b border-white/10 py-1 text-xs md:text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 text-xs md:text-sm font-light text-muted-foreground/90 focus:outline-none placeholder:text-white/5"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                   Type
                 </label>
                 <select
@@ -97,7 +97,7 @@ export function LiabilitiesStep({
                   onChange={(e) =>
                     updateLiability(idx, { liability_type: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-[11px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-[11px] font-mono tracking-widest uppercase text-muted-foreground/80 focus:outline-none"
                 >
                   {LIABILITY_TYPES.map((t) => (
                     <option
@@ -112,7 +112,7 @@ export function LiabilitiesStep({
               </div>
               <div className="grid grid-cols-2 gap-4 md:col-span-2">
                 <div className="space-y-1">
-                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                  <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                     Balance
                   </label>
                   <input
@@ -124,11 +124,11 @@ export function LiabilitiesStep({
                         outstanding_balance: e.target.value,
                       })
                     }
-                    className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
+                    className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                  <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                     Interest %
                   </label>
                   <input
@@ -139,7 +139,7 @@ export function LiabilitiesStep({
                     onChange={(e) =>
                       updateLiability(idx, { interest_rate: e.target.value })
                     }
-                    className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
+                    className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
                   />
                 </div>
               </div>
@@ -155,9 +155,9 @@ export function LiabilitiesStep({
                       is_paid_in_cadences: e.target.checked,
                     })
                   }
-                  className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                  className="w-4 h-4 rounded border-border bg-transparent checked:bg-white transition-colors cursor-pointer"
                 />
-                <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                <span className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest group-hover:text-muted-foreground/90 transition-colors">
                   Paid in Cadence
                 </span>
               </label>
@@ -168,7 +168,7 @@ export function LiabilitiesStep({
                   className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-2 pl-6 md:pl-8 border-l border-white/5"
                 >
                   <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-white/20 uppercase">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase">
                       Cadence
                     </label>
                     <select
@@ -176,7 +176,7 @@ export function LiabilitiesStep({
                       onChange={(e) =>
                         updateLiability(idx, { cadence: e.target.value })
                       }
-                      className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                      className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                     >
                       <option value="weekly" className="bg-black">
                         Weekly
@@ -188,7 +188,7 @@ export function LiabilitiesStep({
                   </div>
                   <div className="grid grid-cols-2 gap-4 md:col-span-2">
                     <div className="space-y-1">
-                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                      <label className="text-[9px] font-mono text-muted-foreground/60 uppercase">
                         {liab.cadence === "weekly" ? "Day" : "Day"}
                       </label>
                       {liab.cadence === "monthly" ? (
@@ -203,7 +203,7 @@ export function LiabilitiesStep({
                               cadence_day_date: e.target.value,
                             })
                           }
-                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                          className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                         />
                       ) : (
                         <select
@@ -213,7 +213,7 @@ export function LiabilitiesStep({
                               cadence_day_date: e.target.value,
                             })
                           }
-                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                          className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                         >
                           {[
                             "Monday",
@@ -232,7 +232,7 @@ export function LiabilitiesStep({
                       )}
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                      <label className="text-[9px] font-mono text-muted-foreground/60 uppercase">
                         Payment
                       </label>
                       <input
@@ -244,7 +244,7 @@ export function LiabilitiesStep({
                             cadence_amount: e.target.value,
                           })
                         }
-                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                        className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -255,7 +255,7 @@ export function LiabilitiesStep({
             <button
               type="button"
               onClick={() => removeLiability(idx)}
-              className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+              className="absolute top-0 right-0 p-2 text-muted-foreground/50 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
             >
               ✕
             </button>
@@ -265,7 +265,7 @@ export function LiabilitiesStep({
       <button
         type="button"
         onClick={addLiability}
-        className="text-[11px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-4 px-8 border border-white/10 rounded-full self-start active:scale-95"
+        className="text-[11px] font-mono tracking-[0.6em] uppercase text-muted-foreground/70 hover:text-foreground transition-all py-4 px-8 border border-border rounded-full self-start active:scale-95"
       >
         + Append Obligation
       </button>

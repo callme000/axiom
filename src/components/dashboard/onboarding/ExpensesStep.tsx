@@ -56,7 +56,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+      <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
         Operational Baselines
       </h2>
       <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
@@ -71,10 +71,10 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                 placeholder="Baseline Name"
                 value={base.title}
                 onChange={(e) => updateBaseline(idx, { title: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-xl md:text-2xl text-white focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 font-cormorant text-xl md:text-2xl text-foreground focus:outline-none placeholder:text-white/5"
               />
               <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                   Category
                 </label>
                 <select
@@ -82,7 +82,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                   onChange={(e) =>
                     updateBaseline(idx, { category: e.target.value })
                   }
-                  className="bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none w-full"
+                  className="bg-transparent border-b border-border py-1 text-[10px] font-mono tracking-widest uppercase text-muted-foreground/80 focus:outline-none w-full"
                 >
                   {TAXONOMY_CATEGORIES.map((cat) => (
                     <option
@@ -98,7 +98,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-12">
               <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                   Amount
                 </label>
                 <input
@@ -108,7 +108,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                   onChange={(e) =>
                     updateBaseline(idx, { amount: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
+                  className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
                 />
               </div>
             </div>
@@ -121,9 +121,9 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                   onChange={(e) =>
                     updateBaseline(idx, { is_recurring: e.target.checked })
                   }
-                  className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                  className="w-4 h-4 rounded border-border bg-transparent checked:bg-white transition-colors cursor-pointer"
                 />
-                <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                <span className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest group-hover:text-muted-foreground/90 transition-colors">
                   Recurring Expense
                 </span>
               </label>
@@ -134,7 +134,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                   className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-2 pl-6 md:pl-8 border-l border-white/5"
                 >
                   <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-white/20 uppercase">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase">
                       Frequency
                     </label>
                     <select
@@ -142,7 +142,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                       onChange={(e) =>
                         updateBaseline(idx, { cadence: e.target.value })
                       }
-                      className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                      className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                     >
                       {BASELINE_CADENCES.map((c) => (
                         <option
@@ -158,7 +158,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
 
                   {base.cadence === "daily" && (
                     <div className="flex items-center pt-2">
-                      <p className="text-[8px] font-mono text-white/20 uppercase leading-tight">
+                      <p className="text-[8px] font-mono text-muted-foreground/60 uppercase leading-tight">
                         Prompted everyday to verify.
                       </p>
                     </div>
@@ -168,7 +168,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                     base.cadence === "weekly" ||
                     base.cadence === "biweekly") && (
                     <div className="space-y-1">
-                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                      <label className="text-[9px] font-mono text-muted-foreground/60 uppercase">
                         {base.cadence === "monthly" ? "Day" : "Day of Week"}
                       </label>
                       {base.cadence === "monthly" ? (
@@ -183,7 +183,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                               execution_day: e.target.value,
                             })
                           }
-                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                          className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                         />
                       ) : (
                         <select
@@ -193,7 +193,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                               execution_day: e.target.value,
                             })
                           }
-                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                          className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                         >
                           {[
                             { label: "Mon", value: 1 },
@@ -223,7 +223,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
               <button
                 type="button"
                 onClick={() => removeBaseline(idx)}
-                className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+                className="absolute top-0 right-0 p-2 text-muted-foreground/50 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
               >
                 ✕
               </button>
@@ -234,7 +234,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
       <button
         type="button"
         onClick={addBaseline}
-        className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
+        className="text-[9px] font-mono tracking-[0.6em] uppercase text-muted-foreground/70 hover:text-foreground transition-all py-3 px-6 border border-border rounded-full self-start active:scale-95"
       >
         + Append Recurring
       </button>

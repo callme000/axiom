@@ -44,7 +44,7 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+      <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
         Account Structure
       </h2>
       <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
@@ -61,7 +61,7 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
                 onChange={(e) =>
                   updateAccount(idx, { account_name: e.target.value })
                 }
-                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-xl md:text-2xl text-white focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 font-cormorant text-xl md:text-2xl text-foreground focus:outline-none placeholder:text-white/5"
               />
               <input
                 type="text"
@@ -70,12 +70,12 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
                 onChange={(e) =>
                   updateAccount(idx, { institution: e.target.value })
                 }
-                className="bg-transparent border-b border-white/10 py-1 text-xs md:text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 text-xs md:text-sm font-light text-muted-foreground/90 focus:outline-none placeholder:text-white/5"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
               <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                   Account Type
                 </label>
                 <select
@@ -83,7 +83,7 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
                   onChange={(e) =>
                     updateAccount(idx, { account_type: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono tracking-widest uppercase text-muted-foreground/80 focus:outline-none"
                 >
                   {ACCOUNT_TYPES.map((t) => (
                     <option
@@ -97,7 +97,7 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                   Current Liquidity
                 </label>
                 <input
@@ -107,7 +107,7 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
                   onChange={(e) =>
                     updateAccount(idx, { current_balance: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
+                  className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
                 />
               </div>
             </div>
@@ -116,7 +116,7 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
               <button
                 type="button"
                 onClick={() => removeAccount(idx)}
-                className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+                className="absolute top-0 right-0 p-2 text-muted-foreground/50 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
               >
                 ✕
               </button>
@@ -127,7 +127,7 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
       <button
         type="button"
         onClick={addAccount}
-        className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
+        className="text-[9px] font-mono tracking-[0.6em] uppercase text-muted-foreground/70 hover:text-foreground transition-all py-3 px-6 border border-border rounded-full self-start active:scale-95"
       >
         + Append Source
       </button>

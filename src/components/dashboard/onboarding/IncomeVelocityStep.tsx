@@ -51,7 +51,7 @@ export function IncomeVelocityStep({
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+      <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
         Income Velocity
       </h2>
       <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
@@ -68,19 +68,19 @@ export function IncomeVelocityStep({
                 onChange={(e) =>
                   updateIncome(idx, { income_name: e.target.value })
                 }
-                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-xl md:text-2xl text-white focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 font-cormorant text-xl md:text-2xl text-foreground focus:outline-none placeholder:text-white/5"
               />
               <input
                 type="text"
                 placeholder="Origin"
                 value={inc.source}
                 onChange={(e) => updateIncome(idx, { source: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 text-xs md:text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 text-xs md:text-sm font-light text-muted-foreground/90 focus:outline-none placeholder:text-white/5"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                   Type
                 </label>
                 <select
@@ -88,7 +88,7 @@ export function IncomeVelocityStep({
                   onChange={(e) =>
                     updateIncome(idx, { income_type: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono tracking-widest uppercase text-muted-foreground/80 focus:outline-none"
                 >
                   {INCOME_TYPES.map((t) => (
                     <option
@@ -102,7 +102,7 @@ export function IncomeVelocityStep({
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
                   KES
                 </label>
                 <input
@@ -112,7 +112,7 @@ export function IncomeVelocityStep({
                   onChange={(e) =>
                     updateIncome(idx, { amount: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
+                  className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
                 />
               </div>
             </div>
@@ -125,9 +125,9 @@ export function IncomeVelocityStep({
                   onChange={(e) =>
                     updateIncome(idx, { is_recurring: e.target.checked })
                   }
-                  className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
+                  className="w-4 h-4 rounded border-border bg-transparent checked:bg-white transition-colors cursor-pointer"
                 />
-                <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                <span className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest group-hover:text-muted-foreground/90 transition-colors">
                   Recurring Income
                 </span>
               </label>
@@ -138,7 +138,7 @@ export function IncomeVelocityStep({
                   className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-2 pl-6 md:pl-8 border-l border-white/5"
                 >
                   <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-white/20 uppercase">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase">
                       Frequency
                     </label>
                     <select
@@ -146,7 +146,7 @@ export function IncomeVelocityStep({
                       onChange={(e) =>
                         updateIncome(idx, { cadence: e.target.value })
                       }
-                      className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                      className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                     >
                       {CADENCES.map((c) => (
                         <option
@@ -164,7 +164,7 @@ export function IncomeVelocityStep({
                     inc.cadence === "weekly" ||
                     inc.cadence === "biweekly") && (
                     <div className="space-y-1">
-                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                      <label className="text-[9px] font-mono text-muted-foreground/60 uppercase">
                         {inc.cadence === "monthly" ? "Day" : "Day of Week"}
                       </label>
                       {inc.cadence === "monthly" ? (
@@ -177,7 +177,7 @@ export function IncomeVelocityStep({
                           onChange={(e) =>
                             updateIncome(idx, { execution_day: e.target.value })
                           }
-                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                          className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                         />
                       ) : (
                         <select
@@ -185,7 +185,7 @@ export function IncomeVelocityStep({
                           onChange={(e) =>
                             updateIncome(idx, { execution_day: e.target.value })
                           }
-                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                          className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono text-muted-foreground/90 focus:outline-none"
                         >
                           {[
                             { label: "Mon", value: 1 },
@@ -214,7 +214,7 @@ export function IncomeVelocityStep({
             <button
               type="button"
               onClick={() => removeIncome(idx)}
-              className="absolute top-0 right-0 p-2 text-white/10 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
+              className="absolute top-0 right-0 p-2 text-muted-foreground/50 hover:text-red-400 bg-white/5 rounded-full hover:bg-white/10 transition-all"
             >
               ✕
             </button>
@@ -224,7 +224,7 @@ export function IncomeVelocityStep({
       <button
         type="button"
         onClick={addIncome}
-        className="text-[9px] font-mono tracking-[0.6em] uppercase text-white/30 hover:text-white transition-all py-3 px-6 border border-white/10 rounded-full self-start active:scale-95"
+        className="text-[9px] font-mono tracking-[0.6em] uppercase text-muted-foreground/70 hover:text-foreground transition-all py-3 px-6 border border-border rounded-full self-start active:scale-95"
       >
         + Append Income
       </button>
