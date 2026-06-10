@@ -20,7 +20,10 @@ interface LiabilitiesStepProps {
   onChange: (liabilities: OnboardingLiability[]) => void;
 }
 
-export function LiabilitiesStep({ liabilities, onChange }: LiabilitiesStepProps) {
+export function LiabilitiesStep({
+  liabilities,
+  onChange,
+}: LiabilitiesStepProps) {
   const addLiability = () => {
     if (liabilities.length < 2) {
       onChange([
@@ -44,7 +47,10 @@ export function LiabilitiesStep({ liabilities, onChange }: LiabilitiesStepProps)
     onChange(liabilities.filter((_, i) => i !== index));
   };
 
-  const updateLiability = (index: number, updates: Partial<OnboardingLiability>) => {
+  const updateLiability = (
+    index: number,
+    updates: Partial<OnboardingLiability>,
+  ) => {
     const next = [...liabilities];
     next[index] = { ...next[index], ...updates };
     onChange(next);
@@ -53,68 +59,89 @@ export function LiabilitiesStep({ liabilities, onChange }: LiabilitiesStepProps)
   return (
     <div className="flex flex-col h-full gap-6">
       <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
-        Financial Commitment
+        Financial Commitments
       </h2>
-      <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+      <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
         {liabilities.map((liab, idx) => (
-          <div key={idx} className="space-y-3 pb-3 border-b border-white/5 relative shrink-0">
-            <div className="grid grid-cols-2 gap-6">
+          <div
+            key={idx}
+            className="space-y-4 md:space-y-3 pb-6 md:pb-3 border-b border-white/5 relative shrink-0"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <input
                 type="text"
                 placeholder="Obligation Name"
                 value={liab.liability_name}
-                onChange={(e) => updateLiability(idx, { liability_name: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+                onChange={(e) =>
+                  updateLiability(idx, { liability_name: e.target.value })
+                }
+                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-xl md:text-2xl text-white focus:outline-none placeholder:text-white/5"
               />
               <input
                 type="text"
                 placeholder="Financial Institution"
                 value={liab.institution}
-                onChange={(e) => updateLiability(idx, { institution: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                onChange={(e) =>
+                  updateLiability(idx, { institution: e.target.value })
+                }
+                className="bg-transparent border-b border-white/10 py-1 text-xs md:text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
               />
             </div>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <div className="space-y-1">
                 <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
                   Type
                 </label>
                 <select
                   value={liab.liability_type}
-                  onChange={(e) => updateLiability(idx, { liability_type: e.target.value })}
+                  onChange={(e) =>
+                    updateLiability(idx, { liability_type: e.target.value })
+                  }
                   className="w-full bg-transparent border-b border-white/10 py-1 text-[11px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
                 >
                   {LIABILITY_TYPES.map((t) => (
-                    <option key={t.value} value={t.value} className="bg-[#080808]">
+                    <option
+                      key={t.value}
+                      value={t.value}
+                      className="bg-[#080808]"
+                    >
                       {t.label}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
-                  Balance
-                </label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={liab.outstanding_balance}
-                  onChange={(e) => updateLiability(idx, { outstanding_balance: e.target.value })}
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
-                  Interest %
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="0"
-                  value={liab.interest_rate}
-                  onChange={(e) => updateLiability(idx, { interest_rate: e.target.value })}
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
-                />
+              <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                    Balance
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={liab.outstanding_balance}
+                    onChange={(e) =>
+                      updateLiability(idx, {
+                        outstanding_balance: e.target.value,
+                      })
+                    }
+                    className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
+                    Interest %
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="0"
+                    value={liab.interest_rate}
+                    onChange={(e) =>
+                      updateLiability(idx, { interest_rate: e.target.value })
+                    }
+                    className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
+                  />
+                </div>
               </div>
             </div>
 
@@ -123,7 +150,11 @@ export function LiabilitiesStep({ liabilities, onChange }: LiabilitiesStepProps)
                 <input
                   type="checkbox"
                   checked={liab.is_paid_in_cadences}
-                  onChange={(e) => updateLiability(idx, { is_paid_in_cadences: e.target.checked })}
+                  onChange={(e) =>
+                    updateLiability(idx, {
+                      is_paid_in_cadences: e.target.checked,
+                    })
+                  }
                   className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
                 />
                 <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
@@ -134,13 +165,17 @@ export function LiabilitiesStep({ liabilities, onChange }: LiabilitiesStepProps)
                 <motion.div
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="grid grid-cols-3 gap-6 pt-2 pl-8 border-l border-white/5"
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-2 pl-6 md:pl-8 border-l border-white/5"
                 >
                   <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-white/20 uppercase">Cadence</label>
+                    <label className="text-[9px] font-mono text-white/20 uppercase">
+                      Cadence
+                    </label>
                     <select
                       value={liab.cadence}
-                      onChange={(e) => updateLiability(idx, { cadence: e.target.value })}
+                      onChange={(e) =>
+                        updateLiability(idx, { cadence: e.target.value })
+                      }
                       className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
                     >
                       <option value="weekly" className="bg-black">
@@ -151,55 +186,72 @@ export function LiabilitiesStep({ liabilities, onChange }: LiabilitiesStepProps)
                       </option>
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-white/20 uppercase">
-                      {liab.cadence === "weekly" ? "Day of Week" : "Day of Month"}
-                    </label>
-                    {liab.cadence === "monthly" ? (
+                  <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                        {liab.cadence === "weekly" ? "Day" : "Day"}
+                      </label>
+                      {liab.cadence === "monthly" ? (
+                        <input
+                          type="number"
+                          min="1"
+                          max="31"
+                          placeholder="15"
+                          value={liab.cadence_day_date}
+                          onChange={(e) =>
+                            updateLiability(idx, {
+                              cadence_day_date: e.target.value,
+                            })
+                          }
+                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                        />
+                      ) : (
+                        <select
+                          value={liab.cadence_day_date || "Monday"}
+                          onChange={(e) =>
+                            updateLiability(idx, {
+                              cadence_day_date: e.target.value,
+                            })
+                          }
+                          className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
+                        >
+                          {[
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                            "Sunday",
+                          ].map((day) => (
+                            <option key={day} value={day} className="bg-black">
+                              {day.slice(0, 3)}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono text-white/20 uppercase">
+                        Payment
+                      </label>
                       <input
                         type="number"
-                        min="1"
-                        max="31"
-                        placeholder="15"
-                        value={liab.cadence_day_date}
-                        onChange={(e) => updateLiability(idx, { cadence_day_date: e.target.value })}
+                        placeholder="0"
+                        value={liab.cadence_amount}
+                        onChange={(e) =>
+                          updateLiability(idx, {
+                            cadence_amount: e.target.value,
+                          })
+                        }
                         className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
                       />
-                    ) : (
-                      <select
-                        value={liab.cadence_day_date || "Monday"}
-                        onChange={(e) => updateLiability(idx, { cadence_day_date: e.target.value })}
-                        className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
-                      >
-                        {[
-                          "Monday",
-                          "Tuesday",
-                          "Wednesday",
-                          "Thursday",
-                          "Friday",
-                          "Saturday",
-                          "Sunday",
-                        ].map((day) => (
-                          <option key={day} value={day} className="bg-black">
-                            {day}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-white/20 uppercase">Payment</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={liab.cadence_amount}
-                      onChange={(e) => updateLiability(idx, { cadence_amount: e.target.value })}
-                      className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
-                    />
+                    </div>
                   </div>
                 </motion.div>
               )}
             </div>
+
             <button
               type="button"
               onClick={() => removeLiability(idx)}

@@ -3,12 +3,18 @@
 import { motion } from "framer-motion";
 import { BrandMark } from "@/components/ui/brand-mark";
 
-export function OnboardingHeader({ step, totalSteps }: { step: number; totalSteps: number }) {
+export function OnboardingHeader({
+  step,
+  totalSteps,
+}: {
+  step: number;
+  totalSteps: number;
+}) {
   const romans = ["I", "II", "III", "IV"];
   return (
-    <nav className="absolute top-0 left-0 w-full z-50 px-12 py-10 flex justify-between items-center mix-blend-difference pointer-events-none">
-      <div className="flex items-center gap-6 group cursor-pointer pointer-events-auto">
-        <BrandMark className="w-10 h-10" />
+    <nav className="absolute top-0 left-0 w-full z-50 px-6 md:px-12 py-6 md:py-10 flex justify-between items-center mix-blend-difference pointer-events-none">
+      <div className="flex items-center gap-4 md:gap-6 group cursor-pointer pointer-events-auto">
+        <BrandMark className="w-8 h-8 md:w-10 md:h-10" />
         <div className="flex flex-col">
           <span className="font-mono text-[10px] tracking-[0.6em] uppercase font-bold text-white">
             AXIOM
@@ -18,10 +24,13 @@ export function OnboardingHeader({ step, totalSteps }: { step: number; totalStep
           </span>
         </div>
       </div>
-      <div className="flex gap-12 items-center pointer-events-auto">
-        <div className="flex gap-8">
+      <div className="flex gap-6 md:gap-12 items-center pointer-events-auto">
+        <div className="flex gap-4 md:gap-8">
           {Array.from({ length: totalSteps }).map((_, idx) => (
-            <div key={idx} className="flex flex-col items-center gap-2 text-white">
+            <div
+              key={idx}
+              className="flex flex-col items-center gap-2 text-white"
+            >
               <span
                 className={`font-mono text-[9px] tracking-widest transition-colors duration-700 ${
                   idx + 1 === step ? "opacity-100" : "opacity-10"
@@ -31,12 +40,14 @@ export function OnboardingHeader({ step, totalSteps }: { step: number; totalStep
               </span>
               <motion.div
                 animate={{ scaleX: idx + 1 === step ? 1 : 0 }}
-                className="h-px w-4 bg-white origin-left"
+                className="h-px w-3 md:w-4 bg-white origin-left"
               />
             </div>
           ))}
         </div>
-        <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/20">v1.0</span>
+        <span className="hidden md:block font-mono text-[9px] tracking-[0.4em] uppercase text-white/20">
+          v1.0
+        </span>
       </div>
     </nav>
   );
@@ -54,24 +65,26 @@ export function OnboardingSidebar({
   direction: number;
 }) {
   return (
-    <div className="flex flex-col justify-center h-full border-r border-white/5 pr-12 text-white overflow-hidden">
+    <div className="flex flex-col justify-center h-full md:border-r border-white/5 md:pr-12 text-white overflow-hidden">
       <motion.div
         key={title}
         initial={{ opacity: 0, x: direction * 50 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -direction * 50 }}
         transition={{ duration: 0.8, ease: [0.215, 0.61, 0.355, 1] }}
-        className="space-y-6"
+        className="space-y-4 md:space-y-6"
       >
-        <div className="space-y-2">
-          <div className="font-cormorant italic text-8xl text-white/5 leading-none select-none">
+        <div className="space-y-1 md:space-y-2">
+          <div className="hidden md:block font-cormorant italic text-8xl text-white/5 leading-none select-none">
             {roman}
           </div>
-          <h1 className="font-cormorant text-6xl text-white leading-none tracking-tight">
+          <h1 className="font-cormorant text-4xl md:text-6xl text-white leading-none tracking-tight">
             {title}
           </h1>
         </div>
-        <p className="text-white/40 text-lg font-light leading-relaxed">{desc}</p>
+        <p className="text-white/40 text-base md:text-lg font-light leading-relaxed max-w-lg md:max-w-none">
+          {desc}
+        </p>
       </motion.div>
     </div>
   );

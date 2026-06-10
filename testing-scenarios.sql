@@ -5,19 +5,19 @@
 ---------------------------------------------------------
 -- SCENARIO 0: CLEAN SLATE / SYSTEM RESET
 ---------------------------------------------------------
-DELETE FROM public.deployments WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-DELETE FROM public.liabilities WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-DELETE FROM public.income_streams WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-DELETE FROM public.financial_goals WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-DELETE FROM public.strategic_objectives WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-DELETE FROM public.accounts WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-DELETE FROM public.kairos_insights WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-DELETE FROM public.operational_baseline WHERE user_id = '453007ef-8eba-4f6a-8d86-81445fc0af3d';
-
+DELETE FROM public.deployments WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.liabilities WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.income_streams WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.financial_goals WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.strategic_objectives WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.accounts WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.kairos_insights WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.operational_baseline WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
+DELETE FROM public.kairos_insights WHERE user_id = '78277e2c-25d1-4a00-9b50-32e4bd560e73';
 
 -- Initialize default settings
 INSERT INTO public.user_settings (user_id, total_liquidity)
-VALUES ('453007ef-8eba-4f6a-8d86-81445fc0af3d', 100000)
+VALUES ('78277e2c-25d1-4a00-9b50-32e4bd560e73', 100000)
 ON CONFLICT (user_id) DO UPDATE SET total_liquidity = 100000;
 
 

@@ -186,8 +186,8 @@ export default function DayZeroOnboarding({
 
       <OnboardingHeader step={step} totalSteps={STEPS.length} />
 
-      <div className="relative z-10 flex-1 flex items-center justify-center px-8 md:px-12 pt-16">
-        <div className="max-w-7xl w-full h-155 grid lg:grid-cols-[1.1fr_1.4fr] gap-16 md:gap-24 items-stretch overflow-visible">
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 md:px-12 pt-24 md:pt-16 pb-12 overflow-y-auto">
+        <div className="max-w-7xl w-full md:h-155 grid grid-cols-1 lg:grid-cols-[1.1fr_1.4fr] gap-8 md:gap-24 items-stretch overflow-visible">
           <OnboardingSidebar
             roman={activeStepConfig.roman}
             title={activeStepConfig.title}
@@ -195,8 +195,8 @@ export default function DayZeroOnboarding({
             direction={direction}
           />
 
-          <LuxuryCard className="h-full flex flex-col border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden">
-            <div className="flex-1 p-10 md:p-14 overflow-hidden relative rounded-t-[inherit]">
+          <LuxuryCard className="flex flex-col border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden min-h-[500px] md:min-h-0">
+            <div className="flex-1 p-6 md:p-14 overflow-hidden relative rounded-t-[inherit]">
               <form
                 onSubmit={handleSubmit}
                 className="h-full flex flex-col text-white"
@@ -240,10 +240,10 @@ export default function DayZeroOnboarding({
               </form>
             </div>
 
-            <div className="h-32 border-t border-white/5 relative z-10 px-12 md:px-16 flex flex-col justify-center shrink-0 bg-[#080808]/60 backdrop-blur-3xl rounded-b-[inherit]">
+            <div className="h-24 md:h-32 border-t border-white/5 relative z-10 px-6 md:px-16 flex flex-col justify-center shrink-0 bg-[#080808]/60 backdrop-blur-3xl rounded-b-[inherit]">
               {error && (
-                <div className="absolute top-0 left-0 w-full transform -translate-y-full px-12 pb-4">
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-[10px] font-mono tracking-wider flex items-center gap-3">
+                <div className="absolute top-0 left-0 w-full transform -translate-y-full px-6 md:px-12 pb-4">
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-[9px] md:text-[10px] font-mono tracking-wider flex items-center gap-3">
                     <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                     {error}
                   </div>
@@ -254,7 +254,7 @@ export default function DayZeroOnboarding({
                   type="button"
                   onClick={handlePrev}
                   disabled={step === 1}
-                  className="text-[11px] font-mono tracking-[0.6em] text-white/20 hover:text-white transition-all uppercase disabled:opacity-0 py-8 px-12 -ml-12 hover:bg-white/5 rounded-full"
+                  className="text-[10px] md:text-[11px] font-mono tracking-[0.4em] md:tracking-[0.6em] text-white/20 hover:text-white transition-all uppercase disabled:opacity-0 py-4 md:py-8 px-4 md:px-12 -ml-4 md:-ml-12 hover:bg-white/5 rounded-full"
                 >
                   ← Back
                 </button>
@@ -262,7 +262,7 @@ export default function DayZeroOnboarding({
                   {step === 4 ? (
                     <HoverButton
                       glowColor="rgba(255,255,255,0.4)"
-                      className="px-24 py-10 rounded-full text-[11px]"
+                      className="px-12 md:px-24 py-4 md:py-10 rounded-full text-[10px] md:text-[11px]"
                       disabled={isLoading || !isStepValid()}
                     >
                       {isLoading ? "..." : "Archive Setup"}
@@ -270,7 +270,7 @@ export default function DayZeroOnboarding({
                   ) : (
                     <RippleButton
                       variant="hoverborder"
-                      className="px-24 py-10 border-none text-[11px]"
+                      className="px-12 md:px-24 py-4 md:py-10 border-none text-[10px] md:text-[11px]"
                       disabled={isLoading || !isStepValid()}
                     >
                       Next Phase →

@@ -56,7 +56,7 @@ export function KairosNarrative({ insight }: KairosNarrativeProps) {
                 STATUS:
               </p>
               <p className="text-sm text-white/80 uppercase tracking-wider">
-                {insight.category.replace(/_/g, " ")}
+                {insight.category?.replace(/_/g, " ") || "STRATEGIC ANALYSIS"}
                 <span className={`ml-2 ${severityColor}`}>
                   (Severity: {displaySeverity})
                 </span>

@@ -18,7 +18,10 @@ interface IncomeVelocityStepProps {
   onChange: (incomes: OnboardingIncome[]) => void;
 }
 
-export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProps) {
+export function IncomeVelocityStep({
+  incomes,
+  onChange,
+}: IncomeVelocityStepProps) {
   const addIncome = () => {
     if (incomes.length < 3) {
       onChange([
@@ -48,38 +51,51 @@ export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProp
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">Income Velocity</h2>
-      <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+        Income Velocity
+      </h2>
+      <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
         {incomes.map((inc, idx) => (
-          <div key={idx} className="space-y-3 pb-3 border-b border-white/5 relative shrink-0">
-            <div className="grid grid-cols-2 gap-6">
+          <div
+            key={idx}
+            className="space-y-4 md:space-y-3 pb-6 md:pb-3 border-b border-white/5 relative shrink-0"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <input
                 type="text"
                 placeholder="e.g. Salary"
                 value={inc.income_name}
-                onChange={(e) => updateIncome(idx, { income_name: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+                onChange={(e) =>
+                  updateIncome(idx, { income_name: e.target.value })
+                }
+                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-xl md:text-2xl text-white focus:outline-none placeholder:text-white/5"
               />
               <input
                 type="text"
                 placeholder="Origin"
                 value={inc.source}
                 onChange={(e) => updateIncome(idx, { source: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-white/10 py-1 text-xs md:text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
               />
             </div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1">
                 <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
                   Type
                 </label>
                 <select
                   value={inc.income_type}
-                  onChange={(e) => updateIncome(idx, { income_type: e.target.value })}
+                  onChange={(e) =>
+                    updateIncome(idx, { income_type: e.target.value })
+                  }
                   className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
                 >
                   {INCOME_TYPES.map((t) => (
-                    <option key={t.value} value={t.value} className="bg-[#080808]">
+                    <option
+                      key={t.value}
+                      value={t.value}
+                      className="bg-[#080808]"
+                    >
                       {t.label}
                     </option>
                   ))}
@@ -93,8 +109,10 @@ export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProp
                   type="number"
                   placeholder="0.00"
                   value={inc.amount}
-                  onChange={(e) => updateIncome(idx, { amount: e.target.value })}
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
+                  onChange={(e) =>
+                    updateIncome(idx, { amount: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
                 />
               </div>
             </div>
@@ -104,7 +122,9 @@ export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProp
                 <input
                   type="checkbox"
                   checked={inc.is_recurring}
-                  onChange={(e) => updateIncome(idx, { is_recurring: e.target.checked })}
+                  onChange={(e) =>
+                    updateIncome(idx, { is_recurring: e.target.checked })
+                  }
                   className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
                 />
                 <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/60 transition-colors">
@@ -115,22 +135,31 @@ export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProp
                 <motion.div
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="grid grid-cols-2 gap-6 pt-2 pl-8 border-l border-white/5"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-2 pl-6 md:pl-8 border-l border-white/5"
                 >
                   <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-white/20 uppercase">Frequency</label>
+                    <label className="text-[9px] font-mono text-white/20 uppercase">
+                      Frequency
+                    </label>
                     <select
                       value={inc.cadence}
-                      onChange={(e) => updateIncome(idx, { cadence: e.target.value })}
+                      onChange={(e) =>
+                        updateIncome(idx, { cadence: e.target.value })
+                      }
                       className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
                     >
                       {CADENCES.map((c) => (
-                        <option key={c.value} value={c.value} className="bg-black">
+                        <option
+                          key={c.value}
+                          value={c.value}
+                          className="bg-black"
+                        >
                           {c.label}
                         </option>
                       ))}
                     </select>
                   </div>
+
                   {(inc.cadence === "monthly" ||
                     inc.cadence === "weekly" ||
                     inc.cadence === "biweekly") && (
@@ -145,13 +174,17 @@ export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProp
                           max="31"
                           placeholder="15"
                           value={inc.execution_day}
-                          onChange={(e) => updateIncome(idx, { execution_day: e.target.value })}
+                          onChange={(e) =>
+                            updateIncome(idx, { execution_day: e.target.value })
+                          }
                           className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
                         />
                       ) : (
                         <select
                           value={inc.execution_day || 1}
-                          onChange={(e) => updateIncome(idx, { execution_day: e.target.value })}
+                          onChange={(e) =>
+                            updateIncome(idx, { execution_day: e.target.value })
+                          }
                           className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono text-white/60 focus:outline-none"
                         >
                           {[
@@ -163,7 +196,11 @@ export function IncomeVelocityStep({ incomes, onChange }: IncomeVelocityStepProp
                             { label: "Sat", value: 6 },
                             { label: "Sun", value: 7 },
                           ].map((day) => (
-                            <option key={day.value} value={day.value} className="bg-black">
+                            <option
+                              key={day.value}
+                              value={day.value}
+                              className="bg-black"
+                            >
                               {day.label}
                             </option>
                           ))}

@@ -7,6 +7,8 @@ import Link from "next/link";
 import { SmoothScrollProvider } from "@/components/ui/smooth-scroll-provider";
 import { checkOnboardingStatusAction } from "./actions";
 import { BrandMark } from "@/components/ui/brand-mark";
+import DayZeroOnboarding from "@/components/dashboard/DayZeroOnboarding";
+import DashboardLoading from "./loading";
 
 export const dynamic = "force-dynamic";
 
@@ -212,7 +214,13 @@ export default function DashboardLayout({
           <div
             className={`max-w-5xl mx-auto px-4 md:px-16 py-8 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
           >
-            {children}
+            {isOnboarded === null ? (
+              <DashboardLoading />
+            ) : isOnboarded === false ? (
+              <DayZeroOnboarding onComplete={() => setIsOnboarded(true)} />
+            ) : (
+              children
+            )}
           </div>
         </SmoothScrollProvider>
       </main>

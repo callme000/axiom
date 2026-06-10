@@ -33,7 +33,10 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
     onChange(accounts.filter((_, i) => i !== index));
   };
 
-  const updateAccount = (index: number, updates: Partial<OnboardingAccount>) => {
+  const updateAccount = (
+    index: number,
+    updates: Partial<OnboardingAccount>,
+  ) => {
     const next = [...accounts];
     next[index] = { ...next[index], ...updates };
     onChange(next);
@@ -41,38 +44,53 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">Account Name</h2>
-      <div className="flex-1 space-y-4 overflow-y-auto scrollbar-hide pr-2">
+      <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+        Account Structure
+      </h2>
+      <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
         {accounts.map((acc, idx) => (
-          <div key={idx} className="space-y-3 pb-3 border-b border-white/5 relative shrink-0">
-            <div className="grid grid-cols-2 gap-6">
+          <div
+            key={idx}
+            className="space-y-4 md:space-y-3 pb-6 md:pb-3 border-b border-white/5 relative shrink-0"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <input
                 type="text"
                 placeholder="e.g. M-Pesa, Crypto Wallet"
                 value={acc.account_name}
-                onChange={(e) => updateAccount(idx, { account_name: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-2xl text-white focus:outline-none placeholder:text-white/5"
+                onChange={(e) =>
+                  updateAccount(idx, { account_name: e.target.value })
+                }
+                className="bg-transparent border-b border-white/10 py-1 font-cormorant text-xl md:text-2xl text-white focus:outline-none placeholder:text-white/5"
               />
               <input
                 type="text"
                 placeholder="Financial Institution (optional)"
                 value={acc.institution}
-                onChange={(e) => updateAccount(idx, { institution: e.target.value })}
-                className="bg-transparent border-b border-white/10 py-1 text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
+                onChange={(e) =>
+                  updateAccount(idx, { institution: e.target.value })
+                }
+                className="bg-transparent border-b border-white/10 py-1 text-xs md:text-sm font-light text-white/60 focus:outline-none placeholder:text-white/5"
               />
             </div>
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
               <div className="space-y-1">
                 <label className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">
                   Account Type
                 </label>
                 <select
                   value={acc.account_type}
-                  onChange={(e) => updateAccount(idx, { account_type: e.target.value })}
+                  onChange={(e) =>
+                    updateAccount(idx, { account_type: e.target.value })
+                  }
                   className="w-full bg-transparent border-b border-white/10 py-1 text-[10px] font-mono tracking-widest uppercase text-white/40 focus:outline-none"
                 >
                   {ACCOUNT_TYPES.map((t) => (
-                    <option key={t.value} value={t.value} className="bg-[#080808]">
+                    <option
+                      key={t.value}
+                      value={t.value}
+                      className="bg-[#080808]"
+                    >
                       {t.label}
                     </option>
                   ))}
@@ -86,11 +104,14 @@ export function AccountsStep({ accounts, onChange }: AccountsStepProps) {
                   type="number"
                   placeholder="0.00"
                   value={acc.current_balance}
-                  onChange={(e) => updateAccount(idx, { current_balance: e.target.value })}
-                  className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light text-white focus:outline-none tabular-nums"
+                  onChange={(e) =>
+                    updateAccount(idx, { current_balance: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-white/10 py-1 text-lg md:text-xl font-light text-white focus:outline-none tabular-nums"
                 />
               </div>
             </div>
+
             {accounts.length > 1 && (
               <button
                 type="button"
