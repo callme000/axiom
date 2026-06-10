@@ -51,7 +51,7 @@ export function LuxuryHero() {
         {/* Main Display Headline */}
         <AnimatePresence>
           {isVisible && (
-            <h1 className="font-cormorant italic text-7xl md:text-[10rem] lg:text-[12rem] text-white leading-[0.8] tracking-tighter mb-12 overflow-hidden">
+            <h1 className="font-cormorant italic text-5xl md:text-[8rem] lg:text-[12rem] text-white leading-[0.8] tracking-tighter mb-12 overflow-hidden">
               <motion.span
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
@@ -87,7 +87,7 @@ export function LuxuryHero() {
           initial={{ opacity: 0 }}
           animate={isVisible ? { opacity: 1 } : {}}
           transition={{ duration: 1.5, delay: 1.2 }}
-          className="max-w-2xl mx-auto text-white/40 text-xl md:text-2xl font-light leading-relaxed mb-16"
+          className="max-w-2xl mx-auto text-white/40 text-lg md:text-2xl font-light leading-relaxed mb-16 px-4"
         >
           Beyond passive tracking. Axiom deploys deterministic intelligence to
           secure your structural solvency and amplify liquidity in the Kenyan
@@ -99,19 +99,19 @@ export function LuxuryHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, delay: 1.5 }}
-          className="flex flex-col md:flex-row justify-center gap-8"
+          className="flex flex-col md:flex-row justify-center gap-6 md:gap-8 px-6"
         >
           <Link href="/signup">
             <HoverButton
               glowColor="rgba(255,255,255,0.5)"
-              className="px-24 py-8 rounded-full border border-white/20"
+              className="px-12 md:px-24 py-6 md:py-8 rounded-full border border-white/20 text-sm md:text-base"
             >
               Initialize Access
             </HoverButton>
           </Link>
           <RippleButton
             variant="hoverborder"
-            className="px-16 py-8 rounded-full text-[10px] tracking-widest"
+            className="px-12 md:px-16 py-6 md:py-8 rounded-full text-[9px] md:text-[10px] tracking-widest"
             onClick={() => {
               const el = document.getElementById("architecture");
               el?.scrollIntoView({ behavior: "smooth" });

@@ -210,7 +210,7 @@ export default function DashboardLayout({
       >
         <SmoothScrollProvider>
           <div
-            className={`max-w-5xl mx-auto px-6 md:px-16 py-12 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
+            className={`max-w-5xl mx-auto px-4 md:px-16 py-8 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
           >
             {children}
           </div>

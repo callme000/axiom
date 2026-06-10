@@ -140,13 +140,13 @@ class CarouselGeneratorAPI:
 
 def main():
     # CONFIGURATION
-    THEME = "dark abstract geometric shapes, black marble, clinical white lights, moody minimalism"
+    THEME = "black command center, holographic financial telemetry, glowing dashboards, dark luxury technology, cinematic shadows"
     SLIDES = [
-        "1: Your financial decisions are compromised.\\nEgo and fear are taxing your capital.",
-        "2: You buy to simulate status.\\nYou avoid auditing your accounts because of anxiety.\\nEmotion is the enemy of efficiency.",
-        "3: The elite do not operate on feelings.\\nThey operate on strict, unforgiving systems.\\nMath dictates their deployment.",
-        "4: Axiom strips the emotion out of your operations.\\nOur intelligence engine calculates your structural solvency with zero judgment.\\nJust cold, deterministic truth.",
-        "5: Stop operating on feelings.\\nEstablish your Day Zero Baseline today.\\nLink in bio.",
+        "1: Most people do not manage money.\\nThey manage memories.",
+        "2: Ask someone where their capital went last month.\\nYou will receive a story.\\nNot data.",
+        "3: Without telemetry, patterns remain invisible.\\nInvisible patterns become expensive mistakes.",
+        "4: Axiom transforms transactions into behavioral intelligence.\\nEvery deployment becomes observable.",
+        "5: Stop guessing.\\nStart measuring.\\nEstablish your Day Zero Baseline.\\nLink in bio.",
     ]
 
     generator = CarouselGeneratorAPI()

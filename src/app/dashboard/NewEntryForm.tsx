@@ -58,8 +58,8 @@ export function NewEntryForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-12">
-      <div className="space-y-12">
+    <form onSubmit={handleSubmit} className="space-y-8 md:space-y-12">
+      <div className="space-y-8 md:space-y-12">
         <div className="space-y-4">
           <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
             Intent
@@ -70,12 +70,12 @@ export function NewEntryForm({
             placeholder="Objective of this deployment?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent border-b border-white/10 py-6 font-cormorant text-4xl text-white placeholder:text-white/20 focus:outline-none focus:border-white transition-all"
+            className="w-full bg-transparent border-b border-white/10 py-6 font-cormorant text-3xl md:text-4xl text-white placeholder:text-white/20 focus:outline-none focus:border-white transition-all"
             required
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="flex justify-between items-center">

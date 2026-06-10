@@ -195,25 +195,25 @@ export default function DashboardPage() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="max-w-7xl mx-auto p-6 md:p-12 pb-32 space-y-24"
+      className="max-w-7xl mx-auto p-4 md:p-12 pb-32 space-y-12 md:space-y-24"
     >
       {/* HEADER SECTION */}
       <motion.header
         variants={itemVariants}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-12"
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8 md:pb-12"
       >
-        <div className="space-y-4">
+        <div className="space-y-2 md:space-y-4">
           <p className="font-mono text-[10px] tracking-[0.6em] text-white/20 uppercase">
             Strategic Command Center // v1.0
           </p>
-          <h1 className="font-cormorant text-6xl text-white tracking-tight leading-none">
+          <h1 className="font-cormorant text-4xl md:text-6xl text-white tracking-tight leading-none">
             Welcome, <span className="italic">Architect.</span>
           </h1>
         </div>
         <div className="flex gap-4">
           <button
             onClick={fetchDashboardData}
-            className="px-6 py-3 border border-white/10 rounded-full font-mono text-[9px] tracking-widest uppercase hover:bg-white/5 transition-all active:scale-95"
+            className="px-6 py-3 border border-white/10 rounded-full font-mono text-[9px] tracking-widest uppercase hover:bg-white/5 transition-all active:scale-95 w-full md:w-auto"
           >
             Refresh Intel
           </button>
@@ -224,12 +224,12 @@ export default function DashboardPage() {
       <motion.section
         id="overview"
         variants={itemVariants}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8"
       >
         {hudMetrics.map((metric, i) => (
           <LuxuryCard
             key={metric.label}
-            className="p-8 group hover:border-white/20 transition-all duration-500 flex flex-col justify-between"
+            className="p-6 md:p-8 group hover:border-white/20 transition-all duration-500 flex flex-col justify-between"
           >
             <div>
               <p className="font-mono text-[9px] tracking-[0.4em] text-white/20 uppercase group-hover:text-white/40 transition-colors">
@@ -237,7 +237,7 @@ export default function DashboardPage() {
               </p>
               <div className="space-y-1 mt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-cormorant text-4xl text-white">
+                  <h3 className="font-cormorant text-3xl md:text-4xl text-white">
                     <AnimatedNumber
                       value={metric.value}
                       prefix={metric.prefix}
@@ -283,13 +283,13 @@ export default function DashboardPage() {
 
       {/* ZONE 2: ARCHITECTURE DEPLOYMENT (NewEntryForm) */}
       <motion.section id="deploy" variants={itemVariants} className="w-full">
-        <LuxuryCard className="p-8 md:p-16 border-white/10">
-          <div className="flex flex-col md:flex-row gap-12 items-start">
+        <LuxuryCard className="p-6 md:p-16 border-white/10">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
             <div className="space-y-4 md:w-1/3">
-              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center mb-6">
+              <div className="hidden md:flex w-8 h-8 rounded-full bg-white/5 items-center justify-center mb-6">
                 <div className="w-2 h-2 rounded-full bg-white/40" />
               </div>
-              <h2 className="font-cormorant text-4xl text-white">
+              <h2 className="font-cormorant text-3xl md:text-4xl text-white">
                 Architecture Deployment
               </h2>
               <p className="font-mono text-[10px] tracking-widest text-white/30 uppercase leading-relaxed">
@@ -327,13 +327,13 @@ export default function DashboardPage() {
       <motion.section
         id="intelligence"
         variants={itemVariants}
-        className="space-y-12"
+        className="space-y-8 md:space-y-12"
       >
-        <div className="flex items-center gap-6">
-          <span className="font-cormorant italic text-3xl text-white/20">
+        <div className="flex items-center gap-4 md:gap-6">
+          <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
             I.
           </span>
-          <h2 className="font-cormorant text-4xl text-white tracking-wide">
+          <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
             Kairos Intelligence
           </h2>
           <div className="flex-1 h-px bg-white/5" />
@@ -350,17 +350,17 @@ export default function DashboardPage() {
         {/* LEFT COLUMN: TACTICAL ENGINE */}
         <section className="space-y-12 lg:space-y-24">
           {/* PENDING ACTIONS */}
-          <div className="space-y-12">
-            <div className="flex items-center gap-6">
-              <span className="font-cormorant italic text-3xl text-white/20">
+          <div className="space-y-8 md:space-y-12">
+            <div className="flex items-center gap-4 md:gap-6">
+              <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
                 II.
               </span>
-              <h2 className="font-cormorant text-4xl text-white tracking-wide">
+              <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
                 Tactical Response
               </h2>
               <div className="flex-1 h-px bg-white/5" />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <PendingInflows
                 incomeStreams={ledger.incomeStreams}
                 accounts={ledger.accounts}
@@ -380,13 +380,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-8 lg:space-y-12">
-            <LuxuryCard className="p-6 md:p-10">
+            <LuxuryCard className="p-4 md:p-10">
               <IncomeSection
                 incomeStreams={ledger.incomeStreams}
                 onSnapshot={applyDashboardSnapshot}
               />
             </LuxuryCard>
-            <LuxuryCard className="p-6 md:p-10">
+            <LuxuryCard className="p-4 md:p-10">
               <BaselineSection
                 baseline={ledger.baseline}
                 onSnapshot={applyDashboardSnapshot}
@@ -394,14 +394,14 @@ export default function DashboardPage() {
             </LuxuryCard>
           </div>
 
-          <LuxuryCard className="p-6 md:p-10">
+          <LuxuryCard className="p-4 md:p-10">
             <LiabilitySection
               liabilities={ledger.liabilities}
               onSnapshot={applyDashboardSnapshot}
             />
           </LuxuryCard>
 
-          <LuxuryCard className="p-6 md:p-10">
+          <LuxuryCard className="p-4 md:p-10">
             <AccountSection
               accounts={ledger.accounts}
               onSnapshot={applyDashboardSnapshot}
@@ -411,17 +411,17 @@ export default function DashboardPage() {
 
         {/* RIGHT COLUMN: STRATEGIC ENGINE */}
         <section className="space-y-12 lg:space-y-24">
-          <div className="space-y-12">
-            <div className="flex items-center gap-6">
-              <span className="font-cormorant italic text-3xl text-white/20">
+          <div className="space-y-8 md:space-y-12">
+            <div className="flex items-center gap-4 md:gap-6">
+              <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
                 III.
               </span>
-              <h2 className="font-cormorant text-4xl text-white tracking-wide">
+              <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
                 Strategic Alignment
               </h2>
               <div className="flex-1 h-px bg-white/5" />
             </div>
-            <LuxuryCard className="p-6 md:p-10">
+            <LuxuryCard className="p-4 md:p-10">
               <StrategicObjectiveSection
                 objectives={ledger.objectives}
                 onSnapshot={applyDashboardSnapshot}
@@ -429,24 +429,24 @@ export default function DashboardPage() {
             </LuxuryCard>
           </div>
 
-          <LuxuryCard className="p-6 md:p-10">
+          <LuxuryCard className="p-4 md:p-10">
             <GoalSection
               goals={ledger.goals}
               onSnapshot={applyDashboardSnapshot}
             />
           </LuxuryCard>
 
-          <LuxuryCard className="p-6 md:p-10">
+          <LuxuryCard className="p-4 md:p-10">
             <HistoricalAudit deployments={ledger.deployments} />
           </LuxuryCard>
 
           {/* OBSERVABILITY */}
           <section className="opacity-20 hover:opacity-100 transition-opacity duration-1000">
-            <div className="flex items-center gap-6 mb-12">
-              <span className="font-cormorant italic text-3xl text-white/20">
+            <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12">
+              <span className="font-cormorant italic text-2xl md:text-3xl text-white/20">
                 IV.
               </span>
-              <h2 className="font-cormorant text-4xl text-white tracking-wide">
+              <h2 className="font-cormorant text-3xl md:text-4xl text-white tracking-wide whitespace-nowrap">
                 System Telemetry
               </h2>
               <div className="flex-1 h-px bg-white/5" />
