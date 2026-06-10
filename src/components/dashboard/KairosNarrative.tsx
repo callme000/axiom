@@ -93,7 +93,7 @@ export function KairosNarrative({ insight }: KairosNarrativeProps) {
                         key={idx}
                         className="flex gap-4 items-start group/signal"
                       >
-                        <span className="text-[10px] text-muted-foreground/30 mt-1">
+                        <span className="text-[10px] text-muted-foreground/60 mt-1">
                           {idx + 1}.
                         </span>
                         <p className="text-xs text-muted-foreground group-hover/signal:text-foreground transition-colors leading-relaxed">

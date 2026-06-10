@@ -98,7 +98,7 @@ export function BaselineSection({
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/80 hover:text-white transition-colors"
         >
           {isAdding ? "✕ CANCEL" : "+ APPEND RECURRING"}
         </button>
@@ -109,7 +109,7 @@ export function BaselineSection({
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Baseline Name
                 </label>
                 <input
@@ -122,7 +122,7 @@ export function BaselineSection({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Amount
                 </label>
                 <input
@@ -138,7 +138,7 @@ export function BaselineSection({
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Category
                 </label>
                 <select
@@ -170,7 +170,7 @@ export function BaselineSection({
                     }
                     className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
                   />
-                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                  <span className="text-[10px] font-mono text-muted-foreground/80 uppercase tracking-widest group-hover:text-white/60 transition-colors">
                     Recurring Expense
                   </span>
                 </label>
@@ -179,7 +179,7 @@ export function BaselineSection({
                   <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-top-2 border-l border-white/5 pl-6 ml-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-2">
-                        <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                        <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                           Frequency
                         </label>
                         <select
@@ -206,7 +206,7 @@ export function BaselineSection({
 
                       {form.cadence === "daily" && (
                         <div className="flex items-center pt-4">
-                          <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest leading-relaxed">
+                          <p className="text-[10px] font-mono text-muted-foreground/80 uppercase tracking-widest leading-relaxed">
                             <span className="text-white/60">Note:</span> You
                             will be prompted everyday to verify this baseline.
                           </p>
@@ -217,7 +217,7 @@ export function BaselineSection({
                         form.cadence === "weekly" ||
                         form.cadence === "biweekly") && (
                         <div className="space-y-2">
-                          <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                          <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                             {form.cadence === "monthly"
                               ? "Day of Month (1-31)"
                               : "Day of Week"}
@@ -307,15 +307,15 @@ export function BaselineSection({
           </div>
         ) : (
           baseline.map((item, index) => (
-            <ScrollReveal key={item.id} delay={index * 0.05} distance={10}>
+            <ScrollReveal key={item.id} delay={item.execution_day ? (index * 0.05) : index * 0.05} distance={10}>
               <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                    <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60">
                       {item.cadence}
                     </span>
                     {item.execution_day && (
-                      <span className="text-[8px] font-mono tracking-widest uppercase text-white/10">
+                      <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/50">
                         • Day {item.execution_day}
                       </span>
                     )}

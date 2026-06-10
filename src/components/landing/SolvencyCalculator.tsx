@@ -46,7 +46,7 @@ export function SolvencyCalculator() {
               {/* Input 1 */}
               <div className="space-y-8 group">
                 <div className="flex justify-between items-end border-b border-border pb-4 transition-colors group-hover:border-truth/40">
-                  <label className="text-muted-foreground/40 font-mono text-[10px] uppercase tracking-[0.4em]">
+                  <label className="text-muted-foreground/70 font-mono text-[10px] uppercase tracking-[0.4em]">
                     Total Liquid Assets
                   </label>
                   <span className="font-cormorant text-4xl text-foreground">
@@ -62,7 +62,7 @@ export function SolvencyCalculator() {
                   onChange={(e) => setBalance(Number(e.target.value))}
                   className="w-full"
                 />
-                <div className="flex justify-between text-[9px] text-muted-foreground/20 font-mono uppercase tracking-widest">
+                <div className="flex justify-between text-[9px] text-muted-foreground/50 font-mono uppercase tracking-widest">
                   <span>KES 50K</span>
                   <span>KES 10M+</span>
                 </div>
@@ -71,7 +71,7 @@ export function SolvencyCalculator() {
               {/* Input 2 */}
               <div className="space-y-8 group">
                 <div className="flex justify-between items-end border-b border-border pb-4 transition-colors group-hover:border-truth/40">
-                  <label className="text-muted-foreground/40 font-mono text-[10px] uppercase tracking-[0.4em]">
+                  <label className="text-muted-foreground/70 font-mono text-[10px] uppercase tracking-[0.4em]">
                     Monthly Deployment
                   </label>
                   <span className="font-cormorant text-4xl text-foreground">
@@ -87,7 +87,7 @@ export function SolvencyCalculator() {
                   onChange={(e) => setBurn(Number(e.target.value))}
                   className="w-full"
                 />
-                <div className="flex justify-between text-[9px] text-muted-foreground/20 font-mono uppercase tracking-widest">
+                <div className="flex justify-between text-[9px] text-muted-foreground/50 font-mono uppercase tracking-widest">
                   <span>KES 10K</span>
                   <span>KES 2M+</span>
                 </div>
@@ -108,21 +108,21 @@ export function SolvencyCalculator() {
               </div>
 
               <div>
-                <p className="text-muted-foreground/40 font-mono text-[10px] uppercase tracking-[0.5em] mb-4">
+                <p className="text-muted-foreground/70 font-mono text-[10px] uppercase tracking-[0.5em] mb-4">
                   Deterministic Runway
                 </p>
                 <div className="flex items-baseline gap-4">
                   <span className="font-cormorant text-[10rem] md:text-[12rem] text-truth leading-none tracking-tighter drop-shadow-[0_0_20px_rgba(59,130,246,0.3)]">
                     {runway}
                   </span>
-                  <span className="font-cormorant italic text-4xl text-muted-foreground/20">
+                  <span className="font-cormorant italic text-4xl text-muted-foreground/50">
                     Months
                   </span>
                 </div>
               </div>
 
               <div className="pt-12 border-t border-border space-y-10">
-                <p className="text-muted-foreground/60 text-sm leading-relaxed font-light max-w-sm">
+                <p className="text-muted-foreground/80 text-sm leading-relaxed font-light max-w-sm">
                   This projection is based on your current liquidity
                   architecture. Axiom provides the tools to optimize these
                   variables and extend your runway indefinitely.
@@ -132,7 +132,7 @@ export function SolvencyCalculator() {
                   Establish Baseline Architecture
                 </RippleButton>
 
-                <p className="text-[9px] font-mono text-muted-foreground/20 uppercase tracking-widest text-center italic">
+                <p className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-widest text-center italic">
                   * Estimated from clinical mathematical truth
                 </p>
               </div>

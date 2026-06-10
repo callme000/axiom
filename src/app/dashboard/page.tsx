@@ -250,10 +250,10 @@ export default function DashboardPage() {
           >
             <div className="relative z-10">
               <div className="flex justify-between items-start">
-                <p className="font-mono text-[9px] tracking-[0.4em] text-muted-foreground/40 uppercase group-hover:text-muted-foreground transition-colors">
+                <p className="font-mono text-[9px] tracking-[0.4em] text-muted-foreground/70 uppercase group-hover:text-muted-foreground transition-colors">
                   {metric.label}
                 </p>
-                <metric.icon strokeWidth={1} size={18} className="text-muted-foreground/20 group-hover:text-truth transition-colors" />
+                <metric.icon strokeWidth={1} size={18} className="text-muted-foreground/50 group-hover:text-truth transition-colors" />
               </div>
               <div className="space-y-1 mt-4">
                 <div className="flex items-center justify-between">
@@ -265,7 +265,7 @@ export default function DashboardPage() {
                     />
                   </h3>
                 </div>
-                <p className="text-[9px] font-mono text-muted-foreground/20 uppercase tracking-widest group-hover:text-muted-foreground/40 transition-colors">
+                <p className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-widest group-hover:text-muted-foreground/70 transition-colors">
                   {metric.desc}
                 </p>
               </div>
@@ -312,7 +312,7 @@ export default function DashboardPage() {
               <h2 className="font-cormorant text-3xl md:text-4xl text-foreground">
                 Architecture Deployment
               </h2>
-              <p className="font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase leading-relaxed">
+              <p className="font-mono text-[10px] tracking-widest text-muted-foreground/70 uppercase leading-relaxed">
                 Log deployments, allocate capital, and dictate the flow of
                 resources through your system.
               </p>
@@ -351,7 +351,7 @@ export default function DashboardPage() {
       >
         <div className="flex items-center gap-4 md:gap-6">
           <div className="flex items-center gap-4">
-            <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+            <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/50">
               I.
             </span>
             <Brain strokeWidth={1} size={24} className="text-truth" />
@@ -376,7 +376,7 @@ export default function DashboardPage() {
           <div className="space-y-8 md:space-y-12">
             <div className="flex items-center gap-4 md:gap-6">
               <div className="flex items-center gap-4">
-                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/50">
                   II.
                 </span>
                 <Zap strokeWidth={1} size={24} className="text-warning" />
@@ -440,7 +440,7 @@ export default function DashboardPage() {
           <div className="space-y-8 md:space-y-12">
             <div className="flex items-center gap-4 md:gap-6">
               <div className="flex items-center gap-4">
-                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/50">
                   III.
                 </span>
                 <Hexagon strokeWidth={1} size={24} className="text-truth" />
@@ -473,7 +473,7 @@ export default function DashboardPage() {
           <section className="opacity-20 hover:opacity-100 transition-opacity duration-1000">
             <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12">
               <div className="flex items-center gap-4">
-                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/20">
+                <span className="font-cormorant italic text-2xl md:text-3xl text-muted-foreground/50">
                   IV.
                 </span>
                 <Activity strokeWidth={1} size={24} className="text-truth" />

@@ -79,7 +79,7 @@ export function ProcessFlow() {
 
                 <div className="space-y-6 relative z-10">
                   <div className="flex justify-between items-start">
-                    <span className="font-cormorant italic text-2xl text-muted-foreground/20 group-hover:text-primary-foreground/20 transition-colors">
+                    <span className="font-cormorant italic text-2xl text-muted-foreground/50 group-hover:text-primary-foreground/20 transition-colors">
                       {step.roman}
                     </span>
                     <step.icon 
@@ -115,7 +115,7 @@ export function ProcessFlow() {
             </h3>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.4}>
-            <p className="text-muted-foreground/20 font-mono text-[10px] tracking-[0.5em] uppercase">
+            <p className="text-muted-foreground/50 font-mono text-[10px] tracking-[0.5em] uppercase">
               Axiom Strategic Wealth Intelligence
             </p>
           </ScrollReveal>

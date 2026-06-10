@@ -89,7 +89,7 @@ export function LiabilitySection({
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/80 hover:text-white transition-colors"
         >
           {isAdding ? "✕ CANCEL" : "+ APPEND COMMITMENT"}
         </button>
@@ -100,7 +100,7 @@ export function LiabilitySection({
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Commitment Name
                 </label>
                 <input
@@ -115,7 +115,7 @@ export function LiabilitySection({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Financial Institution
                 </label>
                 <input
@@ -129,7 +129,7 @@ export function LiabilitySection({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Outstanding Balance
                 </label>
                 <input
@@ -147,7 +147,7 @@ export function LiabilitySection({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Type
                 </label>
                 <select
@@ -165,7 +165,7 @@ export function LiabilitySection({
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Interest (% per cadence)
                 </label>
                 <input
@@ -191,7 +191,7 @@ export function LiabilitySection({
                   }
                   className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
                 />
-                <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                <span className="text-[10px] font-mono text-muted-foreground/80 uppercase tracking-widest group-hover:text-white/60 transition-colors">
                   Paid in Cadences
                 </span>
               </label>
@@ -200,7 +200,7 @@ export function LiabilitySection({
                 <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-top-2">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                      <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                         Cadence
                       </label>
                       <select
@@ -219,7 +219,7 @@ export function LiabilitySection({
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                      <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                         {form.cadence === "monthly"
                           ? "Day of Month (1-31)"
                           : "Day of Week"}
@@ -272,7 +272,7 @@ export function LiabilitySection({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                       Payment Amount per Cadence
                     </label>
                     <input
@@ -325,11 +325,11 @@ export function LiabilitySection({
             <ScrollReveal key={liability.id} delay={index * 0.05} distance={10}>
               <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
                 <div className="space-y-1">
-                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60">
                     {LiabilityMap[liability.liability_type] ||
                       liability.liability_type}
                     {liability.is_paid_in_cadences && (
-                      <span className="ml-2 text-white/10">
+                      <span className="ml-2 text-muted-foreground/50">
                         • {liability.cadence} ({liability.cadence_day_date})
                       </span>
                     )}

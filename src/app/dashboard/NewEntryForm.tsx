@@ -61,7 +61,7 @@ export function NewEntryForm({
     <form onSubmit={handleSubmit} className="space-y-8 md:space-y-12">
       <div className="space-y-8 md:space-y-12">
         <div className="space-y-4">
-          <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em] ml-1">
             Intent
           </label>
           <input
@@ -70,7 +70,7 @@ export function NewEntryForm({
             placeholder="Objective of this deployment?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent border-b border-white/10 py-6 font-cormorant text-3xl md:text-4xl text-white placeholder:text-white/20 focus:outline-none focus:border-white transition-all"
+            className="w-full bg-transparent border-b border-white/10 py-6 font-cormorant text-3xl md:text-4xl text-white placeholder:text-muted-foreground/60 focus:outline-none focus:border-white transition-all"
             required
           />
         </div>
@@ -79,10 +79,10 @@ export function NewEntryForm({
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
+                <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em] ml-1">
                   Amount (KES)
                 </label>
-                <span className="text-[8px] font-mono text-white/10 uppercase tracking-widest">
+                <span className="text-[8px] font-mono text-muted-foreground/50 uppercase tracking-widest">
                   Available: {formatCurrency(liquidity)}
                 </span>
               </div>
@@ -92,12 +92,12 @@ export function NewEntryForm({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-transparent border-b border-white/10 py-4 font-cormorant text-3xl text-white placeholder:text-white/20 focus:outline-none focus:border-white transition-all tabular-nums"
+                className="w-full bg-transparent border-b border-white/10 py-4 font-cormorant text-3xl text-white placeholder:text-muted-foreground/60 focus:outline-none focus:border-white transition-all tabular-nums"
                 required
               />
             </div>
             <div className="space-y-4">
-              <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
+              <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em] ml-1">
                 Funding Source
               </label>
               <select
@@ -119,7 +119,7 @@ export function NewEntryForm({
           </div>
 
           <div className="space-y-6">
-            <label className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] ml-1">
+            <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em] ml-1">
               Strategic Classification
             </label>
             <div className="grid grid-cols-2 gap-4">
@@ -131,14 +131,14 @@ export function NewEntryForm({
                   className={`p-4 border transition-all text-left space-y-2 ${
                     category === cat.value
                       ? "border-white bg-white text-black"
-                      : "border-white/5 bg-white/2 text-white/40 hover:border-white/20 hover:text-white"
+                      : "border-white/5 bg-white/2 text-muted-foreground/80 hover:border-white/20 hover:text-white"
                   }`}
                 >
                   <span className="block text-[8px] font-mono tracking-widest uppercase">
                     {DeploymentMap[cat.value] || cat.label}
                   </span>
                   <span
-                    className={`block text-[7px] font-light leading-tight ${category === cat.value ? "text-black/60" : "text-white/20"}`}
+                    className={`block text-[7px] font-light leading-tight ${category === cat.value ? "text-black/60" : "text-muted-foreground/60"}`}
                   >
                     {cat.definition}
                   </span>
@@ -161,7 +161,7 @@ export function NewEntryForm({
             type="button"
             onClick={onCancel}
             disabled={isActionLoading}
-            className="flex-1 border border-white/5 text-white/40 py-6 font-medium tracking-[0.3em] uppercase text-xs hover:bg-white/5 transition-all"
+            className="flex-1 border border-white/5 text-muted-foreground/80 py-6 font-medium tracking-[0.3em] uppercase text-xs hover:bg-white/5 transition-all"
           >
             Cancel
           </button>

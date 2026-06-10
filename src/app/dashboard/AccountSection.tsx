@@ -79,7 +79,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/40 hover:text-foreground transition-colors"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/80 hover:text-foreground transition-colors"
         >
           {isAdding ? "✕ CANCEL" : "+ APPEND ACCOUNT"}
         </button>
@@ -89,7 +89,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
           <form onSubmit={handleSourceSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Account Name
                 </label>
                 <input
@@ -107,7 +107,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Current Liquidity
                 </label>
                 <input
@@ -128,7 +128,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Account Type
                 </label>
                 <select
@@ -149,7 +149,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Financial Institution
                 </label>
                 <input
@@ -202,7 +202,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
             <ScrollReveal key={account.id} delay={index * 0.05} distance={10}>
               <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
                 <div className="space-y-1">
-                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60">
                     {AccountMap[account.account_type] || account.account_type}
                   </span>
                   <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
@@ -214,7 +214,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                     {formatCurrency(account.current_balance)}
                   </p>
                   {account.institution && (
-                    <p className="text-[8px] font-mono text-white/10 uppercase tracking-widest mt-1">
+                    <p className="text-[8px] font-mono text-muted-foreground/50 uppercase tracking-widest mt-1">
                       {account.institution}
                     </p>
                   )}

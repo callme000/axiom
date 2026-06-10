@@ -106,7 +106,7 @@ export function StrategicPillars() {
 
                   <div className="flex items-center gap-12 relative z-10">
                     <div className="flex items-center gap-4">
-                      <span className="font-cormorant italic text-2xl text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors w-8">
+                      <span className="font-cormorant italic text-2xl text-muted-foreground/50 group-hover:text-muted-foreground/70 transition-colors w-8">
                         {pillar.roman}
                       </span>
                       <pillar.icon 

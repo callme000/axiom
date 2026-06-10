@@ -140,7 +140,7 @@ export function TelemetryDashboard() {
                           : log.severity === "high" ||
                               log.severity === "warning"
                             ? "text-warning"
-                            : "text-muted-foreground/40"
+                            : "text-muted-foreground/70"
                       }`}
                     >
                       {log.severity}
@@ -155,7 +155,7 @@ export function TelemetryDashboard() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="py-12 text-center text-[10px] font-mono text-muted-foreground/20 uppercase tracking-widest"
+                    className="py-12 text-center text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest"
                   >
                     No forensic data available.
                   </td>

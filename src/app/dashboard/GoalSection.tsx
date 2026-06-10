@@ -81,7 +81,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/80 hover:text-white transition-colors"
         >
           {isAdding ? "✕ CANCEL" : "+ APPEND MILESTONE"}
         </button>
@@ -92,7 +92,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Milestone Name
                 </label>
                 <input
@@ -107,7 +107,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Milestone Type
                 </label>
                 <select
@@ -132,7 +132,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Priority
                 </label>
                 <select
@@ -150,7 +150,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Status
                 </label>
                 <select
@@ -169,7 +169,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Target Amount
                 </label>
                 <input
@@ -184,7 +184,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Current Progress
                 </label>
                 <input
@@ -201,7 +201,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Target Date
                 </label>
                 <input
@@ -214,7 +214,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                   Milestone Notes
                 </label>
                 <input
@@ -263,7 +263,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                         className={`text-[8px] font-mono tracking-widest uppercase ${
                           goal.priority === "critical"
                             ? "text-red-500"
-                            : "text-white/20"
+                            : "text-muted-foreground/60"
                         }`}
                       >
                         {goal.priority}

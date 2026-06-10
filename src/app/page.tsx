@@ -121,7 +121,7 @@ export default function LandingPage() {
 
               <div className="flex flex-col items-center gap-6 md:gap-8">
                 <div className="h-24 md:h-40 w-px bg-linear-to-b from-truth/40 to-transparent" />
-                <p className="font-mono text-[9px] tracking-[0.6em] text-muted-foreground/40 uppercase">
+                <p className="font-mono text-[9px] tracking-[0.6em] text-muted-foreground/70 uppercase">
                   Axiom Strategic Protocol // v1.0
                 </p>
               </div>
@@ -143,7 +143,7 @@ export default function LandingPage() {
                 Deterministic financial intelligence for the sovereign individual.
                 Precision modeling for a chaotic ecosystem.
               </p>
-              <div className="pt-8 border-t border-border flex gap-8 font-mono text-[9px] tracking-widest text-muted-foreground/30 uppercase">
+              <div className="pt-8 border-t border-border flex gap-8 font-mono text-[9px] tracking-widest text-muted-foreground/60 uppercase">
                 <span>Encrypted Session</span>
                 <span>Regional Node: Nairobi</span>
               </div>
@@ -183,7 +183,7 @@ export default function LandingPage() {
                 <Link href="#" className="hover:text-truth transition-colors">
                   Compliance Audit
                 </Link>
-                <div className="pt-12 text-muted-foreground/20 italic normal-case font-serif text-sm">
+                <div className="pt-12 text-muted-foreground/50 italic normal-case font-serif text-sm">
                   © 2026 Axiom Labs. All rights reserved.
                 </div>
               </div>

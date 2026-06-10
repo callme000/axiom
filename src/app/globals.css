@@ -101,10 +101,10 @@
     --secondary: hsl(240 5% 10%);
     --secondary-foreground: hsl(0 0% 98%);
 
-    --muted: hsl(240 5% 7%);
-    --muted-foreground: hsl(240 5% 60%);
+    --muted: hsl(240 5% 10%);
+    --muted-foreground: hsl(240 5% 75%);
 
-    --accent: hsl(240 5% 15%);
+    --accent: hsl(240 5% 20%);
     --accent-foreground: hsl(0 0% 100%);
 
     --destructive: hsl(0 84% 45%);

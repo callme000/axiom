@@ -130,7 +130,7 @@ export function IncomeSection({
         </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
+          className="font-mono text-[9px] tracking-[0.4em] uppercase text-muted-foreground/80 hover:text-white transition-colors"
         >
           {isAdding ? "✕ CANCEL" : "+ APPEND INCOME"}
         </button>
@@ -145,7 +145,7 @@ export function IncomeSection({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                       Source Name
                     </label>
                     <input
@@ -160,7 +160,7 @@ export function IncomeSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                       Origin / Payer
                     </label>
                     <input
@@ -177,7 +177,7 @@ export function IncomeSection({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                       Type
                     </label>
                     <select
@@ -203,7 +203,7 @@ export function IncomeSection({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                    <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                       Amount
                     </label>
                     <input
@@ -229,7 +229,7 @@ export function IncomeSection({
                       }
                       className="w-4 h-4 rounded border-white/10 bg-transparent checked:bg-white transition-colors cursor-pointer"
                     />
-                    <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                    <span className="text-[10px] font-mono text-muted-foreground/80 uppercase tracking-widest group-hover:text-white/60 transition-colors">
                       Recurring Inflow
                     </span>
                   </label>
@@ -238,7 +238,7 @@ export function IncomeSection({
                     <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-top-2 border-l border-white/5 pl-6 ml-2">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                          <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                          <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                             Frequency
                           </label>
                           <select
@@ -267,7 +267,7 @@ export function IncomeSection({
                           entry.cadence === "weekly" ||
                           entry.cadence === "biweekly") && (
                           <div className="space-y-2">
-                            <label className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                            <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest">
                               {entry.cadence === "monthly"
                                 ? "Day of Month (1-31)"
                                 : "Day of Week"}
@@ -332,7 +332,7 @@ export function IncomeSection({
               <button
                 type="button"
                 onClick={addEntry}
-                className="text-[9px] font-mono tracking-widest uppercase text-white/20 hover:text-white transition-colors"
+                className="text-[9px] font-mono tracking-widest uppercase text-muted-foreground/60 hover:text-white transition-colors"
               >
                 + APPEND ANOTHER SOURCE
               </button>
@@ -373,7 +373,7 @@ export function IncomeSection({
             <ScrollReveal key={stream.id} delay={index * 0.05} distance={10}>
               <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
                 <div className="space-y-1">
-                  <span className="text-[8px] font-mono tracking-widest uppercase text-white/20">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60">
                     {IncomeMap[stream.income_type] || stream.income_type}
                     {stream.source && ` • ${stream.source}`}
                   </span>
@@ -384,12 +384,12 @@ export function IncomeSection({
                 <div className="text-right">
                   <p className="font-cormorant text-xl text-white">
                     {formatCurrency(stream.amount)}
-                    <span className="text-[10px] ml-2 text-white/20 font-sans tracking-widest uppercase">
+                    <span className="text-[10px] ml-2 text-muted-foreground/60 font-sans tracking-widest uppercase">
                       / {stream.cadence}
                     </span>
                   </p>
                   {stream.execution_day && (
-                    <p className="text-[8px] font-mono text-white/10 uppercase tracking-widest mt-1">
+                    <p className="text-[8px] font-mono text-muted-foreground/50 uppercase tracking-widest mt-1">
                       Executes on day {stream.execution_day}
                     </p>
                   )}
