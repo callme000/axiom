@@ -3,11 +3,8 @@
 import { useState } from "react";
 import { submitDayZeroOnboardingAction } from "@/app/dashboard/actions";
 import { type DashboardSnapshot } from "@/lib/dashboard/types";
-import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
-import { HoverButton } from "@/components/ui/hover-glow-button";
-import { LuxuryCard } from "@/components/ui/luxury-card";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, TrendingUp, Flame, ShieldAlert } from "lucide-react";
+import { Wallet, TrendingUp, Flame, ShieldAlert, Zap } from "lucide-react";
 
 import {
   OnboardingHeader,
@@ -40,28 +37,28 @@ const STEPS = [
     icon: Wallet,
     color: "var(--truth)",
     title: "Accounts",
-    desc: "Every strong financial foundation begins with a clear map of your available capital. Please list the financial accounts that hold your primary source of liquidity (for example, corporate checking accounts or short-term cash reserves)",
+    desc: "Map initial capital distribution. List primary liquidity vehicles for architecture baseline.",
   },
   {
     roman: "II",
     icon: TrendingUp,
     color: "var(--opportunity)",
-    title: "Income Velocity",
-    desc: "Every strong financial foundation relies on a predictable cash flow. Please list your revenue-generating activities so we can calculate how quickly your funds are replenished (for example, recurring subscription fees, product sales, or monthly client retainers).",
+    title: "Yield Velocity",
+    desc: "Define inbound cash flow parameters. Calculate capital replenishment speed.",
   },
   {
     roman: "III",
     icon: Flame,
     color: "var(--leakage)",
-    title: "Baseline Expenses",
-    desc: "Every strong financial foundation requires full visibility into its baseline expenses. Please list your fixed operating costs so we can identify and eliminate unnecessary spending (for example, office rent, software subscriptions, or employee salaries).",
+    title: "Baseline Burn",
+    desc: "Quantify structural maintenance costs. Identify high-leakage vectors.",
   },
   {
     roman: "IV",
     icon: ShieldAlert,
     color: "var(--warning)",
-    title: "Financial Commitments",
-    desc: "Every strong financial foundation requires a clear view of what you owe. Please list your current debts and upcoming financial obligations so we can protect your long-term solvency (for example, short-term loans, credit card balances, or vendor invoices).",
+    title: "Solvency Risks",
+    desc: "Map current liabilities. Establish debt-to-capital alignment ratio.",
   },
 ];
 
@@ -147,21 +144,18 @@ export default function DayZeroOnboarding({
     setError(null);
 
     try {
-      // PURE DELEGATION: Send raw state to server for transformation and persistence
       const snapshot = await submitDayZeroOnboardingAction({
         accounts,
         incomes,
         liabilities,
         baselines,
       });
-
-      // SEAMLESS TRANSITION: No hard reload. Revalidation is handled by server action.
       onComplete(snapshot);
     } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
-          : "An unexpected error occurred. Please verify your inputs.",
+          : "System Error: Input verification failed.",
       );
     } finally {
       setIsLoading(false);
@@ -169,36 +163,16 @@ export default function DayZeroOnboarding({
   }
 
   const activeStepConfig = STEPS[step - 1];
-  const backgroundX = -(step - 1) * 5;
 
   return (
-    <div className="fixed inset-0 bg-background z-[100] flex flex-col selection:bg-primary selection:text-primary-foreground overflow-hidden h-screen w-full font-sans text-foreground">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <motion.div
-          animate={{ x: `${backgroundX}%` }}
-          transition={{ duration: 1.2, ease: [0.215, 0.61, 0.355, 1] }}
-          className="absolute inset-0 w-[150%] h-full"
-        >
-          <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-glow-truth animate-pulse-glow" />
-          <div className="absolute bottom-[-10%] right-[30%] w-[40%] h-[40%] bg-glow-opportunity animate-pulse-glow [animation-delay:1s]" />
-          <div className="fixed inset-0 pointer-events-none z-0 bg-grid-white opacity-[0.02]" />
-          <div className="fixed inset-0 pointer-events-none z-50 bg-noise mix-blend-overlay opacity-[0.03]" />
-          <div
-            className="absolute inset-0 opacity-15 mix-blend-screen grayscale"
-            style={{
-              backgroundImage: "url('/images/tactical-schematic.png')",
-              backgroundSize: "cover",
-              backgroundPosition: "left center",
-            }}
-          />
-        </motion.div>
-      </div>
+    <div className="fixed inset-0 bg-black z-[100] flex flex-col selection:bg-white selection:text-black overflow-hidden h-screen w-full font-mono text-foreground">
+      {/* Clinical Grid Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px]" />
 
       <OnboardingHeader step={step} totalSteps={STEPS.length} />
 
       <div className="relative z-10 flex-1 flex items-start md:items-center justify-center px-4 md:px-12 pt-32 md:pt-16 pb-12 overflow-y-auto">
-        <div className="max-w-7xl w-full md:h-155 grid grid-cols-1 lg:grid-cols-[1.1fr_1.4fr] gap-12 md:gap-24 items-stretch overflow-visible">
+        <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-[0.9fr_1.6fr] gap-12 md:gap-24 items-stretch overflow-visible">
           <OnboardingSidebar
             roman={activeStepConfig.roman}
             icon={activeStepConfig.icon}
@@ -208,8 +182,8 @@ export default function DayZeroOnboarding({
             direction={direction}
           />
 
-          <LuxuryCard className="flex flex-col border border-border shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden min-h-[500px] md:min-h-0">
-            <div className="flex-1 p-6 md:p-14 overflow-hidden relative rounded-t-[inherit]">
+          <div className="flex flex-col border border-white/10 bg-[#0a0a0a] rounded-sm overflow-hidden min-h-[500px] md:min-h-0 shadow-2xl">
+            <div className="flex-1 p-6 md:p-14 overflow-hidden relative">
               <form
                 onSubmit={handleSubmit}
                 className="h-full flex flex-col text-foreground"
@@ -218,10 +192,10 @@ export default function DayZeroOnboarding({
                   <motion.div
                     key={step}
                     custom={direction}
-                    initial={{ opacity: 0, x: direction * 30 }}
+                    initial={{ opacity: 0, x: direction * 10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -direction * 30 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    exit={{ opacity: 0, x: -direction * 10 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
                     className="flex-1 flex flex-col"
                   >
                     {step === 1 && (
@@ -253,11 +227,11 @@ export default function DayZeroOnboarding({
               </form>
             </div>
 
-            <div className="h-24 md:h-32 border-t border-border relative z-10 px-6 md:px-16 flex flex-col justify-center shrink-0 bg-card/60 backdrop-blur-3xl rounded-b-[inherit]">
+            <div className="h-24 md:h-28 border-t border-white/10 relative z-10 px-6 md:px-16 flex flex-col justify-center shrink-0 bg-black">
               {error && (
                 <div className="absolute top-0 left-0 w-full transform -translate-y-full px-6 md:px-12 pb-4">
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-destructive/80 text-[9px] md:text-[10px] font-mono tracking-wider flex items-center gap-3">
-                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-sm p-3 text-red-500 text-[10px] font-bold tracking-wider flex items-center gap-3">
+                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                     {error}
                   </div>
                 </div>
@@ -267,33 +241,28 @@ export default function DayZeroOnboarding({
                   type="button"
                   onClick={handlePrev}
                   disabled={step === 1}
-                  className="text-[10px] md:text-[11px] font-mono tracking-[0.4em] md:tracking-[0.6em] text-muted-foreground/60 hover:text-foreground transition-all uppercase disabled:opacity-0 py-4 md:py-8 px-4 md:px-12 -ml-4 md:-ml-12 hover:bg-muted/50 rounded-full"
+                  className="text-[10px] font-bold tracking-[0.4em] text-zinc-600 hover:text-white transition-all uppercase disabled:opacity-0 py-4 px-8 border border-transparent hover:border-white/5"
                 >
-                  ← Back
+                  ← PREV_PHASE
                 </button>
                 <div onClick={handleSubmit}>
-                  {step === 4 ? (
-                    <HoverButton
-                      glowColor="var(--truth)"
-                      className="px-12 md:px-24 py-4 md:py-10 rounded-full text-[10px] md:text-[11px] border-border hover:border-truth/50 transition-colors"
-                      disabled={isLoading || !isStepValid()}
-                    >
-                      {isLoading ? "..." : "Archive Setup"}
-                    </HoverButton>
-                  ) : (
-                    <RippleButton
-                      variant="hoverborder"
-                      hoverBorderEffectColor="var(--truth)"
-                      className="px-12 md:px-24 py-4 md:py-10 border border-border text-[10px] md:text-[11px]"
-                      disabled={isLoading || !isStepValid()}
-                    >
-                      Next Phase →
-                    </RippleButton>
-                  )}
+                  <button
+                    disabled={isLoading || !isStepValid()}
+                    className="px-12 py-4 bg-white text-black font-bold text-[10px] tracking-[0.4em] uppercase hover:bg-zinc-200 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {step === 4 ? (
+                      <>
+                        <Zap size={14} />
+                        ARCHIVE_SETUP
+                      </>
+                    ) : (
+                      "NEXT_PHASE →"
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
-          </LuxuryCard>
+          </div>
         </div>
       </div>
     </div>

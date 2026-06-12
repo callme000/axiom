@@ -72,11 +72,11 @@ export function TelemetryDashboard() {
             value: Object.keys(telemetry?.ruleHits || {}).length,
           },
         ].map((stat) => (
-          <div key={stat.label} className="bg-background p-8 group">
+          <div key={stat.label} className="bg-background p-8 group border-r border-border last:border-r-0">
             <span className="text-[8px] font-mono text-muted-foreground uppercase tracking-[0.3em] block mb-4 group-hover:text-foreground transition-colors">
               {stat.label}
             </span>
-            <span className="font-cormorant text-3xl text-foreground">
+            <span className="font-mono text-2xl text-foreground tabular-nums font-bold">
               {stat.value}
             </span>
           </div>
@@ -85,15 +85,15 @@ export function TelemetryDashboard() {
 
       {/* FORENSIC LOG TABLE */}
       <div className="space-y-8">
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <h3 className="font-cormorant italic text-xl text-muted-foreground">
+        <div className="flex items-center justify-between border-b border-white/20 pb-4">
+          <h3 className="font-mono text-xs uppercase tracking-[0.4em] text-muted-foreground">
             Evaluation Audit Trail
           </h3>
           <button
             onClick={() => loadTelemetry(true)}
             className="text-[8px] font-mono text-muted-foreground hover:text-foreground uppercase tracking-widest transition-colors"
           >
-            Refresh Logs
+            [ Refresh Logs ]
           </button>
         </div>
 
@@ -129,18 +129,18 @@ export function TelemetryDashboard() {
                       second: "2-digit",
                     })}
                   </td>
-                  <td className="py-4 text-[11px] text-foreground font-light group-hover:translate-x-1 transition-transform">
+                  <td className="py-4 text-[11px] text-foreground font-mono group-hover:text-white transition-colors">
                     {log.rule_id}
                   </td>
                   <td className="py-4">
                     <span
-                      className={`text-[8px] font-mono uppercase tracking-widest ${
+                      className={`text-[8px] font-mono uppercase tracking-widest px-2 py-0.5 border ${
                         log.severity === "critical"
-                          ? "text-leakage"
+                          ? "text-leakage border-leakage bg-leakage/10"
                           : log.severity === "high" ||
                               log.severity === "warning"
-                            ? "text-warning"
-                            : "text-muted-foreground/70"
+                            ? "text-warning border-warning bg-warning/10"
+                            : "text-muted-foreground/70 border-muted-foreground/20"
                       }`}
                     >
                       {log.severity}

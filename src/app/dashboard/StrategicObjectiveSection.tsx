@@ -98,7 +98,7 @@ export function StrategicObjectiveSection({
   return (
     <div className="space-y-12">
       <div className="flex items-center justify-between">
-        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+        <h2 className="font-mono text-xl text-white tracking-widest uppercase">
           Strategic Intent
         </h2>
         <button
@@ -290,12 +290,12 @@ export function StrategicObjectiveSection({
                       >
                         {obj.priority_level}
                       </span>
-                      <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">
+                      <h3 className="font-mono text-xl text-white transition-transform group-hover:translate-x-2">
                         {obj.objective_name}
                       </h3>
                     </div>
                     <div className="text-right">
-                      <p className="font-cormorant text-3xl text-white tabular-nums">
+                      <p className="font-mono text-2xl text-white tabular-nums">
                         {Math.round(ratio)}%
                       </p>
                     </div>

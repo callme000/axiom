@@ -48,16 +48,16 @@ export default function SignUp() {
 
         <div className="relative z-10 max-w-lg px-12 text-center">
           <ScrollReveal direction="up">
-            <h2 className="font-cormorant italic text-5xl lg:text-7xl text-white mb-8 leading-tight">
+            <h2 className="font-mono uppercase tracking-[0.2em] text-3xl lg:text-5xl text-white mb-8 leading-tight font-bold">
               Strategic Wealth <br />
-              <span className="not-italic font-medium text-white/80">
+              <span className="text-white/80">
                 Architecture.
               </span>
             </h2>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.2}>
-            <div className="h-px w-12 bg-white/20 mx-auto mb-8" />
+            <div className="h-px w-12 bg-white/40 mx-auto mb-8" />
             <p className="text-white/40 font-mono text-[9px] tracking-[0.6em] uppercase">
               Axiom Strategic Protocol // v1.0
             </p>
@@ -77,7 +77,7 @@ export default function SignUp() {
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.4}>
-              <h1 className="font-cormorant text-4xl text-white text-center mb-3 tracking-wide">
+              <h1 className="font-mono text-xl text-white text-center mb-3 tracking-[0.4em] uppercase font-bold">
                 Initialize Access
               </h1>
               <p className="text-white/30 text-[10px] font-mono text-center tracking-[0.3em] uppercase">
@@ -87,7 +87,7 @@ export default function SignUp() {
           </div>
 
           <ScrollReveal direction="up" delay={0.5}>
-            <div className="bg-white/2 border border-white/5 p-10 md:p-14 rounded-3xl backdrop-blur-sm relative overflow-hidden group">
+            <div className="bg-white/[0.02] border border-white/10 p-10 md:p-14 rounded-none backdrop-blur-sm relative overflow-hidden group">
               {/* Subtle Decorative Glow */}
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
@@ -113,8 +113,8 @@ export default function SignUp() {
                         inputLabelText: "rgba(255,255,255,0.4)",
                       },
                       radii: {
-                        buttonBorderRadius: "9999px",
-                        inputBorderRadius: "12px",
+                        buttonBorderRadius: "0px",
+                        inputBorderRadius: "0px",
                       },
                       fonts: {
                         bodyFontFamily: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif`,

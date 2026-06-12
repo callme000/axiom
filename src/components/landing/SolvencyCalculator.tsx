@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export function SolvencyCalculator() {
@@ -27,113 +26,99 @@ export function SolvencyCalculator() {
   }).format(burn);
 
   return (
-    <section
-      id="calculator"
-      className="py-40 px-6 bg-background border-y border-border relative overflow-hidden"
-    >
-      {/* Background Detail */}
-      <div className="absolute top-0 right-0 w-[40%] h-full bg-linear-to-l from-truth/5 to-transparent pointer-events-none" />
+    <section className="py-32 px-6 bg-black font-mono">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32 items-center">
+        {/* INPUTS */}
+        <ScrollReveal direction="left" distance={20}>
+          <div className="space-y-12">
+            <div className="space-y-4">
+              <span className="text-[10px] tracking-[0.8em] text-truth uppercase font-bold">
+                Simulation Engine
+              </span>
+              <h2 className="text-5xl md:text-7xl font-bold text-white uppercase tracking-tighter leading-none">
+                Calculate your <br />
+                <span className="text-zinc-600">Survival Window.</span>
+              </h2>
+            </div>
 
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.2fr_1fr] gap-24 items-center">
-        <ScrollReveal direction="right" delay={0.2}>
-          <div>
-            <h2 className="font-cormorant text-6xl md:text-8xl text-foreground mb-12 leading-[0.9]">
-              Measure your <br />
-              <span className="italic">structural solvency.</span>
-            </h2>
-
-            <div className="space-y-16 mt-20">
-              {/* Input 1 */}
-              <div className="space-y-8 group">
-                <div className="flex justify-between items-end border-b border-border pb-4 transition-colors group-hover:border-truth/40">
-                  <label className="text-muted-foreground/70 font-mono text-[10px] uppercase tracking-[0.4em]">
-                    Total Liquid Assets
-                  </label>
-                  <span className="font-cormorant text-4xl text-foreground">
+            <div className="space-y-16">
+              <div className="space-y-8">
+                <div className="flex justify-between items-end border-b border-white/10 pb-2">
+                  <span className="text-[10px] tracking-widest text-zinc-500 uppercase font-bold">
+                    Liquid Architecture
+                  </span>
+                  <span className="text-2xl font-bold text-white tabular-nums">
                     {formattedBalance}
                   </span>
                 </div>
                 <input
                   type="range"
                   min="50000"
-                  max="10000000"
+                  max="5000000"
                   step="50000"
                   value={balance}
-                  onChange={(e) => setBalance(Number(e.target.value))}
-                  className="w-full"
+                  onChange={(e) => setBalance(parseInt(e.target.value))}
+                  className="w-full accent-white"
                 />
-                <div className="flex justify-between text-[9px] text-muted-foreground/50 font-mono uppercase tracking-widest">
-                  <span>KES 50K</span>
-                  <span>KES 10M+</span>
-                </div>
               </div>
 
-              {/* Input 2 */}
-              <div className="space-y-8 group">
-                <div className="flex justify-between items-end border-b border-border pb-4 transition-colors group-hover:border-truth/40">
-                  <label className="text-muted-foreground/70 font-mono text-[10px] uppercase tracking-[0.4em]">
-                    Monthly Deployment
-                  </label>
-                  <span className="font-cormorant text-4xl text-foreground">
+              <div className="space-y-8">
+                <div className="flex justify-between items-end border-b border-white/10 pb-2">
+                  <span className="text-[10px] tracking-widest text-zinc-500 uppercase font-bold">
+                    Structural Burn (Monthly)
+                  </span>
+                  <span className="text-2xl font-bold text-white tabular-nums">
                     {formattedBurn}
                   </span>
                 </div>
                 <input
                   type="range"
                   min="10000"
-                  max="2000000"
+                  max="1000000"
                   step="10000"
                   value={burn}
-                  onChange={(e) => setBurn(Number(e.target.value))}
-                  className="w-full"
+                  onChange={(e) => setBurn(parseInt(e.target.value))}
+                  className="w-full accent-white"
                 />
-                <div className="flex justify-between text-[9px] text-muted-foreground/50 font-mono uppercase tracking-widest">
-                  <span>KES 10K</span>
-                  <span>KES 2M+</span>
-                </div>
               </div>
             </div>
           </div>
         </ScrollReveal>
 
-        {/* Results Card */}
-        <ScrollReveal direction="left" delay={0.4}>
-          <div className="relative group">
-            <div className="absolute -inset-4 bg-truth/5 blur-3xl rounded-full group-hover:bg-truth/10 transition-all duration-1000" />
-
-            <div className="relative glass-panel p-16 md:p-24 space-y-12 rounded-3xl overflow-hidden border border-border">
-              {/* Roman Decoration */}
-              <div className="absolute top-0 right-0 p-8 font-cormorant italic text-truth/5 text-[12rem] leading-none select-none pointer-events-none">
-                II
-              </div>
-
-              <div>
-                <p className="text-muted-foreground/70 font-mono text-[10px] uppercase tracking-[0.5em] mb-4">
-                  Deterministic Runway
+        {/* RESULT */}
+        <ScrollReveal direction="right" distance={20} delay={0.3}>
+          <div className="relative p-12 bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden">
+            {/* Background Data Matrix */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+            
+            <div className="relative z-10 space-y-10">
+              <div className="space-y-1">
+                <p className="text-[10px] tracking-[0.5em] text-zinc-500 uppercase font-bold">
+                  Computed Solvency
                 </p>
                 <div className="flex items-baseline gap-4">
-                  <span className="font-cormorant text-[10rem] md:text-[12rem] text-truth leading-none tracking-tighter drop-shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                  <span className="text-[10rem] md:text-[12rem] font-bold text-truth leading-none tracking-tighter">
                     {runway}
                   </span>
-                  <span className="font-cormorant italic text-4xl text-muted-foreground/50">
+                  <span className="text-3xl font-bold text-zinc-700 uppercase tracking-widest">
                     Months
                   </span>
                 </div>
               </div>
 
-              <div className="pt-12 border-t border-border space-y-10">
-                <p className="text-muted-foreground/80 text-sm leading-relaxed font-light max-w-sm">
-                  This projection is based on your current liquidity
-                  architecture. Axiom provides the tools to optimize these
-                  variables and extend your runway indefinitely.
+              <div className="pt-12 border-t border-white/10 space-y-10">
+                <p className="text-zinc-500 text-xs leading-relaxed max-w-sm uppercase tracking-tight">
+                  This projection is based on your current liquid architecture. 
+                  Axiom provides the technical units to optimize these
+                  variables and extend your survival window indefinitely.
                 </p>
 
-                <RippleButton variant="primary" className="w-full py-6 text-xs">
-                  Establish Baseline Architecture
-                </RippleButton>
+                <button className="w-full py-6 bg-white text-black font-bold text-[10px] tracking-[0.4em] uppercase hover:bg-zinc-200 transition-all">
+                  Initialize Baseline Architecture
+                </button>
 
-                <p className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-widest text-center italic">
-                  * Estimated from clinical mathematical truth
+                <p className="text-[9px] text-zinc-800 uppercase tracking-widest text-center">
+                  * Clinical mathematical truth // engine: kairos
                 </p>
               </div>
             </div>

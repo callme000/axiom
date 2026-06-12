@@ -72,8 +72,8 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
     <div className="space-y-12">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Wallet strokeWidth={1.2} size={20} className="text-truth" />
-          <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
+          <Wallet strokeWidth={1.5} size={20} className="text-truth" />
+          <h2 className="font-mono text-xl text-foreground tracking-widest uppercase">
             Accounts
           </h2>
         </div>
@@ -103,7 +103,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                       account_name: e.target.value,
                     })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors uppercase tracking-wider"
                 />
               </div>
               <div className="space-y-2">
@@ -121,7 +121,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                       current_balance: e.target.value,
                     })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-lg focus:outline-none focus:border-white transition-colors tabular-nums"
                 />
               </div>
             </div>
@@ -162,7 +162,7 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                       institution: e.target.value,
                     })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors uppercase tracking-wider"
                 />
               </div>
             </div>
@@ -205,12 +205,12 @@ export function AccountSection({ accounts, onSnapshot }: AccountSectionProps) {
                   <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60">
                     {AccountMap[account.account_type] || account.account_type}
                   </span>
-                  <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                  <h3 className="font-mono text-sm uppercase tracking-wider text-white transition-transform group-hover:translate-x-2">
                     {account.account_name}
                   </h3>
                 </div>
                 <div className="text-right">
-                  <p className="font-cormorant text-xl text-white">
+                  <p className="font-mono text-lg text-white tabular-nums">
                     {formatCurrency(account.current_balance)}
                   </p>
                   {account.institution && (

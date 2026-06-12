@@ -1,153 +1,85 @@
 "use client";
 
-import { useState } from "react";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
-import { 
-  Binary, 
-  Waves, 
-  Cpu, 
-  ShieldAlert, 
-  Mountain,
-  ChevronRight
-} from "lucide-react";
+import { Shield, Target, Zap, Activity } from "lucide-react";
 
 const PILLARS = [
   {
-    roman: "I",
-    icon: Binary,
-    color: "var(--truth)",
-    title: "Clinical Precision",
-    desc: "We replace guesswork with deterministic financial modeling. Every shilling is audited against our five taxonomy gates to ensure zero leakage.",
+    icon: Shield,
+    title: "Structural Solvency",
+    desc: "Deterministic modeling to ensure your liquid architecture remains impenetrable to market volatility and erratic flows.",
+    color: "text-truth",
   },
   {
-    roman: "II",
-    icon: Waves,
-    color: "var(--truth)",
-    title: "Sovereign Liquidity",
-    desc: "Axiom optimizes your capital for maximum availability. We ensure your assets remain liquid while maintaining their yield-generating potential.",
+    icon: Target,
+    title: "Strategic Alignment",
+    desc: "Dynamic mapping of capital deployment to higher-order objectives. Every shilling must serve a tactical purpose.",
+    color: "text-truth",
   },
   {
-    roman: "III",
-    icon: Cpu,
-    color: "var(--opportunity)",
-    title: "Skill Multipliers",
-    desc: "We prioritize investment in human capital. Our engine identifies high-alpha opportunities for skill acquisition that compound your earning power.",
+    icon: Zap,
+    title: "Velocity Optimization",
+    desc: "Calculating the replenishment speed of your capital pool. Optimizing yield cycles for maximum deployment capacity.",
+    color: "text-warning",
   },
   {
-    roman: "IV",
-    icon: ShieldAlert,
-    color: "var(--warning)",
-    title: "Risk Mitigation",
-    desc: "Our automated risk-assessment protocols monitor global and local market trends, shielding your portfolio from systemic institutional failure.",
-  },
-  {
-    roman: "V",
-    icon: Mountain,
-    color: "var(--foreground)",
-    title: "Legacy Architecture",
-    desc: "Wealth is more than numbers. We help you build a durable financial legacy through strategic experience-equity and asset compounding.",
+    icon: Activity,
+    title: "Behavioral Auditing",
+    desc: "The Kairos Engine continuously monitors transaction taxonomy, identifying leakage and enforcing operational discipline.",
+    color: "text-opportunity",
   },
 ];
 
 export function StrategicPillars() {
-  const [active, setActive] = useState<number | null>(0);
-
   return (
-    <section className="py-40 px-6 bg-background border-b border-border selection:bg-primary selection:text-primary-foreground relative overflow-hidden">
-      {/* Background Decorative Grid */}
-      <div className="absolute inset-0 bg-grid-white opacity-[0.02] pointer-events-none" />
+    <section className="py-40 px-6 bg-black font-mono">
+      <div className="max-w-7xl mx-auto space-y-32">
+        {/* HEADER */}
+        <ScrollReveal direction="up" distance={20}>
+          <div className="flex flex-col md:flex-row items-end justify-between gap-12">
+            <h2 className="text-6xl md:text-9xl font-bold text-white uppercase tracking-tighter leading-none">
+              Strategic <br />
+              <span className="text-zinc-700">Pillars.</span>
+            </h2>
+            <div className="max-w-sm space-y-6">
+              <p className="text-zinc-500 text-xs tracking-tight uppercase leading-relaxed">
+                Axiom is built on four core technical units designed to provide 
+                absolute financial sovereignty in any ecosystem.
+              </p>
+              <div className="h-px w-full bg-white/10" />
+            </div>
+          </div>
+        </ScrollReveal>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid lg:grid-cols-[1fr_1.5fr] gap-32 items-start">
-          <div className="sticky top-40 space-y-12">
-            <ScrollReveal direction="right">
-              <div className="space-y-4">
-                <span className="font-mono text-[10px] tracking-[0.5em] text-truth uppercase animate-pulse">
-                  Strategic Foundation
-                </span>
-                <h2 className="font-cormorant text-7xl md:text-9xl text-foreground leading-[0.9]">
-                  Why work <br />
-                  <span className="italic">with Axiom?</span>
-                </h2>
+        {/* GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10 border border-white/10">
+          {PILLARS.map((pillar, i) => (
+            <ScrollReveal
+              key={pillar.title}
+              direction="up"
+              distance={20}
+              delay={i * 0.1}
+            >
+              <div className="group p-12 md:p-20 bg-black hover:bg-zinc-900 transition-all duration-500 space-y-12 h-full">
+                <div className="flex items-start justify-between">
+                  <div className={`p-4 border border-white/5 bg-zinc-950 transition-colors group-hover:border-${pillar.color.split("-")[1]}/30`}>
+                    <pillar.icon strokeWidth={1.5} size={32} className={pillar.color} />
+                  </div>
+                  <span className="text-2xl font-bold text-zinc-800 group-hover:text-zinc-600 transition-colors">
+                    0{i + 1}
+                  </span>
+                </div>
+                <div className="space-y-6">
+                  <h3 className="text-3xl font-bold text-white uppercase tracking-tight">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed tracking-tight group-hover:text-zinc-400 transition-colors">
+                    {pillar.desc}
+                  </p>
+                </div>
               </div>
             </ScrollReveal>
-
-            <ScrollReveal direction="right" delay={0.2}>
-              <div className="h-px w-24 bg-truth/20" />
-            </ScrollReveal>
-
-            <ScrollReveal direction="right" delay={0.3}>
-              <p className="text-muted-foreground max-w-sm text-lg font-light leading-relaxed">
-                At Axiom, we maintain a simple yet rigorous philosophy: Wealth
-                is the delta between your earning power and your structural
-                leakage.
-              </p>
-            </ScrollReveal>
-          </div>
-
-          <div className="space-y-2 border-t border-border">
-            {PILLARS.map((pillar, idx) => (
-              <ScrollReveal key={pillar.roman} direction="up" delay={0.1 * idx}>
-                <div
-                  className={`border-b border-border transition-all duration-700 cursor-pointer group relative overflow-hidden ${
-                    active === idx
-                      ? "bg-card/40 px-8 py-12 backdrop-blur-md"
-                      : "py-10 px-4 hover:bg-card/20"
-                  }`}
-                  onClick={() => setActive(active === idx ? null : idx)}
-                >
-                  {/* Subtle Glow Background */}
-                  {active === idx && (
-                    <div 
-                      className="absolute inset-0 opacity-10 blur-3xl pointer-events-none"
-                      style={{ background: pillar.color }}
-                    />
-                  )}
-
-                  <div className="flex items-center gap-12 relative z-10">
-                    <div className="flex items-center gap-4">
-                      <span className="font-cormorant italic text-2xl text-muted-foreground/50 group-hover:text-muted-foreground/70 transition-colors w-8">
-                        {pillar.roman}
-                      </span>
-                      <pillar.icon 
-                        strokeWidth={1.2} 
-                        size={32} 
-                        style={{ color: pillar.color }}
-                        className="drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"
-                      />
-                    </div>
-                    <h3
-                      className={`font-cormorant text-4xl md:text-5xl text-foreground transition-all ${
-                        active === idx
-                          ? "italic translate-x-2"
-                          : "group-hover:translate-x-2"
-                      }`}
-                    >
-                      {pillar.title}
-                    </h3>
-                  </div>
-
-                  <div
-                    className={`overflow-hidden transition-all duration-700 ease-in-out ${
-                      active === idx
-                        ? "max-h-125 opacity-100 mt-12"
-                        : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    <p className="text-muted-foreground text-xl font-light leading-relaxed max-w-2xl pl-20">
-                      {pillar.desc}
-                    </p>
-                    <div className="mt-12 pl-20 flex items-center gap-4">
-                      <button className="text-[10px] font-mono tracking-[0.4em] text-truth hover:text-foreground transition-colors uppercase flex items-center gap-2 group/btn">
-                        Clinical Details 
-                        <ChevronRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
     </section>

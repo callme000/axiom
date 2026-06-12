@@ -56,14 +56,14 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
+      <h2 className="font-mono text-xs text-muted-foreground tracking-[0.4em] uppercase">
         Operational Baselines
       </h2>
       <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
         {baselines.map((base, idx) => (
           <div
             key={idx}
-            className="space-y-4 md:space-y-3 pb-6 md:pb-3 border-b border-white/5 relative shrink-0"
+            className="space-y-4 md:space-y-3 pb-6 md:pb-3 border-b border-white/10 relative shrink-0"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <input
@@ -71,7 +71,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                 placeholder="Baseline Name"
                 value={base.title}
                 onChange={(e) => updateBaseline(idx, { title: e.target.value })}
-                className="bg-transparent border-b border-border py-1 font-cormorant text-xl md:text-2xl text-foreground focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 font-mono text-sm uppercase tracking-widest text-foreground focus:outline-none placeholder:text-white/10"
               />
               <div className="space-y-1">
                 <label className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-[0.4em]">
@@ -108,7 +108,7 @@ export function ExpensesStep({ baselines, onChange }: ExpensesStepProps) {
                   onChange={(e) =>
                     updateBaseline(idx, { amount: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
+                  className="w-full bg-transparent border-b border-border py-1 text-sm font-mono text-foreground focus:outline-none tabular-nums"
                 />
               </div>
             </div>

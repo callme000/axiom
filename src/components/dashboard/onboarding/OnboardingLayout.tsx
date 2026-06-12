@@ -80,11 +80,11 @@ export function OnboardingSidebar({
         className="space-y-4 md:space-y-6"
       >
         <div className="space-y-4 md:space-y-6">
-          <div className="hidden md:flex items-center gap-6 font-cormorant italic text-8xl text-muted-foreground/10 leading-none select-none">
+          <div className="hidden md:flex items-center gap-6 font-mono font-bold text-8xl text-muted-foreground/10 leading-none select-none">
             {roman}
-            <Icon strokeWidth={1} size={80} style={{ color: iconColor }} className="opacity-40 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
+            <Icon strokeWidth={1.5} size={80} style={{ color: iconColor }} className="opacity-40 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
           </div>
-          <h1 className="font-cormorant text-4xl md:text-6xl text-foreground leading-none tracking-tight">
+          <h1 className="font-mono text-4xl md:text-5xl text-foreground leading-none tracking-[0.2em] uppercase font-bold">
             {title}
           </h1>
         </div>

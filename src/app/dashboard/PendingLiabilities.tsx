@@ -13,6 +13,30 @@ interface PendingLiabilitiesProps {
   onSnapshot: (snapshot: DashboardSnapshot) => void;
 }
 
+// Shared Empty State Component
+import { Radar } from "lucide-react";
+
+export function TacticalEmptyState({ title, message }: { title: string, message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-6 relative overflow-hidden bg-[#0a0a0a] border border-white/5 rounded-sm">
+      <div className="relative flex items-center justify-center w-24 h-24 mb-2">
+        <div className="absolute inset-0 rounded-full border border-truth/10" />
+        <div className="absolute inset-4 rounded-full border border-truth/20" />
+        <div className="absolute inset-0 rounded-full border-t border-truth/60 animate-spin" style={{ animationDuration: '4s' }} />
+        <Radar size={24} className="text-truth/60 relative z-10" />
+      </div>
+      <div className="space-y-2 relative z-10">
+        <h3 className="font-mono text-xs tracking-[0.2em] text-truth/80 uppercase font-bold">
+          {title}
+        </h3>
+        <p className="font-mono text-[9px] tracking-widest text-zinc-500 uppercase max-w-[250px] leading-relaxed">
+          {message}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function PendingLiabilities({
   liabilities,
   accounts,
@@ -54,7 +78,9 @@ export function PendingLiabilities({
     return false;
   });
 
-  if (pendingLiabilities.length === 0) return null;
+  if (pendingLiabilities.length === 0) {
+    return <TacticalEmptyState title="Obligations Clear" message="No pending liabilities or scheduled debt executions detected for the current operational cycle." />;
+  }
 
   async function handleVerify(liab: Liability) {
     const accountId = selectedAccounts[liab.id];
@@ -96,7 +122,7 @@ export function PendingLiabilities({
             <p className="text-[10px] font-mono tracking-widest uppercase opacity-60">
               Scheduled Obligation Detected
             </p>
-            <h3 className="font-cormorant text-4xl">
+            <h3 className="font-mono text-3xl tabular-nums">
               {formatCurrency(liab.cadence_amount || 0)}
             </h3>
             <p className="text-xs font-light tracking-wide opacity-80">

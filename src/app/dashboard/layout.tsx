@@ -10,6 +10,15 @@ import { BrandMark } from "@/components/ui/brand-mark";
 import DayZeroOnboarding from "@/components/dashboard/DayZeroOnboarding";
 import DashboardLoading from "./loading";
 
+import { 
+  LayoutDashboard, 
+  Cpu, 
+  Brain, 
+  Database,
+  LogOut,
+  Activity
+} from "lucide-react";
+
 export const dynamic = "force-dynamic";
 
 export default function DashboardLayout({
@@ -67,10 +76,10 @@ export default function DashboardLayout({
   }
 
   const navItems = [
-    { id: "overview", label: "Overview", roman: "I" },
-    { id: "deploy", label: "Architecture", roman: "II" },
-    { id: "intelligence", label: "Intelligence", roman: "III" },
-    { id: "ledger", label: "Ledger", roman: "IV" },
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "deploy", label: "Architecture", icon: Cpu },
+    { id: "intelligence", label: "Intelligence", icon: Brain },
+    { id: "ledger", label: "Ledger", icon: Database },
   ];
 
   const scrollToSection = (id: string) => {
@@ -89,13 +98,14 @@ export default function DashboardLayout({
     }
   };
 
+  const userAvatar = user?.user_metadata?.avatar_url;
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col md:flex-row relative selection:bg-white selection:text-black">
       {/* Background Atmosphere */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/2 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
       </div>
 
       {isOnboarded === true && (
@@ -111,7 +121,7 @@ export default function DashboardLayout({
                 <Link href="/" className="group mb-8 block">
                   <div className="flex items-center gap-4">
                     <BrandMark className="w-10 h-10 group-hover:scale-105 transition-transform duration-700" />
-                    <span className="font-cormorant text-2xl tracking-widest uppercase text-white group-hover:text-white/80 transition-colors">
+                    <span className="font-mono text-xl tracking-[0.4em] uppercase text-white group-hover:text-white/80 transition-colors">
                       AXIOM
                     </span>
                   </div>
@@ -138,13 +148,17 @@ export default function DashboardLayout({
                               : "group-hover:h-1/2 opacity-30"
                           }`}
                         />
-                        <span className="font-cormorant italic text-2xl text-white/60 w-8">
-                          {item.roman}.
-                        </span>
+                        <item.icon 
+                          size={18} 
+                          strokeWidth={activeSection === item.id ? 2.5 : 1.5}
+                          className={`transition-all duration-500 ${
+                            activeSection === item.id ? "text-truth scale-110" : "text-white/40 group-hover:text-white/60"
+                          }`} 
+                        />
                         <span
-                          className={`font-cormorant text-3xl tracking-wide transition-all duration-500 ${
+                          className={`font-mono text-base tracking-widest transition-all duration-500 ${
                             activeSection === item.id
-                              ? "translate-x-2 text-white"
+                              ? "translate-x-2 text-white font-bold"
                               : "group-hover:translate-x-2 text-white/80"
                           }`}
                         >
@@ -162,26 +176,32 @@ export default function DashboardLayout({
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-4 w-full group"
                 >
-                  <div className="w-10 h-10 border border-white/10 bg-white/5 flex items-center justify-center font-mono text-xs text-white group-hover:bg-white group-hover:text-black transition-all duration-500 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-                    {user?.email?.[0].toUpperCase()}
+                  <div className="w-10 h-10 border border-white/10 bg-zinc-900 overflow-hidden flex items-center justify-center font-mono text-xs text-white group-hover:border-white transition-all duration-500 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                    {userAvatar ? (
+                      <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      user?.email?.[0].toUpperCase()
+                    )}
                   </div>
                   <div className="flex flex-col text-left">
                     <span className="text-[10px] font-mono tracking-widest text-white/80 uppercase truncate max-w-30 group-hover:text-white transition-colors">
                       {user?.email?.split("@")[0]}
                     </span>
-                    <span className="text-[8px] font-mono tracking-widest text-white/20 uppercase">
-                      Verified Session
+                    <span className="text-[8px] font-mono tracking-widest text-zinc-500 uppercase flex items-center gap-1.5">
+                      <Activity size={8} className="text-truth" />
+                      Active Session
                     </span>
                   </div>
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute bottom-full left-0 mb-4 w-full bg-black/90 backdrop-blur-xl border border-white/10 p-2 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="absolute bottom-full left-0 mb-4 w-full bg-[#0a0a0a] border border-white/10 p-1 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left font-mono text-[9px] tracking-widest text-red-500 hover:text-red-400 uppercase p-4 hover:bg-white/5 transition-colors"
+                      className="w-full text-left font-mono text-[9px] tracking-widest text-red-500 hover:text-white hover:bg-red-500 transition-all uppercase p-4 flex items-center justify-between group/logout"
                     >
                       Terminate Session
+                      <LogOut size={12} className="group-hover/logout:translate-x-1 transition-transform" />
                     </button>
                   </div>
                 )}
@@ -198,8 +218,12 @@ export default function DashboardLayout({
               </span>
             </div>
             <button onClick={() => setIsProfileOpen(!isProfileOpen)}>
-              <div className="w-8 h-8 border border-white/10 flex items-center justify-center font-mono text-[10px]">
-                {user?.email?.[0].toUpperCase()}
+              <div className="w-8 h-8 border border-white/10 overflow-hidden flex items-center justify-center font-mono text-[10px]">
+                {userAvatar ? (
+                  <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  user?.email?.[0].toUpperCase()
+                )}
               </div>
             </button>
           </header>
@@ -212,7 +236,7 @@ export default function DashboardLayout({
       >
         <SmoothScrollProvider>
           <div
-            className={`max-w-5xl mx-auto px-4 md:px-16 py-8 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
+            className={`max-w-7xl mx-auto px-4 md:px-12 py-8 md:py-24 ${isOnboarded === false ? "h-full flex items-center justify-center" : ""}`}
           >
             {isOnboarded === null ? (
               <DashboardLoading />
@@ -232,10 +256,11 @@ export default function DashboardLayout({
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className={`font-mono text-[8px] tracking-widest uppercase transition-all ${
+              className={`flex flex-col items-center gap-1 font-mono text-[7px] tracking-widest uppercase transition-all ${
                 activeSection === item.id ? "text-white" : "text-white/20"
               }`}
             >
+              <item.icon size={14} />
               {item.label}
             </button>
           ))}

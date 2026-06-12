@@ -6,6 +6,7 @@ import { resolvePendingInflowAction } from "./actions";
 import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { IncomeMap } from "@/lib/utils/taxonomy";
+import { TacticalEmptyState } from "./PendingLiabilities";
 
 interface PendingInflowsProps {
   incomeStreams: IncomeStream[];
@@ -52,7 +53,9 @@ export function PendingInflows({
     return false;
   });
 
-  if (pendingInflows.length === 0) return null;
+  if (pendingInflows.length === 0) {
+    return <TacticalEmptyState title="Inbound Clear" message="No pending yield or inbound capital flows detected for the current operational cycle." />;
+  }
 
   async function handleVerify(stream: IncomeStream) {
     const accountId = selectedAccounts[stream.id];
@@ -94,7 +97,7 @@ export function PendingInflows({
             <p className="text-[10px] font-mono tracking-widest uppercase opacity-40">
               Expected Income Detected
             </p>
-            <h3 className="font-cormorant text-4xl">
+            <h3 className="font-mono text-3xl tabular-nums">
               {formatCurrency(stream.amount)}
             </h3>
             <p className="text-xs font-light tracking-wide opacity-60">

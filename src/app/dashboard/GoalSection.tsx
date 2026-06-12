@@ -76,7 +76,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
   return (
     <div className="space-y-12">
       <div className="flex items-center justify-between">
-        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+        <h2 className="font-mono text-xl text-white tracking-widest uppercase">
           Wealth Milestones
         </h2>
         <button
@@ -103,7 +103,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   onChange={(e) =>
                     setForm({ ...form, goal_name: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors uppercase tracking-wider"
                 />
               </div>
               <div className="space-y-2">
@@ -180,7 +180,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   onChange={(e) =>
                     setForm({ ...form, target_amount: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-lg focus:outline-none focus:border-white transition-colors tabular-nums"
                 />
               </div>
               <div className="space-y-2">
@@ -194,7 +194,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   onChange={(e) =>
                     setForm({ ...form, current_progress: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-lg focus:outline-none focus:border-white transition-colors tabular-nums"
                 />
               </div>
             </div>
@@ -222,7 +222,7 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   placeholder="Add context..."
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors uppercase tracking-wider"
                 />
               </div>
             </div>
@@ -268,12 +268,12 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                       >
                         {goal.priority}
                       </span>
-                      <h3 className="font-cormorant text-2xl text-white transition-transform group-hover:translate-x-2">
+                      <h3 className="font-mono text-lg uppercase tracking-wider text-white transition-transform group-hover:translate-x-2">
                         {goal.goal_name}
                       </h3>
                     </div>
                     <div className="text-right">
-                      <p className="font-cormorant text-3xl text-white tabular-nums">
+                      <p className="font-mono text-2xl text-white tabular-nums">
                         {Math.round(progress)}%
                       </p>
                     </div>

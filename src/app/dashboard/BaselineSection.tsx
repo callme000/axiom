@@ -93,7 +93,7 @@ export function BaselineSection({
   return (
     <div className="space-y-12">
       <div className="flex items-center justify-between">
-        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+        <h2 className="font-mono text-xl text-white tracking-widest uppercase">
           Operational Maintenance
         </h2>
         <button
@@ -118,7 +118,7 @@ export function BaselineSection({
                   placeholder="e.g. Rent, Netflix"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors uppercase tracking-wider"
                 />
               </div>
               <div className="space-y-2">
@@ -131,7 +131,7 @@ export function BaselineSection({
                   placeholder="0.00"
                   value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-lg focus:outline-none focus:border-white transition-colors tabular-nums"
                 />
               </div>
             </div>
@@ -320,12 +320,12 @@ export function BaselineSection({
                       </span>
                     )}
                   </div>
-                  <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                  <h3 className="font-mono text-sm uppercase tracking-wider text-white transition-transform group-hover:translate-x-2">
                     {item.title}
                   </h3>
                 </div>
                 <div className="text-right">
-                  <p className="font-cormorant text-xl text-white">
+                  <p className="font-mono text-lg text-white tabular-nums">
                     {formatCurrency(item.amount)}
                   </p>
                 </div>

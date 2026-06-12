@@ -5,6 +5,7 @@ import type { OperationalBaseline, Account } from "@/lib/analytics/types";
 import { resolvePendingBaselineAction } from "./actions";
 import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
+import { TacticalEmptyState } from "./PendingLiabilities";
 
 interface PendingBaselinesProps {
   baseline: OperationalBaseline[];
@@ -56,7 +57,9 @@ export function PendingBaselines({
     return false;
   });
 
-  if (pendingBaselines.length === 0) return null;
+  if (pendingBaselines.length === 0) {
+    return <TacticalEmptyState title="Maintenance Clear" message="No pending operational burn or maintenance baseline requirements detected for the current cycle." />;
+  }
 
   async function handleVerify(item: OperationalBaseline) {
     const accountId = selectedAccounts[item.id];
@@ -99,7 +102,7 @@ export function PendingBaselines({
             <p className="text-[10px] font-mono tracking-widest uppercase text-red-500/60">
               Structural Maintenance Prompt ({item.cadence})
             </p>
-            <h3 className="font-cormorant text-4xl">
+            <h3 className="font-mono text-3xl tabular-nums">
               {formatCurrency(item.amount)}
             </h3>
             <p className="text-xs font-light tracking-wide opacity-80">

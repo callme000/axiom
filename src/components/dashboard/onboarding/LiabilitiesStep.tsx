@@ -58,14 +58,14 @@ export function LiabilitiesStep({
 
   return (
     <div className="flex flex-col h-full gap-6">
-      <h2 className="font-cormorant text-2xl text-foreground tracking-wide uppercase">
+      <h2 className="font-mono text-xs text-muted-foreground tracking-[0.4em] uppercase">
         Financial Commitments
       </h2>
       <div className="flex-1 space-y-6 md:space-y-4 overflow-y-auto scrollbar-hide pr-2">
         {liabilities.map((liab, idx) => (
           <div
             key={idx}
-            className="space-y-4 md:space-y-3 pb-6 md:pb-3 border-b border-white/5 relative shrink-0"
+            className="space-y-4 md:space-y-3 pb-6 md:pb-3 border-b border-white/10 relative shrink-0"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <input
@@ -75,7 +75,7 @@ export function LiabilitiesStep({
                 onChange={(e) =>
                   updateLiability(idx, { liability_name: e.target.value })
                 }
-                className="bg-transparent border-b border-border py-1 font-cormorant text-xl md:text-2xl text-foreground focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 font-mono text-sm uppercase tracking-widest text-foreground focus:outline-none placeholder:text-white/10"
               />
               <input
                 type="text"
@@ -84,7 +84,7 @@ export function LiabilitiesStep({
                 onChange={(e) =>
                   updateLiability(idx, { institution: e.target.value })
                 }
-                className="bg-transparent border-b border-border py-1 text-xs md:text-sm font-light text-muted-foreground/90 focus:outline-none placeholder:text-white/5"
+                className="bg-transparent border-b border-border py-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 focus:outline-none placeholder:text-white/10"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
@@ -97,7 +97,7 @@ export function LiabilitiesStep({
                   onChange={(e) =>
                     updateLiability(idx, { liability_type: e.target.value })
                   }
-                  className="w-full bg-transparent border-b border-border py-1 text-[11px] font-mono tracking-widest uppercase text-muted-foreground/80 focus:outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-[10px] font-mono tracking-widest uppercase text-muted-foreground/80 focus:outline-none"
                 >
                   {LIABILITY_TYPES.map((t) => (
                     <option
@@ -124,7 +124,7 @@ export function LiabilitiesStep({
                         outstanding_balance: e.target.value,
                       })
                     }
-                    className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
+                    className="w-full bg-transparent border-b border-border py-1 text-sm font-mono text-foreground focus:outline-none tabular-nums"
                   />
                 </div>
                 <div className="space-y-1">
@@ -139,7 +139,7 @@ export function LiabilitiesStep({
                     onChange={(e) =>
                       updateLiability(idx, { interest_rate: e.target.value })
                     }
-                    className="w-full bg-transparent border-b border-border py-1 text-lg md:text-xl font-light text-foreground focus:outline-none tabular-nums"
+                    className="w-full bg-transparent border-b border-border py-1 text-sm font-mono text-foreground focus:outline-none tabular-nums"
                   />
                 </div>
               </div>

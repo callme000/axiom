@@ -125,7 +125,7 @@ export function IncomeSection({
   return (
     <div className="space-y-12">
       <div className="flex items-center justify-between">
-        <h2 className="font-cormorant text-2xl text-white tracking-wide uppercase">
+        <h2 className="font-mono text-xl text-white tracking-widest uppercase">
           Income Velocity
         </h2>
         <button
@@ -156,7 +156,7 @@ export function IncomeSection({
                       onChange={(e) =>
                         updateEntry(index, "income_name", e.target.value)
                       }
-                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors uppercase tracking-wider"
                     />
                   </div>
                   <div className="space-y-2">
@@ -170,7 +170,7 @@ export function IncomeSection({
                       onChange={(e) =>
                         updateEntry(index, "source", e.target.value)
                       }
-                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors uppercase tracking-wider"
                     />
                   </div>
                 </div>
@@ -214,7 +214,7 @@ export function IncomeSection({
                       onChange={(e) =>
                         updateEntry(index, "amount", e.target.value)
                       }
-                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-lg focus:outline-none focus:border-white transition-colors tabular-nums"
                     />
                   </div>
                 </div>
@@ -286,7 +286,7 @@ export function IncomeSection({
                                     Number(e.target.value),
                                   )
                                 }
-                                className="w-full bg-transparent border-b border-white/10 py-3 text-white font-light focus:outline-none focus:border-white transition-colors"
+                                className="w-full bg-transparent border-b border-white/10 py-3 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors tabular-nums"
                               />
                             ) : (
                               <select
@@ -377,14 +377,14 @@ export function IncomeSection({
                     {IncomeMap[stream.income_type] || stream.income_type}
                     {stream.source && ` • ${stream.source}`}
                   </span>
-                  <h3 className="font-cormorant text-xl text-white transition-transform group-hover:translate-x-2">
+                  <h3 className="font-mono text-sm uppercase tracking-wider text-white transition-transform group-hover:translate-x-2">
                     {stream.income_name}
                   </h3>
                 </div>
                 <div className="text-right">
-                  <p className="font-cormorant text-xl text-white">
+                  <p className="font-mono text-lg text-white tabular-nums">
                     {formatCurrency(stream.amount)}
-                    <span className="text-[10px] ml-2 text-muted-foreground/60 font-sans tracking-widest uppercase">
+                    <span className="text-[10px] ml-2 text-muted-foreground/60 font-mono tracking-widest uppercase">
                       / {stream.cadence}
                     </span>
                   </p>
