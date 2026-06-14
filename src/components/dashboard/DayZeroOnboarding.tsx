@@ -70,6 +70,9 @@ export default function DayZeroOnboarding({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Terminal Output State
+  const [terminalOutput, setTerminalOutput] = useState<{burnRate: number; runway: number; snapshot: DashboardSnapshot | null} | null>(null);
+
   // State Management
   const [accounts, setAccounts] = useState<OnboardingAccount[]>([
     {

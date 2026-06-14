@@ -197,7 +197,26 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
         </div>
       </motion.header>
 
-      {/* ZONE 1: THE HUD (Macro KPIs) */}
+      {/* ZONE 1: KAIROS INTELLIGENCE (Moved to top as primary driver) */}
+      <motion.section
+        id="intelligence"
+        variants={itemVariants}
+        className="space-y-6"
+      >
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex items-center gap-3">
+            <span className="text-zinc-700 text-lg font-bold">01.</span>
+            <Brain strokeWidth={1.5} size={20} className="text-truth" />
+          </div>
+          <h2 className="text-xl font-bold text-white uppercase tracking-widest">
+            Strategic Directive
+          </h2>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+        <KairosNarrative insight={kairosInsight} />
+      </motion.section>
+
+      {/* ZONE 2: THE HUD (Macro KPIs) */}
       <motion.section
         id="overview"
         variants={itemVariants}
@@ -262,7 +281,7 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
         ))}
       </motion.section>
 
-      {/* ZONE 2: ARCHITECTURE DEPLOYMENT */}
+      {/* ZONE 3: ARCHITECTURE DEPLOYMENT */}
       <motion.section id="deploy" variants={itemVariants} className="w-full">
         <div className="p-8 md:p-12 bg-[#0a0a0a] border border-white/10 rounded-sm">
           <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start">
@@ -302,25 +321,6 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
             </div>
           </div>
         </div>
-      </motion.section>
-
-      {/* ZONE 3: KAIROS INTELLIGENCE */}
-      <motion.section
-        id="intelligence"
-        variants={itemVariants}
-        className="space-y-6"
-      >
-        <div className="flex items-center gap-4 md:gap-6">
-          <div className="flex items-center gap-3">
-            <span className="text-zinc-700 text-lg font-bold">01.</span>
-            <Brain strokeWidth={1.5} size={20} className="text-truth" />
-          </div>
-          <h2 className="text-xl font-bold text-white uppercase tracking-widest">
-            Kairos Intel
-          </h2>
-          <div className="flex-1 h-px bg-white/10" />
-        </div>
-        <KairosNarrative insight={kairosInsight} />
       </motion.section>
 
       {/* ZONE 4: THE LEDGER */}
