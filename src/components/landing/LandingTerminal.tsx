@@ -4,12 +4,11 @@ import { useState, useEffect, useRef } from "react";
 
 const LOGS = [
   { text: "> INITIALIZING KAIROS ENGINE...", type: "info" },
-  { text: "> SYNCING OPERATIONAL BASELINE...", type: "info" },
-  { text: "> ANALYZING TRANSACTION TAXONOMY...", type: "info" },
-  { text: "> CALCULATING STRUCTURAL RUNWAY...", type: "info" },
-  { text: "> [WARNING] INFLOW CONCENTRATION RISK DETECTED.", type: "warning" },
-  { text: "> 85% OF YIELD RELIES ON A SINGLE FLOW.", type: "warning" },
-  { text: "> STRUCTURAL SOLVENCY: OPTIMAL", type: "success" },
+  { text: "> TRADITIONAL BUDGETING DETECTED: CATEGORIZING PAST EXPENSES...", type: "warning" },
+  { text: "> COPILOT: You spent $45 on coffee yesterday.", type: "warning" },
+  { text: "> OVERRIDING LEGACY SYSTEMS. SHIFTING TO FORWARD RADAR...", type: "info" },
+  { text: "> CALCULATING STRUCTURAL BURN RATE...", type: "info" },
+  { text: "> AXIOM: Horizon projected to 6.2 months. Surplus capital ready for deployment.", type: "success" },
   { text: "> DEPLOYMENT STRATEGY: CALCULATED", type: "info" },
 ];
 

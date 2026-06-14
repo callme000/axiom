@@ -222,6 +222,44 @@ export default function DayZeroOnboarding({
                         onChange={setLiabilities}
                       />
                     )}
+                    {step === 5 && terminalOutput && (
+                      <div className="flex-1 flex flex-col justify-center items-center h-full">
+                        <div className="space-y-6 w-full max-w-lg text-center">
+                          <div className="inline-flex items-center gap-4 text-zinc-500 mb-4">
+                            <div className="h-px w-8 bg-zinc-800" />
+                            <span className="text-[9px] tracking-[0.8em] uppercase">
+                              Analysis Complete
+                            </span>
+                            <div className="h-px w-8 bg-zinc-800" />
+                          </div>
+                          
+                          <div className="bg-[#111] border border-white/10 rounded-sm p-8 text-left space-y-8 font-mono shadow-2xl">
+                            <div className="space-y-2">
+                              <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Structural Burn Rate</p>
+                              <p className="text-3xl text-white font-bold tracking-tighter">
+                                ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(terminalOutput.burnRate)} <span className="text-sm text-zinc-500 font-normal">/mo</span>
+                              </p>
+                            </div>
+                            
+                            <div className="h-px w-full bg-white/5" />
+                            
+                            <div className="space-y-2">
+                              <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Current Horizon (Runway)</p>
+                              <div className="flex items-baseline gap-3">
+                                <p className="text-4xl text-[var(--opportunity)] font-bold tracking-tighter">
+                                  {terminalOutput.runway.toFixed(1)}
+                                </p>
+                                <p className="text-sm text-zinc-400">days</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <p className="text-sm text-zinc-400 leading-relaxed pt-4">
+                            Your baseline is mapped. Axiom is now monitoring your structural solvency.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </form>
@@ -240,8 +278,8 @@ export default function DayZeroOnboarding({
                 <button
                   type="button"
                   onClick={handlePrev}
-                  disabled={step === 1}
-                  className="text-[10px] font-bold tracking-[0.4em] text-zinc-600 hover:text-white transition-all uppercase disabled:opacity-0 py-4 px-8 border border-transparent hover:border-white/5"
+                  disabled={step === 1 || step === 5}
+                  className={`text-[10px] font-bold tracking-[0.4em] text-zinc-600 hover:text-white transition-all uppercase py-4 px-8 border border-transparent hover:border-white/5 ${step === 5 || step === 1 ? "opacity-0 pointer-events-none" : ""}`}
                 >
                   ← PREV_PHASE
                 </button>
@@ -253,8 +291,10 @@ export default function DayZeroOnboarding({
                     {step === 4 ? (
                       <>
                         <Zap size={14} />
-                        ARCHIVE_SETUP
+                        CALCULATE_HORIZON
                       </>
+                    ) : step === 5 ? (
+                      "INITIALIZE_DASHBOARD →"
                     ) : (
                       "NEXT_PHASE →"
                     )}

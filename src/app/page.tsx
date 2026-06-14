@@ -80,12 +80,11 @@ export default function LandingPage() {
               <div className="h-px w-8 bg-zinc-800" />
             </div>
             <h1 className="text-4xl md:text-7xl font-bold tracking-tighter text-white uppercase leading-none">
-              Deterministic <br />
-              <span className="text-zinc-500">Wealth Architecture.</span>
+              Engineering <br />
+              <span className="text-zinc-500">Your Runway.</span>
             </h1>
             <p className="max-w-xl mx-auto text-zinc-400 text-sm md:text-base tracking-tight leading-relaxed">
-              Clinical financial intelligence for elite operators. 
-              Secure your structural solvency with sovereign precision.
+              Personal finance apps treat you like a consumer, categorizing past expenses. Axiom treats you like a treasury. A deterministic engine to calculate your structural burn, project your exact runway, and deploy capital with absolute precision.
             </p>
           </div>
 
