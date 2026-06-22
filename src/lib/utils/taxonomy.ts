@@ -1,7 +1,7 @@
 import { AccountType } from "../finance/accounts";
 import { LiabilityType } from "../finance/liabilities";
 import { IncomeType } from "../finance/income";
-import { ValidCategory } from "../finance/taxonomy";
+import { ValidCategory, TAXONOMY_CATEGORIES } from "../finance/taxonomy";
 
 /**
  * TAXONOMY MAPPING DICTIONARY
@@ -37,11 +37,11 @@ export const IncomeMap: Record<IncomeType, string> = {
   other: "Other Inflows",
 };
 
-export const DeploymentMap: Record<ValidCategory, string> = {
-  Asset: "Investments",
-  Skill: "Growth",
-  Leverage: "Efficiency",
-  Experience: "Lifestyle",
-  Maintenance: "Essentials",
-  Leakage: "Waste",
-};
+export const DeploymentMap: Record<ValidCategory, string> = TAXONOMY_CATEGORIES.reduce(
+  (acc, cat) => {
+    acc[cat.value] = cat.label;
+    return acc;
+  },
+  {} as Record<ValidCategory, string>,
+);
+

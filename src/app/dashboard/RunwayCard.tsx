@@ -21,14 +21,14 @@ export function RunwayCard({ runwayDays, netWorth = 0 }: RunwayCardProps) {
     : `${(runwayDays! / 30).toFixed(1)} MONTHS`;
 
   // 3. Conditional Styles
-  const containerClasses = `bg-foreground/5 border rounded-2xl p-6 md:p-8 flex flex-col justify-between transition-all duration-500 ${
+  const containerClasses = `bg-[#0a0a0a] border rounded-sm p-6 md:p-8 flex flex-col justify-between transition-all duration-300 hover:border-truth/40 ${
     isInfiniteRunway
       ? isInsolvent
         ? "border-rose-500/20"
         : "border-emerald-500/10"
       : isCritical
         ? "border-rose-500/30 bg-rose-500/5 shadow-inner"
-        : "border-foreground/10"
+        : "border-white/10"
   }`;
 
   const labelClasses = `text-[11px] font-black uppercase tracking-[0.2em] mb-4 ${
