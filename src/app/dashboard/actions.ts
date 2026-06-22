@@ -798,7 +798,7 @@ export async function fetchTelemetryLogsAction(): Promise<TelemetrySummary> {
   const { userId, supabase } = await requireAuth();
 
   const { data, error } = await supabase
-    .from("kairos_insights")
+    .from("telemetry_logs")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })

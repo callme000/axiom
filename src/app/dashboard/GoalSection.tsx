@@ -8,7 +8,7 @@ import {
   GOAL_PRIORITIES,
   GOAL_STATUSES,
 } from "@/lib/finance/goals";
-import { createGoalAction } from "./actions";
+import { createGoalAction, deleteGoalAction } from "./actions";
 import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
@@ -260,13 +260,24 @@ export function GoalSection({ goals, onSnapshot }: GoalSectionProps) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="space-y-1">
                       <span
-                        className={`text-[8px] font-mono tracking-widest uppercase ${
+                        className={`text-[8px] font-mono tracking-widest uppercase flex items-center gap-2 ${
                           goal.priority === "critical"
                             ? "text-red-500"
                             : "text-muted-foreground/60"
                         }`}
                       >
                         {goal.priority}
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Confirm deletion of milestone ${goal.goal_name}?`)) {
+                              const snapshot = await deleteGoalAction(goal.id);
+                              onSnapshot(snapshot);
+                            }
+                          }}
+                          className="opacity-0 group-hover:opacity-100 text-rose-500 hover:text-rose-400 font-mono text-[8px] tracking-widest uppercase transition-opacity cursor-pointer"
+                        >
+                          [ delete ]
+                        </button>
                       </span>
                       <h3 className="font-mono text-lg uppercase tracking-wider text-white transition-transform group-hover:translate-x-2">
                         {goal.goal_name}

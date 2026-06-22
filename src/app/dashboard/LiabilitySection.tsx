@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { LIABILITY_TYPES, type Liability } from "@/lib/finance/liabilities";
-import { createLiabilityAction } from "./actions";
+import { createLiabilityAction, deleteLiabilityAction } from "./actions";
 import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/utils/formatters";
 import { LiabilityMap } from "@/lib/utils/taxonomy";
@@ -325,14 +325,25 @@ export function LiabilitySection({
             <ScrollReveal key={liability.id} delay={index * 0.05} distance={10}>
               <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
                 <div className="space-y-1">
-                  <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60">
+                  <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60 flex items-center gap-2">
                     {LiabilityMap[liability.liability_type] ||
                       liability.liability_type}
                     {liability.is_paid_in_cadences && (
-                      <span className="ml-2 text-muted-foreground/50">
+                      <span className="text-muted-foreground/50">
                         • {liability.cadence} ({liability.cadence_day_date})
                       </span>
                     )}
+                    <button
+                      onClick={async () => {
+                        if (confirm(`Confirm deletion of commitment ${liability.liability_name}?`)) {
+                          const snapshot = await deleteLiabilityAction(liability.id);
+                          onSnapshot(snapshot);
+                        }
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-rose-500 hover:text-rose-400 ml-2 font-mono text-[8px] tracking-widest uppercase transition-opacity cursor-pointer"
+                    >
+                      [ delete ]
+                    </button>
                   </span>
                   <h3 className="font-mono text-lg text-white transition-transform group-hover:translate-x-2">
                     {liability.liability_name}

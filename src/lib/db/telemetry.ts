@@ -24,9 +24,9 @@ export async function logKairosEvaluation(data: {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Record evaluation event to kairos_insights table.
+    // Record evaluation event to telemetry_logs table.
     // This phase uses the rule registry ID and performance metadata.
-    const { error } = await supabase.from("kairos_insights").insert({
+    const { error } = await supabase.from("telemetry_logs").insert({
       user_id: user.id,
       rule_id: data.ruleId,
       severity: data.severity,

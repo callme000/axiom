@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TAXONOMY_CATEGORIES } from "@/lib/finance/taxonomy";
-import { createOperationalBaselineAction } from "./actions";
+import { createOperationalBaselineAction, deleteOperationalBaselineAction } from "./actions";
 import { type DashboardSnapshot } from "@/lib/dashboard/types";
 import { OperationalBaseline, BaselineCadence } from "@/lib/analytics/types";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -311,14 +311,25 @@ export function BaselineSection({
               <div className="flex items-center justify-between py-6 border-b border-white/5 group hover:bg-white/1 transition-all px-2">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60">
+                    <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/60 flex items-center gap-2">
                       {item.cadence}
+                      {item.execution_day && (
+                        <span className="text-muted-foreground/50">
+                          • Day {item.execution_day}
+                        </span>
+                      )}
+                      <button
+                        onClick={async () => {
+                          if (confirm(`Confirm deletion of baseline entry ${item.title}?`)) {
+                            const snapshot = await deleteOperationalBaselineAction(item.id);
+                            onSnapshot(snapshot);
+                          }
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-rose-500 hover:text-rose-400 font-mono text-[8px] tracking-widest uppercase transition-opacity cursor-pointer"
+                      >
+                        [ delete ]
+                      </button>
                     </span>
-                    {item.execution_day && (
-                      <span className="text-[8px] font-mono tracking-widest uppercase text-muted-foreground/50">
-                        • Day {item.execution_day}
-                      </span>
-                    )}
                   </div>
                   <h3 className="font-mono text-sm uppercase tracking-wider text-white transition-transform group-hover:translate-x-2">
                     {item.title}

@@ -296,9 +296,6 @@ export const projectRunway = (
 ): number | null => {
   const adjustedDailyBurn = dailyBurnRate - monthlyIncome / 30;
 
-  // If net worth is negative, the structural foundation is critical regardless of cash flow
-  if (netWorth < 0) return 0;
-
   if (adjustedDailyBurn <= 0) return null;
   if (balance <= 0) return 0;
 

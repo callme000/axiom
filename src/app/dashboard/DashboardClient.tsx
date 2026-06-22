@@ -9,7 +9,8 @@ import { IncomeSection } from "./IncomeSection";
 import { GoalSection } from "./GoalSection";
 import { StrategicObjectiveSection } from "./StrategicObjectiveSection";
 import { BaselineSection } from "./BaselineSection";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { formatCurrency } from "@/lib/utils/formatters";
 import { PendingInflows } from "./PendingInflows";
 import { PendingLiabilities } from "./PendingLiabilities";
 import { PendingBaselines } from "./PendingBaselines";
@@ -80,6 +81,7 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
     initialSnapshot.kairosInsight,
   );
   const [isExecuting, setIsExecuting] = useState(false);
+  const [inspectMetric, setInspectMetric] = useState<string | null>(null);
 
   const applyDashboardSnapshot = useCallback((snapshot: DashboardSnapshot) => {
     setLedger({
@@ -104,9 +106,9 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
     }
   }, [applyDashboardSnapshot]);
 
-  // 1. HUD / MACRO KPI ROW
   const hudMetrics = [
     {
+      id: "assets",
       label: "Sovereign Wealth",
       icon: ShieldCheck,
       value: ledger.analytics?.totalAssets || 0,
@@ -117,6 +119,7 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
       chartData: [100, 110, 105, 120, 115, 130, 140],
     },
     {
+      id: "liquidity",
       label: "Liquid Capital",
       icon: Waves,
       value: ledger.analytics?.liquidity || 0,
@@ -127,6 +130,7 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
       chartData: [50, 45, 60, 55, 70, 65, 80],
     },
     {
+      id: "burn",
       label: "Structural Burn",
       icon: Flame,
       value: ledger.analytics?.totalStructuralMonthlyBurn || 0,
@@ -138,6 +142,7 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
       chartData: [20, 22, 18, 25, 20, 24, 21],
     },
     {
+      id: "runway",
       label: "Operational Runway",
       icon: Timer,
       value: ledger.analytics?.runwayDays || 0,
@@ -225,14 +230,20 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
         {hudMetrics.map((metric) => (
           <div
             key={metric.label}
-            className="p-6 bg-[#0a0a0a] border border-white/10 rounded-sm group hover:border-truth/40 transition-all duration-300 flex flex-col justify-between overflow-hidden relative"
+            onClick={() => setInspectMetric(metric.id)}
+            className="p-6 bg-[#0a0a0a] border border-white/10 rounded-sm group hover:border-truth/40 transition-all duration-300 flex flex-col justify-between overflow-hidden relative cursor-pointer"
           >
             <div className="relative z-10">
               <div className="flex justify-between items-start">
                 <p className="text-[9px] tracking-[0.2em] text-zinc-500 uppercase font-bold group-hover:text-zinc-300 transition-colors">
                   {metric.label}
                 </p>
-                <metric.icon strokeWidth={1.5} size={16} className="text-zinc-600 group-hover:text-truth transition-colors" />
+                <div className="flex items-center gap-2">
+                  <span className="text-[7px] font-mono text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
+                    [ Inspect ]
+                  </span>
+                  <metric.icon strokeWidth={1.5} size={16} className="text-zinc-600 group-hover:text-truth transition-colors" />
+                </div>
               </div>
               <div className="space-y-1 mt-6">
                 <div className="flex items-center justify-between">
@@ -456,6 +467,294 @@ export function DashboardClient({ initialSnapshot }: DashboardClientProps) {
           </section>
         </div>
       </motion.div>
+
+      {/* Interactive Detail Modal (Click to Inspect) */}
+      <AnimatePresence>
+        {inspectMetric && (
+          <div 
+            className="fixed inset-0 bg-black/85 backdrop-blur-xs z-50 flex items-center justify-center p-4 font-mono select-none"
+            onClick={() => setInspectMetric(null)}
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 p-8 relative overflow-hidden text-left shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Grid Overlay */}
+              <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:16px_16px]" />
+              
+              <button 
+                onClick={() => setInspectMetric(null)}
+                className="absolute top-6 right-6 text-zinc-500 hover:text-white text-xs tracking-widest uppercase transition-colors"
+              >
+                ✕ CLOSE
+              </button>
+
+              {inspectMetric === "assets" && (
+                <div className="space-y-6 relative z-10">
+                  <div className="border-b border-white/10 pb-4">
+                    <p className="text-[10px] tracking-[0.4em] text-truth uppercase font-bold">
+                      METRIC_INSPECTION // SOVEREIGN_WEALTH
+                    </p>
+                    <h2 className="text-xl font-bold text-white uppercase tracking-wider mt-1">
+                      Sovereign Wealth Definition
+                    </h2>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <p className="text-xs text-zinc-400 leading-relaxed uppercase tracking-wide">
+                      Sovereign Wealth represents the aggregated capitalization of your entire architecture. 
+                      It sums the balances of all active accounts in the ledger, regardless of liquid availability.
+                    </p>
+                    
+                    <div className="bg-black/50 border border-white/5 p-4 space-y-2">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest">Mathematical Formula</p>
+                      <p className="text-xs font-bold text-white font-mono">
+                        Sovereign Wealth = Sum of All Account Balances
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest border-b border-white/5 pb-2">Active Capital Ledgers</p>
+                      <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+                        {ledger.accounts.map(acc => (
+                          <div key={acc.id} className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-400 uppercase tracking-wider">{acc.account_name} ({acc.account_type})</span>
+                            <span className="text-white font-bold">{formatCurrency(acc.current_balance)}</span>
+                          </div>
+                        ))}
+                        {ledger.accounts.length === 0 && (
+                          <p className="text-xs text-zinc-600 uppercase">No active accounts detected.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[9px]">
+                      <span className="text-zinc-600 uppercase">Source: [accounts.ts] & [engine.ts:L94]</span>
+                      <a 
+                        href="file:///C:/projects/axiom/src/lib/analytics/engine.ts#L94"
+                        className="text-truth hover:underline uppercase tracking-widest font-bold"
+                      >
+                        Inspect Code
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {inspectMetric === "liquidity" && (
+                <div className="space-y-6 relative z-10">
+                  <div className="border-b border-white/10 pb-4">
+                    <p className="text-[10px] tracking-[0.4em] text-truth uppercase font-bold">
+                      METRIC_INSPECTION // LIQUID_CAPITAL
+                    </p>
+                    <h2 className="text-xl font-bold text-white uppercase tracking-wider mt-1">
+                      Liquid Capital Definition
+                    </h2>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <p className="text-xs text-zinc-400 leading-relaxed uppercase tracking-wide">
+                      Liquid Capital measures immediate tactical deployment capacity. It sums checking, savings, and mobile money balances. 
+                      Illiquid assets (e.g. Brokerage, Crypto) are excluded to ensure tactical readiness.
+                    </p>
+                    
+                    <div className="bg-black/50 border border-white/5 p-4 space-y-2">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest">Mathematical Formula</p>
+                      <p className="text-xs font-bold text-white font-mono">
+                        Liquid Capital = Checking + Savings + Mobile Money Balances
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <p className="text-[9px] text-emerald-500 uppercase tracking-widest border-b border-white/5 pb-2">Liquid Accounts (Included)</p>
+                        <div className="space-y-2">
+                          {ledger.accounts.filter(a => ['checking', 'savings', 'mobile_money'].includes(a.account_type)).map(acc => (
+                            <div key={acc.id} className="flex justify-between items-center text-[11px]">
+                              <span className="text-zinc-400 uppercase">{acc.account_name}</span>
+                              <span className="text-white font-bold">{formatCurrency(acc.current_balance)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[9px] text-rose-500 uppercase tracking-widest border-b border-white/5 pb-2">Illiquid Accounts (Excluded)</p>
+                        <div className="space-y-2">
+                          {ledger.accounts.filter(a => !['checking', 'savings', 'mobile_money'].includes(a.account_type)).map(acc => (
+                            <div key={acc.id} className="flex justify-between items-center text-[11px] opacity-50">
+                              <span className="text-zinc-400 uppercase">{acc.account_name}</span>
+                              <span className="text-white font-bold">{formatCurrency(acc.current_balance)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[9px]">
+                      <span className="text-zinc-600 uppercase">Source: [settings.ts] & [liquidity.ts]</span>
+                      <a 
+                        href="file:///C:/projects/axiom/src/lib/finance/liquidity.ts"
+                        className="text-truth hover:underline uppercase tracking-widest font-bold"
+                      >
+                        Inspect Code
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {inspectMetric === "burn" && (
+                <div className="space-y-6 relative z-10">
+                  <div className="border-b border-white/10 pb-4">
+                    <p className="text-[10px] tracking-[0.4em] text-leakage uppercase font-bold">
+                      METRIC_INSPECTION // STRUCTURAL_BURN
+                    </p>
+                    <h2 className="text-xl font-bold text-white uppercase tracking-wider mt-1">
+                      Structural Burn Definition
+                    </h2>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <p className="text-xs text-zinc-400 leading-relaxed uppercase tracking-wide">
+                      Structural Burn measures the rate of operational capital outflow. It is calculated by dividing 
+                      discretionary deployments, fixed operational baselines, and liability interest accruals into daily averages.
+                    </p>
+                    
+                    <div className="bg-black/50 border border-white/5 p-4 space-y-2">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest">Mathematical Formula</p>
+                      <p className="text-xs font-bold text-white font-mono leading-relaxed">
+                        Daily Burn = (Last 30d Deployments / 30) + (Fixed Baseline / 30) + (Liability Interest / 30)
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest border-b border-white/5 pb-2">Outflow Breakdown (Normalized Monthly)</p>
+                      
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-zinc-400 uppercase">1. Discretionary Outflow (30d average)</span>
+                          <span className="text-white font-bold">
+                            {formatCurrency((ledger.analytics?.averageDeployment || 0) * (ledger.analytics?.deploymentCount || 0))} /mo
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-zinc-400 uppercase">2. Fixed Baseline Outflow</span>
+                          <span className="text-white font-bold">
+                            {formatCurrency(ledger.analytics?.totalStructuralMonthlyBurn || 0)} /mo
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-zinc-400 uppercase">3. Debt Service (Interest Accrual)</span>
+                          <span className="text-white font-bold">
+                            {formatCurrency((ledger.analytics?.dailyBurnRate || 0) * 30.4375 - (ledger.analytics?.totalStructuralMonthlyBurn || 0) - ((ledger.analytics?.averageDeployment || 0) * (ledger.analytics?.deploymentCount || 0) / 30) * 30.4375)} /mo
+                          </span>
+                        </div>
+                        <div className="border-t border-white/10 pt-2 flex justify-between items-center text-sm font-bold">
+                          <span className="text-zinc-300 uppercase">Total Operational Outflow</span>
+                          <span className="text-leakage">
+                            {formatCurrency((ledger.analytics?.dailyBurnRate || 0) * 30.4375)} /mo
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[9px]">
+                      <span className="text-zinc-600 uppercase">Source: [engine.ts:L458]</span>
+                      <a 
+                        href="file:///C:/projects/axiom/src/lib/analytics/engine.ts#L458"
+                        className="text-truth hover:underline uppercase tracking-widest font-bold"
+                      >
+                        Inspect Code
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {inspectMetric === "runway" && (
+                <div className="space-y-6 relative z-10">
+                  <div className="border-b border-white/10 pb-4">
+                    <p className="text-[10px] tracking-[0.4em] text-opportunity uppercase font-bold">
+                      METRIC_INSPECTION // OPERATIONAL_RUNWAY
+                    </p>
+                    <h2 className="text-xl font-bold text-white uppercase tracking-wider mt-1">
+                      Operational Runway Definition
+                    </h2>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <p className="text-xs text-zinc-400 leading-relaxed uppercase tracking-wide">
+                      Operational Runway measures the days of survival before complete capital depletion. 
+                      It projects liquid capital against structural burn, offset by incoming yield streams.
+                    </p>
+                    
+                    <div className="bg-black/50 border border-white/5 p-4 space-y-2">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest">Mathematical Formula</p>
+                      <p className="text-xs font-bold text-white font-mono leading-relaxed">
+                        Runway Days = Liquid Capital / [Daily Burn - (Monthly Income / 30)]
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-widest border-b border-white/5 pb-2">Equation Substitution</p>
+                      
+                      <div className="space-y-3 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-zinc-400 uppercase">Numerator: Liquid Capital</span>
+                          <span className="text-white font-bold">{formatCurrency(ledger.analytics?.liquidity || 0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-zinc-400 uppercase">Denominator: Adjusted daily burn</span>
+                          <span className="text-white font-bold">
+                            {formatCurrency(ledger.analytics?.adjustedDailyBurn || 0)} /day
+                          </span>
+                        </div>
+                        <div className="border-l border-white/10 pl-4 py-1 space-y-1 opacity-70 text-[10px]">
+                          <div className="flex justify-between">
+                            <span className="text-zinc-500 uppercase">• Raw Daily Burn</span>
+                            <span>{formatCurrency(ledger.analytics?.dailyBurnRate || 0)} /day</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-zinc-500 uppercase">• Daily Income Offset</span>
+                            <span>- {formatCurrency((ledger.analytics?.totalMonthlyIncome || 0) / 30)} /day</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-t border-white/10 pt-2 flex justify-between items-center text-sm font-bold">
+                          <span className="text-zinc-300 uppercase">Calculated Runway</span>
+                          <span className="text-opportunity">
+                            {ledger.analytics?.runwayDays ? `${Math.round(ledger.analytics.runwayDays)} Days` : "Infinite / Stable"}
+                          </span>
+                        </div>
+
+                        {ledger.analytics?.netWorth !== undefined && ledger.analytics.netWorth < 0 && (
+                          <div className="mt-4 p-4 border border-rose-500/20 bg-rose-500/5 text-rose-400/90 leading-relaxed text-[10px] uppercase tracking-wide space-y-1">
+                            <p className="font-bold">⚠️ Negative Net Worth Warning</p>
+                            <p>Total Commitments (KSh {Math.abs(ledger.analytics.totalLiabilities).toLocaleString()}) exceed Capitalized Assets (KSh {ledger.analytics.totalAssets.toLocaleString()}). While you have short-term cash flow solvency, the structural balance sheet foundation is vulnerable.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[9px]">
+                      <span className="text-zinc-600 uppercase">Source: [engine.ts:L291] & [projectRunway]</span>
+                      <a 
+                        href="file:///C:/projects/axiom/src/lib/analytics/engine.ts#L291"
+                        className="text-truth hover:underline uppercase tracking-widest font-bold"
+                      >
+                        Inspect Code
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -36,6 +36,7 @@ export async function getInsights(supabase: SupabaseClient, limit: number = 5) {
   const { data, error } = await supabase
     .from("kairos_insights")
     .select("*")
+    .not("message", "is", null)
     .order("created_at", { ascending: false })
     .limit(limit);
 

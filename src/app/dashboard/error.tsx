@@ -22,17 +22,17 @@ export default function DashboardError({
           <AlertOctagon className="text-red-500 shrink-0" size={24} />
           <div>
             <h1 className="text-sm font-bold tracking-[0.3em] uppercase text-red-500">
-              SYSTEM_INTERRUPTED // EXCEPTION_DETECTED
+              SYSTEM_RECALIBRATION // PIPELINE_PAUSED
             </h1>
             <p className="text-[9px] tracking-widest text-zinc-500 uppercase">
-              Operational pipeline halted by analytical logic error
+              Operational pipeline paused due to analytical data interruption
             </p>
           </div>
         </div>
 
         <p className="text-zinc-400 text-xs leading-relaxed mb-8 uppercase tracking-wide">
-          The Axiom intelligence engine encountered an unhandled diagnostic fault during page render. 
-          Session state preserved in secure cache.
+          The Axiom intelligence engine captured a connection or verification exception during page hydration. 
+          Your ledger records remain fully secure in storage.
         </p>
 
         {/* Diagnostic Stack Dump */}
@@ -55,7 +55,7 @@ export default function DashboardError({
           onClick={() => reset()}
           className="w-full border border-white/10 bg-zinc-900 text-white hover:bg-white hover:text-black px-6 py-4 font-bold text-[10px] tracking-[0.4em] transition-all uppercase rounded-none"
         >
-          [ RECALIBRATE_SYSTEM ]
+          [ RE-VERIFY PIPELINE STATUS ]
         </button>
       </div>
     </main>
